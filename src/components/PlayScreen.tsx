@@ -9,7 +9,7 @@ import type { ShortcutSettings } from '../app/shortcuts'
 import { useGlobalShortcut } from '../app/useGlobalShortcut'
 import { useTypingSession } from '../app/useTypingSession'
 import { navigate } from '../app/useHashRoute'
-import { play, setMuted, unlockAudio } from '../audio/audio'
+import { play, unlockAudio } from '../audio/audio'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n'
 import type { LessonProgress, LessonResult } from '../storage/progress'
@@ -31,7 +31,6 @@ export interface PlayScreenProps {
   labels?: Partial<Record<Code, string>>
   errorMode: ErrorMode
   strictShift: boolean
-  sound?: boolean
   showFeedback?: boolean
   suspended?: boolean
   shortcuts?: ShortcutSettings
@@ -47,7 +46,6 @@ export function PlayScreen({
   labels,
   errorMode,
   strictShift,
-  sound = true,
   showFeedback = false,
   suspended = false,
   shortcuts = DEFAULT_SHORTCUTS,
@@ -138,10 +136,6 @@ export function PlayScreen({
       }
     }
   }, [suspended, state.status, pause, resume])
-
-  useEffect(() => {
-    setMuted(!sound)
-  }, [sound])
 
   useEffect(() => {
     const previous = previousStatusRef.current

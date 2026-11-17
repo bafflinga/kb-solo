@@ -4,6 +4,7 @@ import { routeKey } from '../app/navigation'
 import { loadSettings, updateSettings } from '../app/settings'
 import type { AppSettings } from '../app/settings'
 import { navigate, useHashRoute } from '../app/useHashRoute'
+import { setMuted } from '../audio/audio'
 import { getLayout, layoutForProfile, profileOf } from '../domain/layout'
 import { allLessons, getLesson } from '../domain/lessons/registry'
 import type { Code, ContentLanguage } from '../domain/types'
@@ -34,6 +35,11 @@ export default function AppShell() {
   const [settingsKey, setSettingsKey] = useState<string | null>(null)
   const [, setProgressVersion] = useState(0)
   const currentKey = routeKey(route)
+
+  useEffect(() => {
+    setMuted(!settings.sound)
+  }, [settings.sound])
+
   const settingsOpen = settingsKey === currentKey
 
   function closeSettings(): void {
@@ -184,7 +190,6 @@ export default function AppShell() {
                 labels={keyLabels}
                 errorMode={settings.errorMode}
                 strictShift={settings.strictShift}
-                sound={settings.sound}
                 showFeedback={settings.showFeedback}
                 suspended={settingsOpen}
                 shortcuts={settings.shortcuts}

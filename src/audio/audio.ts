@@ -60,6 +60,20 @@ export function createAudioEngine(
         return
       }
       if (context.state !== 'running') {
+        const pending = context
+        void pending
+          .resume()
+          .then(() => {
+            if (
+              context === pending &&
+              context.state === 'running' &&
+              master !== null &&
+              !muted
+            ) {
+              synthesizeSound(context, master, name, context.currentTime)
+            }
+          })
+          .catch(() => {})
         return
       }
       synthesizeSound(context, master, name, context.currentTime)

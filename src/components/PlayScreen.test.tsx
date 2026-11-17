@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SHORTCUTS } from '../app/shortcuts'
-import { play, setMuted, unlockAudio } from '../audio/audio'
+import { play, unlockAudio } from '../audio/audio'
 import { cueFromText } from '../domain/cues'
 import { getLayout } from '../domain/layout'
 import type { LessonMeta, LessonProvider } from '../domain/lessons/types'
@@ -14,7 +14,6 @@ import { PlayScreen } from './PlayScreen'
 
 vi.mock('../audio/audio', () => ({
   play: vi.fn(),
-  setMuted: vi.fn(),
   unlockAudio: vi.fn().mockResolvedValue(undefined),
 }))
 
@@ -94,7 +93,6 @@ describe('PlayScreen', () => {
       lesson?: LessonProvider
       layout?: Layout
       suspended?: boolean
-      sound?: boolean
       showFeedback?: boolean
       best?: LessonProgress
       onFinish?: (result: LessonResult) => void
@@ -107,7 +105,6 @@ describe('PlayScreen', () => {
           layout={options.layout ?? layout}
           errorMode="block"
           strictShift={false}
-          sound={options.sound ?? true}
           showFeedback={options.showFeedback ?? false}
           suspended={options.suspended ?? false}
           now={now}
@@ -406,12 +403,6 @@ describe('PlayScreen', () => {
 
       expect(vi.mocked(play)).toHaveBeenCalledWith('lessonFailure')
       expect(vi.mocked(play)).not.toHaveBeenCalledWith('lessonSuccess')
-    })
-
-    it('syncs mute from the sound prop', async () => {
-      await render({ sound: false })
-
-      expect(vi.mocked(setMuted)).toHaveBeenCalledWith(true)
     })
   })
 

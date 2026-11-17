@@ -3,7 +3,15 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { setMuted } from '../audio/audio'
 import AppShell from './AppShell'
+
+vi.mock('../audio/audio', () => ({
+  play: vi.fn(),
+  setMuted: vi.fn(),
+  unlockAudio: vi.fn().mockResolvedValue(undefined),
+  isMuted: vi.fn(),
+}))
 
 vi.mock('./PwaUpdatePrompt', () => ({
   default: () => null,
@@ -64,6 +72,25 @@ describe('AppShell', () => {
     expect(
       container.querySelector('.keyboard')?.getAttribute('aria-hidden'),
     ).toBe('true')
+  })
+
+  it('syncs the sound setting to the audio engine', async () => {
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    expect(vi.mocked(setMuted)).toHaveBeenCalledWith(false)
+
+    const sound = [
+      ...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+    ].find((input) => input.parentElement?.textContent?.includes('Sound'))
+    expect(sound).toBeDefined()
+
+    await act(async () => {
+      sound?.click()
+    })
+
+    expect(vi.mocked(setMuted)).toHaveBeenLastCalledWith(true)
   })
 
   it('switches the interface language and persists it', async () => {

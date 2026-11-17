@@ -29,7 +29,7 @@ describe('createAudioEngine', () => {
     expect(fake.state).toBe('running')
   })
 
-  it('plays a sound only once the context is running', async () => {
+  it('resumes a suspended context and replays the sound', async () => {
     const fake = new FakeAudioContext()
     const engine = engineFor(fake)
     await engine.unlock()
@@ -40,6 +40,11 @@ describe('createAudioEngine', () => {
     fake.state = 'suspended'
     engine.play('keypress')
     expect(fake.oscillators).toHaveLength(1)
+
+    await Promise.resolve()
+    expect(fake.resumeCalls).toBe(2)
+    expect(fake.state).toBe('running')
+    expect(fake.oscillators).toHaveLength(2)
   })
 
   it('skips sounds while muted and restores gain when unmuted', async () => {
