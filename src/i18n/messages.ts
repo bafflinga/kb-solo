@@ -5,6 +5,7 @@ export type UiLocale = (typeof LOCALES)[number]
 export const messages = {
   en: {
     appName: 'KB Solo',
+    version: 'Version',
     menu: 'Menu',
     stats: 'Stats',
     settings: 'Settings',
@@ -139,6 +140,7 @@ export const messages = {
   },
   ru: {
     appName: 'KB Solo',
+    version: 'Версия',
     menu: 'Меню',
     stats: 'Статистика',
     settings: 'Настройки',

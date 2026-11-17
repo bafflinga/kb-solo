@@ -7,6 +7,7 @@ import { DEFAULT_SETTINGS } from '../app/settings'
 import type { AppSettings } from '../app/settings'
 import { DEFAULT_SHORTCUTS, formatShortcut } from '../app/shortcuts'
 import { useI18n } from '../i18n'
+import { APP_VERSION } from '../version'
 import { SettingsPanel } from './SettingsPanel'
 
 const scope = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -224,5 +225,10 @@ describe('SettingsPanel shortcuts', () => {
     expect(onPatch).toHaveBeenCalledWith({
       shortcuts: { ...changed.shortcuts, start: DEFAULT_SHORTCUTS.start },
     })
+  })
+
+  it('shows the package version', async () => {
+    await render()
+    expect(container.textContent).toContain(`Version ${APP_VERSION}`)
   })
 })

@@ -12,6 +12,7 @@ import type { I18nValue } from '../i18n'
 import type { MessageKey } from '../i18n'
 import { estimateQuota } from '../storage/persistence'
 import type { QuotaInfo } from '../storage/persistence'
+import { APP_VERSION } from '../version'
 import { LayoutSwitcher } from './LayoutSwitcher'
 
 interface SettingsPanelProps {
@@ -308,6 +309,9 @@ export function SettingsPanel({
       <button type="button" className="danger" onClick={clearProgress}>
         {t('clearProgress')}
       </button>
+      <p className="muted">
+        {t('version')} {APP_VERSION}
+      </p>
     </section>
   )
 }
