@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import type { ContentLanguage } from '../domain/types'
 import type { LessonMeta } from '../domain/lessons/types'
 import type { LessonProgress } from '../storage/progress'
@@ -5,6 +6,7 @@ import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n'
 import { starGlyphs } from './stars'
 import { LANGUAGE_LABEL } from './languages'
+import { navigate } from '../app/useHashRoute'
 import './statsScreen.css'
 
 const LANGUAGES: readonly ContentLanguage[] = ['en', 'ru']
@@ -30,6 +32,10 @@ export function StatsScreen({ progress, lessons }: StatsScreenProps) {
     scored.length === 0
       ? 0
       : scored.reduce((sum, item) => sum + item.bestAccuracy, 0) / scored.length
+
+  const gotoLessonHandler = useCallback((id: string) => () => {
+    navigate(`#/lesson/${encodeURIComponent(id)}`)
+  }, [])
 
   if (progress.length === 0) {
     return (
@@ -78,7 +84,11 @@ export function StatsScreen({ progress, lessons }: StatsScreenProps) {
               {rows.map((meta) => {
                 const record = records.get(meta.id)
                 return (
-                  <li key={meta.id} className="stats-row">
+                  <li
+                    key={meta.id}
+                    className="stats-row"
+                    onClick={gotoLessonHandler(meta.id)}
+                  >
                     <span>{t(meta.titleKey as MessageKey)}</span>
                     <span className="stars" aria-label={t('stars')}>
                       {starGlyphs(record?.stars ?? 0)}

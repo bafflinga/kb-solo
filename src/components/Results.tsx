@@ -39,39 +39,41 @@ export function Results({
   return (
     <div className="play-result results" role="status">
       <h3>{status === 'success' ? t('lessonSuccess') : t('lessonFailure')}</h3>
-      <p className="results-stars stars" aria-label={t('stars')}>
-        {starGlyphs(stars)}
-      </p>
-      <dl className="results-stats">
-        <div>
-          <dt>{t('wpm')}</dt>
-          <dd>{n(wpm)}</dd>
-        </div>
-        <div>
-          <dt>{t('accuracy')}</dt>
-          <dd>{n(accuracy)}%</dd>
-        </div>
-        <div>
-          <dt>{t('time')}</dt>
-          <dd>{formatTime(elapsedMs)}</dd>
-        </div>
-        <div>
-          <dt>{t('errors')}</dt>
-          <dd>{n(errors)}</dd>
-        </div>
-      </dl>
-      {previousBest !== undefined && (
-        <p className="results-best muted">
-          {t('best')}: {n(Math.round(previousBest.bestNetWpm))} {t('wpm')}
-          {newBest && (
-            <span className="results-new-best"> · {t('newBest')}</span>
-          )}
+      <div className="results-content">
+        <p className="results-stars stars" aria-label={t('stars')}>
+          {starGlyphs(stars)}
         </p>
-      )}
+        <dl className="results-stats">
+          <div>
+            <dt>{t('wpm')}</dt>
+            <dd>{n(wpm)}</dd>
+          </div>
+          <div>
+            <dt>{t('accuracy')}</dt>
+            <dd>{n(accuracy)}%</dd>
+          </div>
+          <div>
+            <dt>{t('time')}</dt>
+            <dd>{formatTime(elapsedMs)}</dd>
+          </div>
+          <div>
+            <dt>{t('errors')}</dt>
+            <dd>{n(errors)}</dd>
+          </div>
+        </dl>
+        {previousBest !== undefined && (
+          <p className="results-best muted">
+            {t('best')}: {n(Math.round(previousBest.bestNetWpm))} {t('wpm')}
+            {newBest && (
+              <span className="results-new-best"> · {t('newBest')}</span>
+            )}
+          </p>
+        )}
+      </div>
       <div className="results-actions">
         <button
           type="button"
-          className="play-primary"
+          className="play-primary-slim"
           onClick={(event) => {
             event.currentTarget.blur()
             onRetry()
@@ -82,7 +84,7 @@ export function Results({
         {hasNext && (
           <button
             type="button"
-            className="play-primary"
+            className="play-primary-slim"
             onClick={(event) => {
               event.currentTarget.blur()
               onNext()

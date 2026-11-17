@@ -2,8 +2,12 @@
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AppShell from './AppShell'
+
+vi.mock('./PwaUpdatePrompt', () => ({
+  default: () => null,
+}))
 
 const scope = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 scope.IS_REACT_ACT_ENVIRONMENT = true

@@ -22,6 +22,7 @@ import { createKeyboardController } from './Keyboard/keyboardController'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { LessonPicker } from './LessonPicker'
 import { PlayScreen } from './PlayScreen'
+import PwaUpdatePrompt from './PwaUpdatePrompt'
 import { SettingsPanel } from './SettingsPanel'
 import { StatsScreen } from './StatsScreen'
 
@@ -265,6 +266,7 @@ export default function AppShell() {
           i18n={i18n}
         />
       </aside>
+      <PwaUpdatePrompt />
     </div>
   )
 }

@@ -1,8 +1,12 @@
 .results {
   gap: 14px;
 }
+.results-content {
+  display: grid;
+  gap: .2rem;
+}
 
-.results .results-stars {
+.results-content .results-stars {
   color: #f1c40f;
   font-size: 2rem;
   letter-spacing: 0.12em;
@@ -44,21 +48,20 @@
 }
 
 .results-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   justify-content: center;
   gap: 0.5rem;
 }
 
-.results-actions button:not(.play-primary) {
+.results-actions button:not(.play-primary-slim) {
   border: 1px solid #3a3f4c;
   border-radius: 999px;
   background: #1b1f27;
   color: inherit;
-  padding: 0.65rem 1.4rem;
+  padding: 0.2rem 2rem;
   cursor: pointer;
 }
 
-.results-actions button:not(.play-primary):hover {
+.results-actions button:not(.play-primary-slim):hover {
   border-color: #7cc4ff;
 }
