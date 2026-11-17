@@ -1,0 +1,149 @@
+.play-screen {
+  display: grid;
+  gap: 18px;
+}
+
+.play-header {
+  display: flex;
+  flex-wrap: wrap;
+  /* align-items: baseline; */
+  gap: 12px 20px;
+  align-items: center;
+  min-height: 33px;
+}
+
+.play-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.play-back {
+  color: #9aa0ad;
+  text-decoration: none;
+}
+
+.play-back:hover {
+  color: #e8e9ee;
+  text-decoration: underline;
+}
+
+.play-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #7a5a2b;
+  border-radius: 10px;
+  background: rgba(245, 160, 76, 0.12);
+  color: #f5c77a;
+  font-size: 0.9rem;
+}
+
+.play-banner button {
+  border: 1px solid #7a5a2b;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+
+.play-hint {
+  margin: 0;
+  color: #9aa0ad;
+  font-size: 0.85rem;
+}
+
+.play-stage {
+  position: relative;
+}
+
+.play-overlay,
+.play-result {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 18px;
+  text-align: center;
+  background: rgba(17, 19, 24, 0.74);
+  backdrop-filter: blur(2px);
+}
+
+.play-result {
+  background: rgba(23, 27, 34, 0.96);
+}
+
+.play-result h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.play-result p {
+  margin: 0;
+  color: #9aa0ad;
+  font-size: 0.9rem;
+}
+
+.play-countdown {
+  font-size: clamp(4rem, 14vw, 8rem);
+  font-weight: 700;
+  line-height: 1;
+  color: #7cc4ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-primary {
+  border: 0;
+  border-radius: 999px;
+  background: #7cc4ff;
+  color: #111318;
+  padding: 0.65rem 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.play-primary:hover {
+  background: #a5d8ff;
+}
+
+.play-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.play-controls button {
+  border: 1px solid #3a3f4c;
+  border-radius: 999px;
+  background: #1b1f27;
+  color: inherit;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+}
+
+.play-controls button:hover {
+  border-color: #7cc4ff;
+}
+
+@media (max-width: 600px) {
+  .play-screen {
+    gap: 14px;
+  }
+
+  .play-result {
+    position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-overlay,
+  .play-result {
+    backdrop-filter: none;
+  }
+}

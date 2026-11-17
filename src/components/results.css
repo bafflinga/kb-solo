@@ -1,0 +1,64 @@
+.results {
+  gap: 14px;
+}
+
+.results .results-stars {
+  color: #f1c40f;
+  font-size: 2rem;
+  letter-spacing: 0.12em;
+}
+
+.results-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.5rem;
+  margin: 0;
+}
+
+.results-stats div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.results-stats dt {
+  color: #9aa0ad;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.results-stats dd {
+  margin: 0;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.results-best {
+  margin: 0;
+}
+
+.results-new-best {
+  color: #f1c40f;
+  font-weight: 700;
+}
+
+.results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.results-actions button:not(.play-primary) {
+  border: 1px solid #3a3f4c;
+  border-radius: 999px;
+  background: #1b1f27;
+  color: inherit;
+  padding: 0.65rem 1.4rem;
+  cursor: pointer;
+}
+
+.results-actions button:not(.play-primary):hover {
+  border-color: #7cc4ff;
+}

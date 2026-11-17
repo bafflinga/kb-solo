@@ -1,0 +1,158 @@
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(60, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, auto));
+  gap: 2px;
+  user-select: none;
+  width: 100%;
+}
+
+.keycap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(1.6rem, 3.4vw, 2.6rem);
+  padding: 0.1rem;
+  border: 1px solid #2f3542;
+  border-radius: 5px;
+  background: #1b1f27;
+  color: #e8e9ee;
+  font-size: clamp(0.55rem, 1.25vw, 1rem);
+  line-height: 1;
+  overflow: hidden;
+}
+
+.keycap[data-finger='lp'] {
+  --finger: #f76c6c;
+  --finger-tint: rgba(247, 108, 108, 0.18);
+  --finger-strong: rgba(247, 108, 108, 0.45);
+}
+
+.keycap[data-finger='lr'] {
+  --finger: #f5a04c;
+  --finger-tint: rgba(245, 160, 76, 0.18);
+  --finger-strong: rgba(245, 160, 76, 0.45);
+}
+
+.keycap[data-finger='lm'] {
+  --finger: #e8c547;
+  --finger-tint: rgba(232, 197, 71, 0.18);
+  --finger-strong: rgba(232, 197, 71, 0.45);
+}
+
+.keycap[data-finger='li'] {
+  --finger: #63c174;
+  --finger-tint: rgba(99, 193, 116, 0.18);
+  --finger-strong: rgba(99, 193, 116, 0.45);
+}
+
+.keycap[data-finger='ri'] {
+  --finger: #3fbfa8;
+  --finger-tint: rgba(63, 191, 168, 0.18);
+  --finger-strong: rgba(63, 191, 168, 0.45);
+}
+
+.keycap[data-finger='rm'] {
+  --finger: #4a90d9;
+  --finger-tint: rgba(74, 144, 217, 0.18);
+  --finger-strong: rgba(74, 144, 217, 0.45);
+}
+
+.keycap[data-finger='rr'] {
+  --finger: #8f7ae5;
+  --finger-tint: rgba(143, 122, 229, 0.18);
+  --finger-strong: rgba(143, 122, 229, 0.45);
+}
+
+.keycap[data-finger='rp'] {
+  --finger: #ec6fa8;
+  --finger-tint: rgba(236, 111, 168, 0.18);
+  --finger-strong: rgba(236, 111, 168, 0.45);
+}
+
+.keycap[data-finger='thumb'] {
+  --finger: #8a8f98;
+  --finger-tint: rgba(138, 143, 152, 0.18);
+  --finger-strong: rgba(138, 143, 152, 0.45);
+}
+
+.keycap[data-state='rest'] {
+  background: var(--finger-tint, #1b1f27);
+}
+
+.keycap[data-state='next'] {
+  background: var(--finger-strong, #263041);
+  border: 2px solid var(--finger, #7cc4ff);
+}
+
+.keycap[data-state='next']::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.keycap[data-state='pressed'] {
+  background: var(--finger-strong, #263041);
+  border-color: var(--finger, #7cc4ff);
+  transform: translateY(1px);
+}
+
+.keycap[data-state='error'] {
+  background: rgba(255, 107, 107, 0.35);
+  border-color: #ff6b6b;
+  text-decoration: underline wavy #ff6b6b;
+  text-underline-offset: 2px;
+}
+
+.keycap[data-state='wrong-layout'] {
+  opacity: 0.22;
+}
+
+.keycap[data-focused='true'] {
+  outline: 2px dashed var(--finger, #7cc4ff);
+  outline-offset: 1px;
+}
+
+.keycap-legend {
+  grid-area: 1 / 1;
+  text-align: center;
+}
+
+.keycap-shift {
+  font-size: 0.6em;
+  align-self: start;
+  justify-self: end;
+  opacity: 0.75;
+}
+
+.keycap[data-shift='active'] .keycap-base {
+  font-size: 0.6em;
+  align-self: end;
+  justify-self: start;
+  opacity: 0.75;
+}
+
+.keycap[data-shift='active'] .keycap-shift {
+  font-size: 1em;
+  align-self: center;
+  justify-self: center;
+  opacity: 1;
+}
+
+.keycap-label {
+  font-size: 0.75em;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keycap[data-state='pressed'] {
+    transform: none;
+  }
+}

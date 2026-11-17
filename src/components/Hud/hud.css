@@ -1,0 +1,79 @@
+.hud {
+  display: grid;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 1px solid #2f3542;
+  border-radius: 16px;
+  background: #171b22;
+}
+
+.hud-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.hud-stat {
+  display: grid;
+  gap: 2px;
+}
+
+.hud-stat dt {
+  color: #9aa0ad;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hud-stat dd {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-progress {
+  display: grid;
+  gap: 6px;
+}
+
+.hud-progress-label {
+  display: flex;
+  justify-content: space-between;
+  color: #9aa0ad;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #262b35;
+}
+
+.hud-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7cc4ff, #3fbfa8);
+  transition: width 160ms ease;
+}
+
+@media (max-width: 600px) {
+  .hud {
+    padding: 14px;
+  }
+
+  .hud-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-progress-fill {
+    transition: none;
+  }
+}
