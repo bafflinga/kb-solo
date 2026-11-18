@@ -26,6 +26,48 @@ export const RU_HOME_WORDS_DRILL: readonly string[] = [
   'вода два да овал жало лад вдова воды дол ложа',
 ]
 
+export const RU_TOP_LEFT_DRILL: readonly string[] = [
+  'йц уке кеу цй йцке укец йцу ке',
+  'уке йц кеу цй ке йцу укец цйке',
+  'йцке укец кеуй цйке йцу кеу',
+  'йй цц уу кк ее йцу кеу йцке',
+]
+
+export const RU_TOP_RIGHT_DRILL: readonly string[] = [
+  'нг шщ знг гн щш зн гшщ нгз',
+  'шщ нг знг гн зщ шн гш нгшщ',
+  'нгш щзн гшщ знг нгшщ знгш',
+  'нн гг шш щщ зз нгш щзнг',
+]
+
+export const RU_TOP_BOTH_DRILL: readonly string[] = [
+  'йц нг уке шщ ке знг йцу гшщ',
+  'нг йц шщ уке знг гшщ йцу ке',
+  'йцу ке нгш щз йцке угш нгз',
+  'йцнг укеш щзнг йцке угшщ',
+]
+
+export const RU_BOTTOM_LEFT_DRILL: readonly string[] = [
+  'яч сми и мс чя ячс мия чсми',
+  'сми яч и мс чя мия ячс ичсм',
+  'ячс мси чмя исч ячсми иямс',
+  'яя чч сс мм ии ячс мисч',
+]
+
+export const RU_BOTTOM_RIGHT_DRILL: readonly string[] = [
+  'ть б. ю, ьт .б тю ,ь тьб ю.',
+  'б. ть ,ю .б ьт ю, б.ть ю,ть',
+  'тьб ю. ,ть .ю б,ть ю.тьб',
+  'тт ьь бб юю .. ть б. ю,',
+]
+
+export const RU_BOTTOM_BOTH_DRILL: readonly string[] = [
+  'яч ть сми б. ю, ьт ячс миб',
+  'ть яч б. сми ю, ьт ячс ть',
+  'ячс мить б. ю, ячсмить б.ю,',
+  'ячть смиб ю.ть ячсмить б.ю,',
+]
+
 export const RU_INDEX_TOP_LEFT_DRILL: readonly string[] = [
   'ке ек кеек екке кек еке ке ек',
   'ек ке еке кек кеек екке ек ке',

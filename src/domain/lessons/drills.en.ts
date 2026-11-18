@@ -26,6 +26,97 @@ export const EN_HOME_WORDS_DRILL: readonly string[] = [
   'add fad ads dads fads all asks lass alas salad;',
 ]
 
+export const EN_INDEX_TOP_LEFT_DRILL: readonly string[] = [
+  'rt tr rrt ttr rtr trt rrttr ttrrt',
+  'tr rt ttr rrt trt rtr ttrrt rrttr',
+  'rtr trt rrt ttr rt tr rtrt trtr',
+  'rr tt rt tr rrt ttr rtr trt rttr',
+]
+
+export const EN_INDEX_TOP_RIGHT_DRILL: readonly string[] = [
+  'yu uy yyu uyy yuy uyu yyuy uyyu',
+  'uy yu uyy yyu uyu yuy uyyu yyuy',
+  'yuy uyu yyu uyy yu uy yuyu uyuy',
+  'yy uu yu uy yyu uyy yuy uyu uyyu',
+]
+
+export const EN_INDEX_MID_DRILL: readonly string[] = [
+  'gh hg ggh hgg ghg hgh gghg hggh',
+  'hg gh hgg ggh hgh ghg hggh gghg',
+  'ghg hgh ggh hgg gh hg ghgh hghg',
+  'gg hh gh hg ggh hgg ghg hgh gghh',
+]
+
+export const EN_INDEX_BOTTOM_DRILL: readonly string[] = [
+  'vb nm mv bn vbn nmb bvn mnb vbmn',
+  'nm vb bn mv nmb vbn mnb bvn nbmv',
+  'vbn nmb mvb bnm vbmn nbvm mvbn bnvm',
+  'vb nm vv bb nn mm vbn nmb vbmn nbvm',
+]
+
+export const EN_INDEX_BOTH_DRILL: readonly string[] = [
+  'fr tv gb nm ju hy frtv gbnm juhy',
+  'nm gb tv fr hy ju nmgb tvfr hyju',
+  'frt vbn gbn mju hyj frtv gbnm juhy',
+  'rtv bnm fgh juy rtvb nmfg hju yfrt',
+]
+
+export const EN_MIDDLE_DRILL: readonly string[] = [
+  'ec i, ce ,i ei c, ie ,c eci cie',
+  'i, ec ,i ce c, ei ,c ie cie eci',
+  'ce ,i ec i, ie c, ,c ei eci cie',
+  'ee cc ii ,, eci cie ie, ,ec eci,',
+]
+
+export const EN_MIDDLE_BOTH_DRILL: readonly string[] = [
+  'de ci dk ie dc ki eci cie',
+  'ki de ie dk ci dc cie eci',
+  'dec kie cdi kie dce ike deck',
+  'dk ie dc ki de ci d, k, e, i,',
+]
+
+export const EN_RING_DRILL: readonly string[] = [
+  'wo x. .w ox wx o. xw .o wox x.o',
+  'x. wo ox .w o. wx .o xw x.o wox',
+  'w. xo ow .x wo x. ox .w wox xo.',
+  'wx o. wo x. wxo o.x xwo .ow',
+]
+
+export const EN_RING_BOTH_DRILL: readonly string[] = [
+  'sw xo wo xl s. x. wol xow',
+  'xo sw xl wo x. s. xow wol',
+  'swx ol. wox sl. xwo low',
+  's. x. wo xl sw xo sxo w.l',
+]
+
+export const EN_PINKY_TOP_DRILL: readonly string[] = [
+  'qp [` ]q p[ q] `p q[ p] `q',
+  '[` qp ]q p[ `p q] p] q[ `q',
+  'qp p[ [` ]q `q q] p] q[ `p',
+  'q[ p] `q ]p [q p` qp [` ]q',
+]
+
+export const EN_PINKY_BOTTOM_DRILL: readonly string[] = [
+  'z/ /z zz // z/z /z/ z// /zz',
+  '/z z/ // zz /z/ z/z z// /zz',
+  'z/ z/ /z /z z/z /z/ zz //',
+  'zz // z/ /z /zz z// z/z /z/',
+]
+
+export const EN_PINKY_RIGHT_DRILL: readonly string[] = [
+  "p[ 'p [p p' p[' 'p[ p[ p' 'p",
+  "'p p[ p' [p 'p[ [p' p[ 'p p[",
+  "p' [p 'p p[ [p' p[' 'p[ p[ p'",
+  "p[ p' 'p [p p[' [p' p' [p 'p",
+]
+
+export const EN_PINKY_BOTH_DRILL: readonly string[] = [
+  "aq z; p[ 'q az ;p [z q' az",
+  "z; aq [z q' ;p az p[ 'q p[",
+  "p[ 'q aq z; az ;p [z q' az",
+  "aqz ;p[ 'q az; p[z q'a az",
+]
+
 export const EN_TOP_LEFT_DRILL: readonly string[] = [
   'qq ww ee rr tt qqww eerr ttqq trew rqwe wqer',
   'qw er we rt qr wt eq tr qwe wer ert tre rew',
@@ -68,7 +159,7 @@ export const EN_BOTTOM_BOTH_DRILL: readonly string[] = [
   'zxcv bnm, zxcv bnm. ,. zx mc vn b, n. xz cv',
 ]
 
-export const EN_SHIFT_DRILL: readonly string[] = [
+export const EN_CAPS_DRILL: readonly string[] = [
   'Al Bo Cy Da Ed Fe Go Hi Jo Ki Lu Ma No Pa Qu Ro Si Tu Vi Wa Xe Ye Za',
   'New York, London, Paris, Tokyo, Berlin, Rome, Madrid, Oslo, Seoul',
   'Sam and Max; Bob or Tom; Jan, Feb, Mar, Apr, May, Jun, Jul, Aug',
@@ -89,11 +180,18 @@ export const EN_DIGITS_RIGHT_DRILL: readonly string[] = [
   '67 78 89 90 06 678 789 890 906 067 67890 09876',
 ]
 
-export const EN_SYMBOL_DRILL: readonly string[] = [
+export const EN_PUNCTUATION_DRILL: readonly string[] = [
   "[] -= ;' ,. /\\ {} _= :\" <> ?| [] -= ;'",
   "-= [] {} ;: '\" ,. <> /? \\| _= [] {} ;:",
   ",. /\\ [] -= ;' <> ?| {} _= :\" ,. /\\ []",
   "-= [] ;' ,. /\\ -_=+ []{} ;: ,.<> /? \\|",
+]
+
+export const EN_ALL_LETTERS_DRILL: readonly string[] = [
+  'abcd efgh ijkl mnop qrst uvwxyz',
+  'zyxw vuts rqpon mlkj ihgfe dcba',
+  'the quick brown fox jumps over the lazy dog',
+  'qwerty asdfgh zxcvb poiuy lkjmn',
 ]
 
 export const EN_WORDS: readonly (readonly string[])[] = [

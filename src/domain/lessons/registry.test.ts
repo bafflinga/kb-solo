@@ -15,10 +15,45 @@ function countChars(cues: readonly Cue[]): number {
 }
 
 describe('registry', () => {
-  it('has 42 lessons split into 17 English and 25 Russian', () => {
-    expect(allLessons()).toHaveLength(42)
-    expect(lessonsFor('en')).toHaveLength(17)
-    expect(lessonsFor('ru')).toHaveLength(25)
+  it('has 63 lessons split into 31 English and 32 Russian', () => {
+    expect(allLessons()).toHaveLength(63)
+    expect(lessonsFor('en')).toHaveLength(31)
+    expect(lessonsFor('ru')).toHaveLength(32)
+  })
+
+  it('increases difficulty monotonically within each language', () => {
+    for (const language of ['en', 'ru'] as const) {
+      const difficulties = lessonsFor(language).map((meta) => meta.difficulty)
+      for (let i = 1; i < difficulties.length; i++) {
+        const previous = difficulties[i - 1]
+        const current = difficulties[i]
+        if (previous === undefined || current === undefined) {
+          throw new Error('missing difficulty in monotonicity check')
+        }
+        expect(current, `${language} lesson ${i + 1}`).toBeGreaterThanOrEqual(
+          previous,
+        )
+      }
+    }
+  })
+
+  it('shares lesson types and difficulty across languages', () => {
+    const typeOf = (id: string) => id.replace(/^(en|ru)-/, '')
+    const enTypes = lessonsFor('en').map((meta) => typeOf(meta.id))
+    const ruTypes = lessonsFor('ru')
+      .map((meta) => typeOf(meta.id))
+      .filter((type) => type !== 'hard-sign')
+
+    expect([...enTypes].sort()).toEqual([...ruTypes].sort())
+    expect(
+      lessonsFor('ru').some((meta) => typeOf(meta.id) === 'hard-sign'),
+    ).toBe(true)
+    for (const meta of lessonsFor('en')) {
+      const russian = lessonsFor('ru').find(
+        (candidate) => candidate.id === `ru-${typeOf(meta.id)}`,
+      )
+      expect(russian?.difficulty, meta.id).toBe(meta.difficulty)
+    }
   })
 
   it('orders lessons by language, then order, then id', () => {

@@ -17,9 +17,9 @@ function typedCodes(id: string): Set<string> {
 }
 
 describe('curricula', () => {
-  it('produces non-empty, fully resolved cues for all 42 lessons', () => {
+  it('produces non-empty, fully resolved cues for all 63 lessons', () => {
     const metas = allLessons()
-    expect(metas).toHaveLength(42)
+    expect(metas).toHaveLength(63)
 
     for (const meta of metas) {
       const provider = getLesson(meta.id)
@@ -184,7 +184,7 @@ describe('curricula', () => {
   })
 
   it('falls back to authored variants for drills without focus codes', () => {
-    const provider = getLesson('en-shift')
+    const provider = getLesson('en-caps')
     expect(provider?.meta.focusCodes).toBeUndefined()
     expect(
       provider?.createCues(undefined, { variantIndex: 0, generate: true }),

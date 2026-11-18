@@ -11,7 +11,24 @@ console.log(\`\${user.name}: \${label}\`)`,
   console.log(i)
 }`,
   `const scores = [12, 8, 15, 6]
-const total = scores.reduce((sum, n) => sum + n, 0)
-const best = Math.max(...scores)
-console.log(\`total=\${total} best=\${best}\`)`,
+  const total = scores.reduce((sum, n) => sum + n, 0)
+  const best = Math.max(...scores)
+  console.log(\`total=\${total} best=\${best}\`)`,
+]
+
+export const RU_CODE_SNIPPET: readonly string[] = [
+  `Если Счётчик = 0 Тогда
+  Сообщить("Готово");
+КонецЕсли;`,
+  `Для Номер = 1 По 5 Цикл
+  Сумма = Сумма + Номер;
+КонецЦикла;`,
+  `Функция ПолучитьИмя(Код)
+  Имя = "Клиент" + Код;
+  Возврат Имя;
+КонецФункции;`,
+  `Отбор.Добавить("Статус", "Активен");
+Если Отбор.Количество() = 1 Тогда
+  Сообщить("Найден");
+КонецЕсли;`,
 ]
