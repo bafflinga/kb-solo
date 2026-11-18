@@ -1,0 +1,15 @@
+{
+  "formatVersion": 1,
+  "files": [
+    {
+      "language": "en",
+      "file": "en.json",
+      "hash": "540b4aa15e9e7fe88359978effa96576a4d16d478afed580515bd6cfd7601c1a"
+    },
+    {
+      "language": "ru",
+      "file": "ru.json",
+      "hash": "1d6ecd5f0f3586730f6012d6bb9ebeb529f790bd4f511d75b277797bc0fd2b1a"
+    }
+  ]
+}

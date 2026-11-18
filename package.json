@@ -1,7 +1,7 @@
 {
   "name": "kb-solo",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "packageManager": "yarn@4.18.1",
   "scripts": {
@@ -14,7 +14,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "content:manifest": "node scripts/extract-lesson-content.mjs",
+    "content:merge": "node scripts/merge-community-pack.mjs"
   },
   "dependencies": {
     "react": "19.3.1",

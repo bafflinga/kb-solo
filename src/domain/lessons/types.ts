@@ -1,10 +1,13 @@
 import type { Code, ContentLanguage, Cue, Layout, LayoutId } from '../types'
 
+export type LessonKind = 'drill' | 'words' | 'prose' | 'code'
+
 export interface LessonMeta {
   id: string
   language: ContentLanguage
   layoutId: LayoutId
   titleKey: string
+  kind?: LessonKind
   descriptionKey?: string
   order: number
   difficulty: 1 | 2 | 3 | 4 | 5
@@ -16,6 +19,19 @@ export interface LessonMeta {
   targetWpm?: number
 }
 
+export interface LessonContent {
+  formatVersion: number
+  variants: unknown[]
+}
+
+export type LessonContentMap = Readonly<Record<string, LessonContent>>
+
+export interface LanguageContent {
+  formatVersion: number
+  language: ContentLanguage
+  lessons: LessonContentMap
+}
+
 export interface CreateCuesOptions {
   variantIndex?: number
   generate?: boolean
@@ -23,12 +39,7 @@ export interface CreateCuesOptions {
 
 export interface LessonProvider {
   meta: LessonMeta
-  kind: LessonTemplates['kind']
+  kind: LessonKind
   templateCount: number
   createCues(layout?: Layout, options?: CreateCuesOptions): Cue[]
 }
-
-export type LessonTemplates =
-  | { kind: 'drill'; variants: readonly string[] }
-  | { kind: 'words'; variants: readonly (readonly string[])[] }
-  | { kind: 'prose' | 'code'; variants: readonly string[] }

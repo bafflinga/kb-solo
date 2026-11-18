@@ -1,9 +1,23 @@
 import type { ContentLanguage } from '../types'
-import { enLessons } from './curriculum.en'
-import { ruLessons } from './curriculum.ru'
-import type { LessonMeta, LessonProvider } from './types'
+import { buildChainedLessons, chainDefs } from './curriculum'
+import { enDefs } from './curriculum.en'
+import { ruDefs } from './curriculum.ru'
+import type { LessonContentMap, LessonMeta, LessonProvider } from './types'
 
-const PROVIDERS: readonly LessonProvider[] = [...enLessons, ...ruLessons]
+const DEF_GROUPS = [enDefs, ruDefs] as const
+const METAS: readonly LessonMeta[] = DEF_GROUPS.flatMap(chainDefs)
+const KNOWN_IDS = new Set(METAS.map((meta) => meta.id))
+
+let providers: ReadonlyMap<string, LessonProvider> = new Map()
+
+export function isKnownLessonId(id: string): boolean {
+  return KNOWN_IDS.has(id)
+}
+
+export function hydrateLessons(content: LessonContentMap): void {
+  const built = DEF_GROUPS.flatMap((defs) => buildChainedLessons(defs, content))
+  providers = new Map(built.map((provider) => [provider.meta.id, provider]))
+}
 
 function compareMeta(a: LessonMeta, b: LessonMeta): number {
   if (a.language !== b.language) {
@@ -16,15 +30,19 @@ function compareMeta(a: LessonMeta, b: LessonMeta): number {
 }
 
 export function allLessons(): LessonMeta[] {
-  return PROVIDERS.map((provider) => provider.meta).sort(compareMeta)
+  return [...METAS].sort(compareMeta)
 }
 
 export function lessonsFor(language: ContentLanguage): LessonMeta[] {
   return allLessons().filter((meta) => meta.language === language)
 }
 
+export function getLessonMeta(id: string): LessonMeta | undefined {
+  return METAS.find((meta) => meta.id === id)
+}
+
 export function getLesson(id: string): LessonProvider | undefined {
-  return PROVIDERS.find((provider) => provider.meta.id === id)
+  return providers.get(id)
 }
 
 export function isUnlocked(

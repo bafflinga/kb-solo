@@ -34,7 +34,12 @@ export default defineConfig({
     },
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
+      includeAssets: [
+        'favicon.svg',
+        'icon-192.png',
+        'icon-512.png',
+        'icon-maskable-512.png',
+      ],
       manifest: {
         name: 'KB Solo',
         short_name: 'KB Solo',
@@ -48,11 +53,16 @@ export default defineConfig({
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,json}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallback: 'index.html',
       },

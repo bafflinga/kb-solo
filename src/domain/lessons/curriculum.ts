@@ -1,16 +1,13 @@
-import {
-  drillCues,
-  lineCues,
-  randomComboCues,
-  wordCues,
-} from '../cues'
+import { drillCues, lineCues, randomComboCues, wordCues } from '../cues'
 import { getLayout } from '../layout'
 import type { Cue, Layout } from '../types'
 import type {
   CreateCuesOptions,
+  LessonContent,
+  LessonContentMap,
+  LessonKind,
   LessonMeta,
   LessonProvider,
-  LessonTemplates,
 } from './types'
 
 function pickVariant<T>(variants: readonly T[], index?: number): T {
@@ -24,55 +21,71 @@ function pickVariant<T>(variants: readonly T[], index?: number): T {
 
 export function makeProvider(
   meta: LessonMeta,
-  templates: LessonTemplates,
+  content: LessonContent,
 ): LessonProvider {
+  const kind = meta.kind
+  if (!kind) {
+    throw new Error(`Missing lesson kind for ${meta.id}`)
+  }
+  const variants = content.variants
   return {
     meta,
-    kind: templates.kind,
-    templateCount: templates.variants.length,
+    kind,
+    templateCount: variants.length,
     createCues(layoutOverride?: Layout, options?: CreateCuesOptions): Cue[] {
       const layout = layoutOverride ?? getLayout(meta.layoutId)
-      switch (templates.kind) {
+      switch (kind) {
         case 'drill':
           if (options?.generate === true && meta.focusCodes?.length) {
             return randomComboCues(layout, meta.focusCodes)
           }
           return drillCues(
             layout,
-            pickVariant(templates.variants, options?.variantIndex),
+            pickVariant(variants as string[], options?.variantIndex),
           )
         case 'words':
           return wordCues(
             layout,
-            pickVariant(templates.variants, options?.variantIndex).join(' '),
+            pickVariant(
+              variants as (readonly string[])[],
+              options?.variantIndex,
+            ).join(' '),
           )
         case 'prose':
           return wordCues(
             layout,
-            pickVariant(templates.variants, options?.variantIndex),
+            pickVariant(variants as string[], options?.variantIndex),
           )
         case 'code':
           return lineCues(
             layout,
-            pickVariant(templates.variants, options?.variantIndex),
+            pickVariant(variants as string[], options?.variantIndex),
           )
       }
     },
   }
 }
 
-export type LessonDef = Omit<LessonMeta, 'requires'>
+export type LessonDef = Omit<LessonMeta, 'requires'> & { kind: LessonKind }
+
+export function chainDefs(defs: readonly LessonDef[]): LessonMeta[] {
+  const metas: LessonMeta[] = []
+  for (const def of defs) {
+    const previous = metas[metas.length - 1]
+    metas.push(previous ? { ...def, requires: [previous.id] } : { ...def })
+  }
+  return metas
+}
 
 export function buildChainedLessons(
-  defs: readonly { meta: LessonDef; templates: LessonTemplates }[],
+  defs: readonly LessonDef[],
+  content: LessonContentMap,
 ): LessonProvider[] {
-  const providers: LessonProvider[] = []
-  for (const { meta, templates } of defs) {
-    const previous = providers[providers.length - 1]
-    const finalMeta: LessonMeta = previous
-      ? { ...meta, requires: [previous.meta.id] }
-      : { ...meta }
-    providers.push(makeProvider(finalMeta, templates))
-  }
-  return providers
+  return chainDefs(defs).map((meta) => {
+    const found = content[meta.id]
+    if (!found) {
+      throw new Error(`Missing lesson content for ${meta.id}`)
+    }
+    return makeProvider(meta, found)
+  })
 }

@@ -6,6 +6,9 @@ export const messages = {
   en: {
     appName: 'KB Solo',
     version: 'Version',
+    contentCached: 'Content cached {{cached}}/{{total}}',
+    loadingContent: 'Loading lesson…',
+    contentError: 'Could not load lesson content',
     menu: 'Menu',
     stats: 'Stats',
     settings: 'Settings',
@@ -186,6 +189,9 @@ export const messages = {
   ru: {
     appName: 'KB Solo',
     version: 'Версия',
+    contentCached: 'Контент загружен {{cached}}/{{total}}',
+    loadingContent: 'Загрузка урока…',
+    contentError: 'Не удалось загрузить содержимое урока',
     menu: 'Меню',
     stats: 'Статистика',
     settings: 'Настройки',

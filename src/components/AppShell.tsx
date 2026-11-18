@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { mapFocusCodes, resolveLessonLayout } from '../app/lessonLayout'
 import { routeKey } from '../app/navigation'
 import { loadSettings, updateSettings } from '../app/settings'
@@ -6,7 +6,11 @@ import type { AppSettings, ClearScope } from '../app/settings'
 import { navigate, useHashRoute } from '../app/useHashRoute'
 import { setMuted } from '../audio/audio'
 import { getLayout, layoutForProfile, profileOf } from '../domain/layout'
-import { allLessons, getLesson } from '../domain/lessons/registry'
+import {
+  loadLanguage,
+  useContentCacheStatus,
+} from '../domain/lessons/contentStore'
+import { allLessons, getLessonMeta } from '../domain/lessons/registry'
 import type { Code, ContentLanguage } from '../domain/types'
 import { useI18n } from '../i18n'
 import {
@@ -21,8 +25,8 @@ import type { LessonResult } from '../storage/progress'
 import { Keyboard } from './Keyboard/Keyboard'
 import { createKeyboardController } from './Keyboard/keyboardController'
 import { LanguageSwitcher } from './LanguageSwitcher'
+import { ContentErrorBoundary, LessonGate } from './LessonGate'
 import { LessonPicker } from './LessonPicker'
-import { PlayScreen } from './PlayScreen'
 import PwaUpdatePrompt from './PwaUpdatePrompt'
 import { SettingsPanel } from './SettingsPanel'
 import { StatsScreen } from './StatsScreen'
@@ -30,6 +34,7 @@ import { StatsScreen } from './StatsScreen'
 export default function AppShell() {
   const i18n = useI18n()
   const { t, locale, setLocale } = i18n
+  const cacheStatus = useContentCacheStatus()
   const route = useHashRoute()
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings())
   const [settingsKey, setSettingsKey] = useState<string | null>(null)
@@ -39,6 +44,12 @@ export default function AppShell() {
   useEffect(() => {
     setMuted(!settings.sound)
   }, [settings.sound])
+
+  useEffect(() => {
+    void loadLanguage(settings.contentLanguage).catch((error: unknown) => {
+      console.error(error)
+    })
+  }, [settings.contentLanguage])
 
   const settingsOpen = settingsKey === currentKey
 
@@ -73,10 +84,7 @@ export default function AppShell() {
 
   function handleFinish(result: LessonResult): void {
     saveProgress(
-      mergeProgress(
-        loadProgress(result.lessonId, result.paceLevel),
-        result,
-      ),
+      mergeProgress(loadProgress(result.lessonId, result.paceLevel), result),
     )
     setProgressVersion((version) => version + 1)
   }
@@ -119,25 +127,25 @@ export default function AppShell() {
   )
 
   const menuLayout = getLayout(settings.layoutId)
-  const lesson =
-    route.screen === 'lesson' ? getLesson(route.lessonId) : undefined
-  const lessonLayout = lesson
+  const lessonMeta =
+    route.screen === 'lesson' ? getLessonMeta(route.lessonId) : undefined
+  const lessonLayout = lessonMeta
     ? resolveLessonLayout(
-        lesson.meta.language,
-        lesson.meta.layoutId,
+        lessonMeta.language,
+        lessonMeta.layoutId,
         settings.layoutId,
       )
     : menuLayout
   const focusCodes = useMemo(
     () =>
-      lesson
+      lessonMeta
         ? mapFocusCodes(
-            lesson.meta.focusCodes,
-            getLayout(lesson.meta.layoutId),
+            lessonMeta.focusCodes,
+            getLayout(lessonMeta.layoutId),
             lessonLayout,
           )
         : undefined,
-    [lesson, lessonLayout],
+    [lessonMeta, lessonLayout],
   )
 
   return (
@@ -148,6 +156,14 @@ export default function AppShell() {
         </a>
         <header className="app-header">
           <h1>{t('appName')}</h1>
+          {cacheStatus.total > 0 && (
+            <span className="content-status">
+              {t('contentCached', {
+                cached: cacheStatus.cached,
+                total: cacheStatus.total,
+              })}
+            </span>
+          )}
           <LanguageSwitcher
             locale={locale}
             onChange={changeLocale}
@@ -190,24 +206,45 @@ export default function AppShell() {
           )}
 
           {route.screen === 'lesson' &&
-            (lesson ? (
-              <PlayScreen
-                key={lesson.meta.id}
-                lesson={lesson}
-                layout={lessonLayout}
-                focusCodes={focusCodes}
-                labels={keyLabels}
-                errorMode={settings.errorMode}
-                strictShift={settings.strictShift}
-                showFeedback={settings.showFeedback}
-                randomTemplates={settings.randomTemplates}
-                generatedDrills={settings.generatedDrills}
-                paceLevel={settings.paceLevel}
-                suspended={settingsOpen}
-                shortcuts={settings.shortcuts}
-                best={progress.find((item) => item.lessonId === lesson.meta.id)}
-                onFinish={handleFinish}
-              />
+            (lessonMeta ? (
+              <ContentErrorBoundary
+                fallback={
+                  <section className="panel">
+                    <h2>{t('play')}</h2>
+                    <p>{t('contentError')}</p>
+                    <a href="#/">{t('back')}</a>
+                  </section>
+                }
+              >
+                <Suspense
+                  fallback={
+                    <section className="panel">
+                      <h2>{t('play')}</h2>
+                      <p>{t('loadingContent')}</p>
+                    </section>
+                  }
+                >
+                  <LessonGate
+                    key={lessonMeta.id}
+                    lessonId={lessonMeta.id}
+                    layout={lessonLayout}
+                    focusCodes={focusCodes}
+                    labels={keyLabels}
+                    errorMode={settings.errorMode}
+                    strictShift={settings.strictShift}
+                    showFeedback={settings.showFeedback}
+                    randomTemplates={settings.randomTemplates}
+                    generatedDrills={settings.generatedDrills}
+                    paceLevel={settings.paceLevel}
+                    suspended={settingsOpen}
+                    shortcuts={settings.shortcuts}
+                    best={progress.find(
+                      (item) => item.lessonId === lessonMeta.id,
+                    )}
+                    onFinish={handleFinish}
+                  />
+                </Suspense>
+              </ContentErrorBoundary>
             ) : (
               <section className="panel">
                 <h2>{t('play')}</h2>
