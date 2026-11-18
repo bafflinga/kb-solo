@@ -14,6 +14,7 @@ const score: Score = { grossWpm: 44, netWpm: 40.2, accuracy: 0.981 }
 
 const previousBest: LessonProgress = {
   lessonId: 'en-home-left',
+  paceLevel: 'off',
   bestNetWpm: 30,
   bestAccuracy: 0.95,
   stars: 2,

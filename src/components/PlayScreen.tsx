@@ -12,6 +12,7 @@ import { navigate } from '../app/useHashRoute'
 import { play, unlockAudio } from '../audio/audio'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n'
+import type { PaceLevel } from '../domain/pacing'
 import type { LessonProgress, LessonResult } from '../storage/progress'
 import { FingerGuide } from './FingerGuide/FingerGuide'
 import { Hud } from './Hud/Hud'
@@ -32,6 +33,9 @@ export interface PlayScreenProps {
   errorMode: ErrorMode
   strictShift: boolean
   showFeedback?: boolean
+  randomTemplates?: boolean
+  generatedDrills?: boolean
+  paceLevel?: PaceLevel
   suspended?: boolean
   shortcuts?: ShortcutSettings
   now?: () => number
@@ -47,6 +51,9 @@ export function PlayScreen({
   errorMode,
   strictShift,
   showFeedback = false,
+  randomTemplates = false,
+  generatedDrills = false,
+  paceLevel = 'off',
   suspended = false,
   shortcuts = DEFAULT_SHORTCUTS,
   now,
@@ -64,6 +71,9 @@ export function PlayScreen({
     layout,
     errorMode,
     strictShift,
+    randomTemplates,
+    generatedDrills,
+    paceLevel,
     now,
   })
   const {
@@ -83,8 +93,9 @@ export function PlayScreen({
   const finishRef = useRef<{
     score: Score
     stars: Stars
+    paceLevel: PaceLevel
     onFinish?: (result: LessonResult) => void
-  }>({ score, stars, onFinish })
+  }>({ score, stars, paceLevel, onFinish })
 
   const previousStatusRef = useRef(state.status)
   const playedFeedbackRef = useRef(0)
@@ -96,8 +107,8 @@ export function PlayScreen({
   }, [start])
 
   useEffect(() => {
-    finishRef.current = { score, stars, onFinish }
-  }, [score, stars, onFinish])
+    finishRef.current = { score, stars, paceLevel, onFinish }
+  }, [score, stars, paceLevel, onFinish])
 
   useEffect(() => {
     keyboard.setNextKey(nextChar?.code, nextChar?.needsShift ?? false)
@@ -151,6 +162,7 @@ export function PlayScreen({
       }
       latest.onFinish?.({
         lessonId: lesson.meta.id,
+        paceLevel: latest.paceLevel,
         netWpm: latest.score.netWpm,
         accuracy: latest.score.accuracy,
         stars: latest.stars,
@@ -161,6 +173,7 @@ export function PlayScreen({
       play('lessonFailure')
       latest.onFinish?.({
         lessonId: lesson.meta.id,
+        paceLevel: latest.paceLevel,
         netWpm: latest.score.netWpm,
         accuracy: latest.score.accuracy,
         stars: 0,

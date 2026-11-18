@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { cueFromText, drillCues, lineCues, wordCues } from './cues'
+import {
+  cueFromText,
+  drillCues,
+  lineCues,
+  randomComboCues,
+  wordCues,
+} from './cues'
 import { getLayout } from './layout'
 import type { CueChar, LayoutId } from './types'
 
@@ -106,5 +112,66 @@ describe('cues', () => {
     const cues = drillCues(getLayout('us-qwerty'), 'as df')
     expect(cues.map((cue) => cue.text)).toEqual(['as ', 'df '])
     expect(cues.every((cue) => cue.kind === 'word')).toBe(true)
+  })
+})
+
+const comboLayout = getLayout('us-qwerty')
+const comboCodes = ['KeyA', 'KeyS', 'KeyD'] as const
+
+describe('randomComboCues', () => {
+  it('creates the requested number of word-like cues', () => {
+    const cues = randomComboCues(comboLayout, comboCodes, {
+      chunkCount: 6,
+      minLength: 2,
+      maxLength: 5,
+      rng: () => 0,
+    })
+
+    expect(cues).toHaveLength(6)
+    expect(cues.every((cue) => cue.kind === 'word')).toBe(true)
+    expect(cues.every((cue) => cue.text === 'aa ')).toBe(true)
+  })
+
+  it('uses the maximum length and last code when the RNG is high', () => {
+    const cues = randomComboCues(comboLayout, comboCodes, {
+      chunkCount: 2,
+      minLength: 2,
+      maxLength: 5,
+      rng: () => 0.999,
+    })
+
+    expect(cues.map((cue) => cue.text)).toEqual(['ddddd ', 'ddddd '])
+  })
+
+  it('keeps every generated character inside the allowed codes', () => {
+    const cues = randomComboCues(comboLayout, comboCodes, {
+      chunkCount: 20,
+      minLength: 2,
+      maxLength: 5,
+    })
+
+    for (const cue of cues) {
+      expect(cue.text).toMatch(/^[asd]{2,5} $/)
+    }
+  })
+
+  it('skips whitespace and multi-character legends', () => {
+    const cues = randomComboCues(
+      comboLayout,
+      ['Space', 'KeyA', 'ShiftLeft'],
+      {
+        chunkCount: 3,
+        minLength: 2,
+        maxLength: 2,
+        rng: () => 0,
+      },
+    )
+
+    expect(cues.map((cue) => cue.text)).toEqual(['aa ', 'aa ', 'aa '])
+  })
+
+  it('returns no cues when no usable character is available', () => {
+    expect(randomComboCues(comboLayout, [], {})).toEqual([])
+    expect(randomComboCues(comboLayout, ['ShiftLeft'], {})).toEqual([])
   })
 })

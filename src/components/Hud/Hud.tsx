@@ -24,6 +24,8 @@ export function Hud({ state, score, liveWpm }: HudProps) {
   const total = state.cues.length
   const current =
     state.status === 'success' ? total : Math.min(state.cueIndex, total)
+  const limit = state.timeLimitMs
+  const overPace = limit !== null && state.elapsedMs > limit
 
   return (
     <section className="hud">
@@ -36,9 +38,19 @@ export function Hud({ state, score, liveWpm }: HudProps) {
           <dt>{t('accuracy')}</dt>
           <dd>{n(accuracy)}%</dd>
         </div>
-        <div className="hud-stat">
-          <dt>{t('time')}</dt>
-          <dd>{formatTime(state.elapsedMs)}</dd>
+        <div className="hud-stat" data-over-pace={overPace ? 'true' : undefined}>
+          <dt>
+            {overPace
+              ? t('overPace')
+              : limit !== null
+                ? t('timeLeft')
+                : t('time')}
+          </dt>
+          <dd>
+            {formatTime(
+              limit !== null ? Math.max(0, limit - state.elapsedMs) : state.elapsedMs,
+            )}
+          </dd>
         </div>
         <div className="hud-stat">
           <dt>{t('errors')}</dt>

@@ -1,16 +1,14 @@
-import { drillCues, wordCues } from '../cues'
-import { getLayout } from '../layout'
-import type { Cue, Layout } from '../types'
+import { buildChainedLessons } from './curriculum'
 import {
   RU_ALL_LETTERS_DRILL,
   RU_CAPS_DRILL,
   RU_DIGITS_LEFT_DRILL,
   RU_DIGITS_RIGHT_DRILL,
+  RU_HARD_SIGN_DRILL,
   RU_HOME_BOTH_DRILL,
   RU_HOME_LEFT_DRILL,
   RU_HOME_RIGHT_DRILL,
   RU_HOME_WORDS_DRILL,
-  RU_HARD_SIGN_DRILL,
   RU_INDEX_BOTH_DRILL,
   RU_INDEX_BOTTOM_DRILL,
   RU_INDEX_MID_DRILL,
@@ -28,408 +26,359 @@ import {
   RU_WORDS,
 } from './drills.ru'
 import { RU_PROSE } from './prose.ru'
-import type { LessonMeta, LessonProvider } from './types'
+import type { LessonDef } from './curriculum'
+import type { LessonProvider, LessonTemplates } from './types'
 
-type Plan =
-  | { kind: 'drill'; pattern: string }
-  | { kind: 'words'; words: readonly string[] }
-  | { kind: 'prose'; text: string }
-
-function makeProvider(meta: LessonMeta, plan: Plan): LessonProvider {
-  return {
-    meta,
-    createCues(layoutOverride?: Layout): Cue[] {
-      const layout = layoutOverride ?? getLayout(meta.layoutId)
-      switch (plan.kind) {
-        case 'drill':
-          return drillCues(layout, plan.pattern)
-        case 'words':
-          return wordCues(layout, plan.words.join(' '))
-        case 'prose':
-          return wordCues(layout, plan.text)
-      }
+const defs: { meta: LessonDef; templates: LessonTemplates }[] = [
+  {
+    meta: {
+      id: 'ru-home-left',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.homeLeft',
+      order: 1,
+      difficulty: 1,
+      focusCodes: ['KeyA', 'KeyS', 'KeyD', 'KeyF'],
     },
-  }
-}
-
-const metas: LessonMeta[] = []
-const providers: LessonProvider[] = []
-
-function add(meta: LessonMeta, plan: Plan): void {
-  const previous = metas[metas.length - 1]
-  const finalMeta: LessonMeta = previous
-    ? { ...meta, requires: [previous.id] }
-    : meta
-  metas.push(finalMeta)
-  providers.push(makeProvider(finalMeta, plan))
-}
-
-add(
-  {
-    id: 'ru-home-left',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.homeLeft',
-    order: 1,
-    difficulty: 1,
-    focusCodes: ['KeyA', 'KeyS', 'KeyD', 'KeyF'],
+    templates: { kind: 'drill', variants: RU_HOME_LEFT_DRILL },
   },
-  { kind: 'drill', pattern: RU_HOME_LEFT_DRILL },
-)
-
-add(
   {
-    id: 'ru-home-right',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.homeRight',
-    order: 2,
-    difficulty: 1,
-    focusCodes: ['KeyJ', 'KeyK', 'KeyL', 'Semicolon'],
+    meta: {
+      id: 'ru-home-right',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.homeRight',
+      order: 2,
+      difficulty: 1,
+      focusCodes: ['KeyJ', 'KeyK', 'KeyL', 'Semicolon'],
+    },
+    templates: { kind: 'drill', variants: RU_HOME_RIGHT_DRILL },
   },
-  { kind: 'drill', pattern: RU_HOME_RIGHT_DRILL },
-)
-
-add(
   {
-    id: 'ru-home-both',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.homeBoth',
-    order: 3,
-    difficulty: 1,
-    focusCodes: [
-      'KeyA',
-      'KeyS',
-      'KeyD',
-      'KeyF',
-      'KeyJ',
-      'KeyK',
-      'KeyL',
-      'Semicolon',
-    ],
+    meta: {
+      id: 'ru-home-both',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.homeBoth',
+      order: 3,
+      difficulty: 1,
+      focusCodes: [
+        'KeyA',
+        'KeyS',
+        'KeyD',
+        'KeyF',
+        'KeyJ',
+        'KeyK',
+        'KeyL',
+        'Semicolon',
+      ],
+    },
+    templates: { kind: 'drill', variants: RU_HOME_BOTH_DRILL },
   },
-  { kind: 'drill', pattern: RU_HOME_BOTH_DRILL },
-)
-
-add(
   {
-    id: 'ru-home-words',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.homeWords',
-    order: 4,
-    difficulty: 1,
-    focusCodes: [
-      'KeyA',
-      'KeyS',
-      'KeyD',
-      'KeyF',
-      'KeyJ',
-      'KeyK',
-      'KeyL',
-      'Semicolon',
-    ],
+    meta: {
+      id: 'ru-home-words',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.homeWords',
+      order: 4,
+      difficulty: 1,
+      focusCodes: [
+        'KeyA',
+        'KeyS',
+        'KeyD',
+        'KeyF',
+        'KeyJ',
+        'KeyK',
+        'KeyL',
+        'Semicolon',
+      ],
+    },
+    templates: { kind: 'drill', variants: RU_HOME_WORDS_DRILL },
   },
-  { kind: 'drill', pattern: RU_HOME_WORDS_DRILL },
-)
-
-add(
   {
-    id: 'ru-index-top-left',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.indexTopLeft',
-    order: 5,
-    difficulty: 2,
-    focusCodes: ['KeyR', 'KeyT'],
+    meta: {
+      id: 'ru-index-top-left',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.indexTopLeft',
+      order: 5,
+      difficulty: 2,
+      focusCodes: ['KeyR', 'KeyT'],
+    },
+    templates: { kind: 'drill', variants: RU_INDEX_TOP_LEFT_DRILL },
   },
-  { kind: 'drill', pattern: RU_INDEX_TOP_LEFT_DRILL },
-)
-
-add(
   {
-    id: 'ru-index-top-right',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.indexTopRight',
-    order: 6,
-    difficulty: 2,
-    focusCodes: ['KeyY', 'KeyU'],
+    meta: {
+      id: 'ru-index-top-right',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.indexTopRight',
+      order: 6,
+      difficulty: 2,
+      focusCodes: ['KeyY', 'KeyU'],
+    },
+    templates: { kind: 'drill', variants: RU_INDEX_TOP_RIGHT_DRILL },
   },
-  { kind: 'drill', pattern: RU_INDEX_TOP_RIGHT_DRILL },
-)
-
-add(
   {
-    id: 'ru-index-mid',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.indexMid',
-    order: 7,
-    difficulty: 2,
-    focusCodes: ['KeyG', 'KeyH'],
+    meta: {
+      id: 'ru-index-mid',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.indexMid',
+      order: 7,
+      difficulty: 2,
+      focusCodes: ['KeyG', 'KeyH'],
+    },
+    templates: { kind: 'drill', variants: RU_INDEX_MID_DRILL },
   },
-  { kind: 'drill', pattern: RU_INDEX_MID_DRILL },
-)
-
-add(
   {
-    id: 'ru-index-bottom',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.indexBottom',
-    order: 8,
-    difficulty: 2,
-    focusCodes: ['KeyV', 'KeyB', 'KeyN', 'KeyM'],
+    meta: {
+      id: 'ru-index-bottom',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.indexBottom',
+      order: 8,
+      difficulty: 2,
+      focusCodes: ['KeyV', 'KeyB', 'KeyN', 'KeyM'],
+    },
+    templates: { kind: 'drill', variants: RU_INDEX_BOTTOM_DRILL },
   },
-  { kind: 'drill', pattern: RU_INDEX_BOTTOM_DRILL },
-)
-
-add(
   {
-    id: 'ru-index-both',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.indexBoth',
-    order: 9,
-    difficulty: 3,
-    focusCodes: [
-      'KeyF',
-      'KeyG',
-      'KeyR',
-      'KeyT',
-      'KeyV',
-      'KeyB',
-      'KeyN',
-      'KeyM',
-      'KeyJ',
-      'KeyH',
-      'KeyY',
-      'KeyU',
-    ],
+    meta: {
+      id: 'ru-index-both',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.indexBoth',
+      order: 9,
+      difficulty: 3,
+      focusCodes: [
+        'KeyF',
+        'KeyG',
+        'KeyR',
+        'KeyT',
+        'KeyV',
+        'KeyB',
+        'KeyN',
+        'KeyM',
+        'KeyJ',
+        'KeyH',
+        'KeyY',
+        'KeyU',
+      ],
+    },
+    templates: { kind: 'drill', variants: RU_INDEX_BOTH_DRILL },
   },
-  { kind: 'drill', pattern: RU_INDEX_BOTH_DRILL },
-)
-
-add(
   {
-    id: 'ru-middle',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.middle',
-    order: 10,
-    difficulty: 3,
-    focusCodes: ['KeyE', 'KeyI', 'KeyC', 'Comma'],
+    meta: {
+      id: 'ru-middle',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.middle',
+      order: 10,
+      difficulty: 3,
+      focusCodes: ['KeyE', 'KeyI', 'KeyC', 'Comma'],
+    },
+    templates: { kind: 'drill', variants: RU_MIDDLE_DRILL },
   },
-  { kind: 'drill', pattern: RU_MIDDLE_DRILL },
-)
-
-add(
   {
-    id: 'ru-middle-both',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.middleBoth',
-    order: 11,
-    difficulty: 3,
-    focusCodes: ['KeyD', 'KeyE', 'KeyC', 'KeyK', 'KeyI', 'Comma'],
+    meta: {
+      id: 'ru-middle-both',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.middleBoth',
+      order: 11,
+      difficulty: 3,
+      focusCodes: ['KeyD', 'KeyE', 'KeyC', 'KeyK', 'KeyI', 'Comma'],
+    },
+    templates: { kind: 'drill', variants: RU_MIDDLE_BOTH_DRILL },
   },
-  { kind: 'drill', pattern: RU_MIDDLE_BOTH_DRILL },
-)
-
-add(
   {
-    id: 'ru-ring',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.ring',
-    order: 12,
-    difficulty: 3,
-    focusCodes: ['KeyW', 'KeyO', 'KeyX', 'Period'],
+    meta: {
+      id: 'ru-ring',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.ring',
+      order: 12,
+      difficulty: 3,
+      focusCodes: ['KeyW', 'KeyO', 'KeyX', 'Period'],
+    },
+    templates: { kind: 'drill', variants: RU_RING_DRILL },
   },
-  { kind: 'drill', pattern: RU_RING_DRILL },
-)
-
-add(
   {
-    id: 'ru-ring-both',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.ringBoth',
-    order: 13,
-    difficulty: 4,
-    focusCodes: ['KeyS', 'KeyW', 'KeyX', 'KeyL', 'KeyO', 'Period'],
+    meta: {
+      id: 'ru-ring-both',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.ringBoth',
+      order: 13,
+      difficulty: 4,
+      focusCodes: ['KeyS', 'KeyW', 'KeyX', 'KeyL', 'KeyO', 'Period'],
+    },
+    templates: { kind: 'drill', variants: RU_RING_BOTH_DRILL },
   },
-  { kind: 'drill', pattern: RU_RING_BOTH_DRILL },
-)
-
-add(
   {
-    id: 'ru-pinky-top',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.pinkyTop',
-    order: 14,
-    difficulty: 3,
-    focusCodes: ['KeyQ'],
+    meta: {
+      id: 'ru-pinky-right',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.pinkyRight',
+      order: 14,
+      difficulty: 4,
+      focusCodes: ['KeyP', 'BracketLeft', 'Quote'],
+    },
+    templates: { kind: 'drill', variants: RU_PINKY_RIGHT_DRILL },
   },
-  { kind: 'drill', pattern: RU_PINKY_TOP_DRILL },
-)
-
-add(
   {
-    id: 'ru-pinky-bottom',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.pinkyBottom',
-    order: 15,
-    difficulty: 3,
-    focusCodes: ['KeyZ'],
+    meta: {
+      id: 'ru-pinky-top',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.pinkyTop',
+      order: 15,
+      difficulty: 3,
+      focusCodes: [
+        'KeyQ',
+        'Backquote',
+        'KeyP',
+        'BracketLeft',
+        'BracketRight',
+      ],
+    },
+    templates: { kind: 'drill', variants: RU_PINKY_TOP_DRILL },
   },
-  { kind: 'drill', pattern: RU_PINKY_BOTTOM_DRILL },
-)
-
-add(
   {
-    id: 'ru-pinky-right',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.pinkyRight',
-    order: 16,
-    difficulty: 4,
-    focusCodes: ['KeyP', 'BracketLeft', 'Quote'],
+    meta: {
+      id: 'ru-pinky-bottom',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.pinkyBottom',
+      order: 16,
+      difficulty: 3,
+      focusCodes: ['KeyZ', 'Slash'],
+    },
+    templates: { kind: 'drill', variants: RU_PINKY_BOTTOM_DRILL },
   },
-  { kind: 'drill', pattern: RU_PINKY_RIGHT_DRILL },
-)
-
-add(
   {
-    id: 'ru-pinky-both',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.pinkyBoth',
-    order: 17,
-    difficulty: 4,
-    focusCodes: [
-      'KeyF',
-      'KeyQ',
-      'KeyZ',
-      'Semicolon',
-      'KeyP',
-      'BracketLeft',
-      'Quote',
-    ],
+    meta: {
+      id: 'ru-pinky-both',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.pinkyBoth',
+      order: 17,
+      difficulty: 4,
+      focusCodes: [
+        'KeyA',
+        'KeyQ',
+        'KeyZ',
+        'Semicolon',
+        'KeyP',
+        'BracketLeft',
+        'Quote',
+      ],
+    },
+    templates: { kind: 'drill', variants: RU_PINKY_BOTH_DRILL },
   },
-  { kind: 'drill', pattern: RU_PINKY_BOTH_DRILL },
-)
-
-add(
   {
-    id: 'ru-hard-sign',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.hardSign',
-    order: 18,
-    difficulty: 3,
-    focusCodes: ['BracketRight', 'Backquote'],
+    meta: {
+      id: 'ru-hard-sign',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.hardSign',
+      order: 18,
+      difficulty: 3,
+      focusCodes: ['BracketRight', 'Backquote'],
+    },
+    templates: { kind: 'drill', variants: RU_HARD_SIGN_DRILL },
   },
-  { kind: 'drill', pattern: RU_HARD_SIGN_DRILL },
-)
-
-add(
   {
-    id: 'ru-all-letters',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.allLetters',
-    order: 19,
-    difficulty: 4,
+    meta: {
+      id: 'ru-all-letters',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.allLetters',
+      order: 19,
+      difficulty: 4,
+    },
+    templates: { kind: 'drill', variants: RU_ALL_LETTERS_DRILL },
   },
-  { kind: 'drill', pattern: RU_ALL_LETTERS_DRILL },
-)
-
-add(
   {
-    id: 'ru-caps',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.caps',
-    order: 20,
-    difficulty: 4,
+    meta: {
+      id: 'ru-caps',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.caps',
+      order: 20,
+      difficulty: 4,
+    },
+    templates: { kind: 'drill', variants: RU_CAPS_DRILL },
   },
-  { kind: 'drill', pattern: RU_CAPS_DRILL },
-)
-
-add(
   {
-    id: 'ru-digits-left',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.digitsLeft',
-    order: 21,
-    difficulty: 3,
-    focusCodes: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'],
+    meta: {
+      id: 'ru-digits-left',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.digitsLeft',
+      order: 21,
+      difficulty: 3,
+      focusCodes: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'],
+    },
+    templates: { kind: 'drill', variants: RU_DIGITS_LEFT_DRILL },
   },
-  { kind: 'drill', pattern: RU_DIGITS_LEFT_DRILL },
-)
-
-add(
   {
-    id: 'ru-digits-right',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.digitsRight',
-    order: 22,
-    difficulty: 3,
-    focusCodes: ['Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'],
+    meta: {
+      id: 'ru-digits-right',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.digitsRight',
+      order: 22,
+      difficulty: 3,
+      focusCodes: ['Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'],
+    },
+    templates: { kind: 'drill', variants: RU_DIGITS_RIGHT_DRILL },
   },
-  { kind: 'drill', pattern: RU_DIGITS_RIGHT_DRILL },
-)
-
-add(
   {
-    id: 'ru-punctuation',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.punctuation',
-    order: 23,
-    difficulty: 4,
-    focusCodes: [
-      'Slash',
-      'Digit4',
-      'Digit6',
-      'Digit1',
-      'Digit7',
-      'Digit2',
-      'Minus',
-    ],
+    meta: {
+      id: 'ru-punctuation',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.punctuation',
+      order: 23,
+      difficulty: 4,
+      focusCodes: [
+        'Slash',
+        'Digit4',
+        'Digit6',
+        'Digit1',
+        'Digit7',
+        'Digit2',
+        'Minus',
+      ],
+    },
+    templates: { kind: 'drill', variants: RU_PUNCTUATION_DRILL },
   },
-  { kind: 'drill', pattern: RU_PUNCTUATION_DRILL },
-)
-
-add(
   {
-    id: 'ru-words',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.words',
-    order: 24,
-    difficulty: 4,
+    meta: {
+      id: 'ru-words',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.words',
+      order: 24,
+      difficulty: 4,
+    },
+    templates: { kind: 'words', variants: RU_WORDS },
   },
-  { kind: 'words', words: RU_WORDS },
-)
-
-add(
   {
-    id: 'ru-prose',
-    language: 'ru',
-    layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.prose',
-    order: 25,
-    difficulty: 5,
+    meta: {
+      id: 'ru-prose',
+      language: 'ru',
+      layoutId: 'ru-jcuken',
+      titleKey: 'lesson.ru.prose',
+      order: 25,
+      difficulty: 5,
+    },
+    templates: { kind: 'prose', variants: RU_PROSE },
   },
-  { kind: 'prose', text: RU_PROSE },
-)
+]
 
-export const ruLessons: readonly LessonProvider[] = providers
+export const ruLessons: readonly LessonProvider[] = buildChainedLessons(defs)

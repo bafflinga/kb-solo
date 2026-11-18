@@ -32,6 +32,7 @@ const lessons: LessonMeta[] = [
 
 const record: LessonProgress = {
   lessonId: 'en-home-left',
+  paceLevel: 'off',
   bestNetWpm: 40,
   bestAccuracy: 0.98,
   stars: 3,

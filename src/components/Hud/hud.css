@@ -33,6 +33,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.hud-stat[data-over-pace='true'] dt,
+.hud-stat[data-over-pace='true'] dd {
+  color: #f5a04c;
+}
+
 .hud-progress {
   display: grid;
   gap: 6px;

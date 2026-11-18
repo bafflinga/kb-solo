@@ -13,6 +13,8 @@ import {
   starsFor,
 } from '../domain/engine'
 import type { EngineConfig, EngineState, ErrorMode } from '../domain/engine'
+import { derivePacing } from '../domain/pacing'
+import type { PaceLevel } from '../domain/pacing'
 import type { LessonProvider } from '../domain/lessons/types'
 import type { Score, Stars } from '../domain/scoring'
 import type { Code, Cue, CueChar, Layout } from '../domain/types'
@@ -49,6 +51,9 @@ export interface TypingSessionOptions {
   layout: Layout
   errorMode: ErrorMode
   strictShift: boolean
+  randomTemplates?: boolean
+  generatedDrills?: boolean
+  paceLevel?: PaceLevel
   now?: () => number
 }
 
@@ -92,25 +97,52 @@ export function useTypingSession({
   layout,
   errorMode,
   strictShift,
+  randomTemplates = false,
+  generatedDrills = false,
+  paceLevel = 'off',
   now = defaultNow,
 }: TypingSessionOptions): TypingSession {
-  const timeLimitMs =
-    lesson?.meta.timeLimitSec === undefined
-      ? null
-      : lesson.meta.timeLimitSec * 1000
-  const targetWpm = lesson?.meta.targetWpm ?? 30
+
+  const pickVariant = useCallback(
+    () =>
+      lesson ? Math.floor(Math.random() * Math.max(1, lesson.templateCount)) : 0,
+    [lesson],
+  )
+
+  const [variantIndex, setVariantIndex] = useState(() => pickVariant())
+
+  const cues = useMemo(
+    () => lesson?.createCues(layout, { variantIndex }) ?? [],
+    [lesson, layout, variantIndex],
+  )
+
+  const { timeLimitMs, targetWpm } = useMemo(
+    () => derivePacing(cues, lesson?.meta ?? {}, paceLevel),
+    [cues, lesson, paceLevel],
+  )
+
+  const failOnTimeout = paceLevel === 'hardcore'
+  const useGeneratedDrills =
+    generatedDrills &&
+    lesson?.kind === 'drill' &&
+    (lesson.meta.focusCodes?.length ?? 0) > 0
 
   const config = useMemo<Partial<EngineConfig>>(
-    () => ({ layout, errorMode, strictShift, timeLimitMs, targetWpm }),
-    [layout, errorMode, strictShift, timeLimitMs, targetWpm],
+    () => ({
+      layout,
+      errorMode,
+      strictShift,
+      timeLimitMs,
+      targetWpm,
+      failOnTimeout,
+    }),
+    [layout, errorMode, strictShift, timeLimitMs, targetWpm, failOnTimeout],
   )
   const [state, dispatch] = useReducer(
     engineReducer,
     config,
     createInitialState,
   )
-
-  const cues = useMemo(() => lesson?.createCues(layout) ?? [], [lesson, layout])
 
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS)
   const [history, setHistory] = useState<KeystrokeSample[]>([])
@@ -142,16 +174,29 @@ export function useTypingSession({
     if (!lesson) {
       return
     }
+    const nextVariant = randomTemplates ? pickVariant() : variantIndex
+    const nextCues =
+      useGeneratedDrills || randomTemplates || nextVariant !== variantIndex
+        ? lesson.createCues(layout, {
+            variantIndex: nextVariant,
+            generate: useGeneratedDrills,
+          })
+        : cues
+    if (nextVariant !== variantIndex) {
+      setVariantIndex(nextVariant)
+    }
+    const pacing = derivePacing(nextCues, lesson.meta, paceLevel)
     resetRuntime()
     dispatch({
       type: 'START',
-      cues,
+      cues: nextCues,
       lessonId: lesson.meta.id,
       layout,
       errorMode,
       strictShift,
-      timeLimitMs,
-      targetWpm,
+      timeLimitMs: pacing.timeLimitMs,
+      targetWpm: pacing.targetWpm,
+      failOnTimeout,
     })
   }, [
     lesson,
@@ -159,9 +204,13 @@ export function useTypingSession({
     layout,
     errorMode,
     strictShift,
-    timeLimitMs,
-    targetWpm,
     resetRuntime,
+    randomTemplates,
+    useGeneratedDrills,
+    paceLevel,
+    failOnTimeout,
+    pickVariant,
+    variantIndex,
   ])
 
   const pause = useCallback(() => {

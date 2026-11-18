@@ -27,6 +27,7 @@ export interface EngineState {
   shiftHint: boolean
   timeLimitMs: number | null
   targetWpm: number
+  failOnTimeout: boolean
   shiftDown: boolean
   altDown: boolean
   correctFlags: boolean[]
@@ -42,6 +43,7 @@ export type EngineEvent =
       strictShift?: boolean
       timeLimitMs?: number | null
       targetWpm?: number
+      failOnTimeout?: boolean
     }
   | { type: 'COUNTDOWN_DONE' }
   | {
@@ -65,6 +67,7 @@ export interface EngineConfig {
   strictShift: boolean
   timeLimitMs: number | null
   targetWpm: number
+  failOnTimeout: boolean
 }
 
 const MODIFIER_CODES = new Set<Code>([
@@ -102,6 +105,7 @@ export function createInitialState(
     shiftHint: false,
     timeLimitMs: config?.timeLimitMs ?? null,
     targetWpm: config?.targetWpm ?? 30,
+    failOnTimeout: config?.failOnTimeout ?? false,
     shiftDown: false,
     altDown: false,
     correctFlags: [],
@@ -236,6 +240,7 @@ export function engineReducer(
         strictShift: state.strictShift,
         timeLimitMs: state.timeLimitMs,
         targetWpm: state.targetWpm,
+        failOnTimeout: state.failOnTimeout,
       })
     case 'START':
       return {
@@ -245,6 +250,7 @@ export function engineReducer(
           strictShift: event.strictShift ?? state.strictShift,
           timeLimitMs: event.timeLimitMs ?? state.timeLimitMs,
           targetWpm: event.targetWpm ?? state.targetWpm,
+          failOnTimeout: event.failOnTimeout ?? state.failOnTimeout,
         }),
         status: 'countdown',
         cues: event.cues,
@@ -262,6 +268,7 @@ export function engineReducer(
       const elapsedMs = Math.max(0, event.elapsedMs)
       if (
         state.status === 'running' &&
+        state.failOnTimeout &&
         state.timeLimitMs !== null &&
         elapsedMs >= state.timeLimitMs
       ) {

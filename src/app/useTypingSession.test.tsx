@@ -5,6 +5,7 @@ import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cueFromText } from '../domain/cues'
 import type { ErrorMode } from '../domain/engine'
+import type { PaceLevel } from '../domain/pacing'
 import { getLayout } from '../domain/layout'
 import type { LessonMeta, LessonProvider } from '../domain/lessons/types'
 import type { Cue } from '../domain/types'
@@ -31,7 +32,37 @@ function lessonFor(
       difficulty: 1,
       ...meta,
     },
+    kind: 'drill',
+    templateCount: 1,
     createCues: () => cues,
+  }
+}
+
+function drillLessonFor(
+  text: string,
+  meta: Partial<LessonMeta> = {},
+): { provider: LessonProvider; calls: { generate?: boolean }[] } {
+  const calls: { generate?: boolean }[] = []
+  return {
+    calls,
+    provider: {
+      meta: {
+        id: 'drill',
+        language: 'en',
+        layoutId: 'us-qwerty',
+        titleKey: 'lesson.en.homeLeft',
+        order: 1,
+        difficulty: 1,
+        focusCodes: ['KeyA', 'KeyS'],
+        ...meta,
+      },
+      kind: 'drill',
+      templateCount: 4,
+      createCues: (_layout, options) => {
+        calls.push({ generate: options?.generate })
+        return [cueFromText(layout, `${text}${calls.length}`, 'word')]
+      },
+    },
   }
 }
 
@@ -45,6 +76,9 @@ interface HarnessProps {
   lesson: LessonProvider
   errorMode?: ErrorMode
   strictShift?: boolean
+  randomTemplates?: boolean
+  generatedDrills?: boolean
+  paceLevel?: PaceLevel
   now: () => number
   sessionRef: SessionRef
 }
@@ -53,6 +87,9 @@ function Harness({
   lesson,
   errorMode = 'block',
   strictShift = false,
+  randomTemplates = false,
+  generatedDrills = false,
+  paceLevel = 'off',
   now,
   sessionRef,
 }: HarnessProps) {
@@ -61,6 +98,9 @@ function Harness({
     layout,
     errorMode,
     strictShift,
+    randomTemplates,
+    generatedDrills,
+    paceLevel,
     now,
   })
   useEffect(() => {
@@ -102,7 +142,13 @@ describe('useTypingSession', () => {
 
   async function render(
     lesson: LessonProvider,
-    options: { errorMode?: ErrorMode; strictShift?: boolean } = {},
+    options: {
+      errorMode?: ErrorMode
+      strictShift?: boolean
+      randomTemplates?: boolean
+      generatedDrills?: boolean
+      paceLevel?: PaceLevel
+    } = {},
   ): Promise<void> {
     await act(async () => {
       root.render(
@@ -247,9 +293,66 @@ describe('useTypingSession', () => {
     expect(current().state.elapsedMs).toBeLessThan(3000)
   })
 
-  it('fails when the lesson time limit elapses', async () => {
+  it('keeps running when the lesson time limit elapses', async () => {
     await render(lessonFor('ab', { timeLimitSec: 1 }))
     await begin()
+
+    await press('KeyA', 'a')
+    await advance(1200)
+
+    expect(current().state.status).toBe('running')
+    expect(current().nextChar?.char).toBe('b')
+  })
+
+  it('derives pacing from the chosen level and the lesson cues', async () => {
+    await render(lessonFor('ab'), { paceLevel: 'relaxed' })
+    await act(async () => {
+      current().start()
+    })
+
+    expect(current().state.timeLimitMs).toBeGreaterThan(0)
+    expect(current().state.targetWpm).toBeGreaterThan(0)
+    expect(current().state.targetWpm).toBeLessThan(30)
+  })
+
+  it('regenerates drill cues on every start when generatedDrills is on', async () => {
+    const { provider, calls } = drillLessonFor('ab')
+    await render(provider, { generatedDrills: true })
+
+    await act(async () => {
+      current().start()
+    })
+    const first = current().state.cues[0]?.text
+
+    await act(async () => {
+      current().start()
+    })
+    const second = current().state.cues[0]?.text
+
+    expect(calls.filter((call) => call.generate === true)).toHaveLength(2)
+    expect(second).not.toBe(first)
+  })
+
+  it('does not generate for drills without focus codes', async () => {
+    const { provider, calls } = drillLessonFor('ab', {
+      focusCodes: undefined,
+    })
+    await render(provider, { generatedDrills: true })
+
+    await act(async () => {
+      current().start()
+    })
+
+    expect(calls.some((call) => call.generate === true)).toBe(false)
+  })
+
+  it('fails on timeout in hardcore mode', async () => {
+    await render(lessonFor('ab', { timeLimitSec: 1 }), {
+      paceLevel: 'hardcore',
+    })
+    await begin()
+
+    expect(current().state.failOnTimeout).toBe(true)
 
     await press('KeyA', 'a')
     await advance(1200)

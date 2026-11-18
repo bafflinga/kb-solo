@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { setMuted } from '../audio/audio'
+import { flushProgress } from '../storage/progress'
 import AppShell from './AppShell'
 
 vi.mock('../audio/audio', () => ({
@@ -60,6 +61,7 @@ describe('AppShell', () => {
       root.unmount()
     })
     container.remove()
+    vi.useRealTimers()
   })
 
   it('renders the menu with the keyboard board', async () => {
@@ -91,6 +93,26 @@ describe('AppShell', () => {
     })
 
     expect(vi.mocked(setMuted)).toHaveBeenLastCalledWith(true)
+  })
+
+  it('resolves conflicting template settings in favour of generated drills', async () => {
+    localStorage.setItem(
+      'kb-solo.settings',
+      JSON.stringify({ generatedDrills: true, randomTemplates: true }),
+    )
+
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    const checkbox = (label: string) =>
+      [
+        ...container.querySelectorAll<HTMLInputElement>(
+          'input[type="checkbox"]',
+        ),
+      ].find((input) => input.parentElement?.textContent?.includes(label))
+    expect(checkbox('Generated drills')?.checked).toBe(true)
+    expect(checkbox('Random templates')?.checked).toBe(false)
   })
 
   it('switches the interface language and persists it', async () => {
@@ -413,5 +435,74 @@ describe('AppShell', () => {
     expect(container.textContent).toContain('1 lesson completed')
     expect(container.textContent).toContain('Home row: left hand')
     expect(container.querySelectorAll('.stats-row')).toHaveLength(1)
+  })
+
+  it('saves a hardcore timeout as an attempt without unlocking the next lesson', async () => {
+    vi.useFakeTimers()
+    localStorage.setItem(
+      'kb-solo.settings',
+      JSON.stringify({
+        locale: 'en',
+        contentLanguage: 'en',
+        layoutId: 'us-qwerty',
+        paceLevel: 'hardcore',
+      }),
+    )
+    window.location.hash = '#/lesson/en-home-left'
+
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    const play = [...container.querySelectorAll('button')].find(
+      (button) => button.textContent === 'Play',
+    )
+    expect(play).toBeDefined()
+    await act(async () => {
+      play?.click()
+    })
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000)
+    })
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          code: 'KeyF',
+          key: 'f',
+          bubbles: true,
+        }),
+      )
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(120000)
+    })
+    act(() => {
+      flushProgress()
+    })
+
+    const raw = localStorage.getItem(
+      'kb-solo.progress.hardcore.en-home-left',
+    )
+    expect(raw).toBeDefined()
+    const record = JSON.parse(raw ?? '{}')
+    expect(record).toMatchObject({
+      lessonId: 'en-home-left',
+      paceLevel: 'hardcore',
+      attempts: 1,
+      stars: 0,
+    })
+    expect(record.completedAt).toBeUndefined()
+
+    window.location.hash = '#/'
+    await act(async () => {
+      window.dispatchEvent(new Event('hashchange'))
+    })
+    const right = [...container.querySelectorAll<HTMLButtonElement>('.lesson-button')].find(
+      (button) => button.textContent?.includes('Home row: right hand'),
+    )
+    expect(right?.disabled).toBe(true)
+
+    vi.useRealTimers()
   })
 })

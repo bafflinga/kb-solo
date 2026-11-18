@@ -18,12 +18,13 @@ scope.IS_REACT_ACT_ENVIRONMENT = true
 
 const layout = getLayout('us-qwerty')
 
-function start(): EngineState {
+function start(timeLimitMs: number | null = null): EngineState {
   let state = engineReducer(createInitialState({ layout }), {
     type: 'START',
     cues: [cueFromText(layout, 'ab', 'word')],
     lessonId: 'test',
     layout,
+    timeLimitMs,
   })
   state = engineReducer(state, { type: 'COUNTDOWN_DONE' })
   return state
@@ -87,6 +88,23 @@ describe('Hud', () => {
     expect(progress?.getAttribute('aria-valuemax')).toBe('1')
     expect(progress?.getAttribute('aria-valuenow')).toBe('0')
     expect(progress?.getAttribute('aria-valuetext')).toBe('0 / 1')
+  })
+
+  it('shows remaining time when the lesson is timed', async () => {
+    let state = start(60000)
+    state = engineReducer(state, { type: 'TICK', elapsedMs: 10000 })
+    await render(state, 42)
+
+    expect(stat('Time left')).toBe('0:50')
+    expect(stat('Time')).toBeUndefined()
+
+    state = engineReducer(state, { type: 'TICK', elapsedMs: 65000 })
+    await render(state, 42)
+
+    expect(stat('Over pace')).toBe('0:00')
+    expect(
+      container.querySelector('.hud-stat[data-over-pace="true"]'),
+    ).not.toBeNull()
   })
 
   it('shows the final score and errors when the lesson ends', async () => {

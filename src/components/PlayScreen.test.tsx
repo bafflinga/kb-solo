@@ -8,6 +8,7 @@ import { play, unlockAudio } from '../audio/audio'
 import { cueFromText } from '../domain/cues'
 import { getLayout } from '../domain/layout'
 import type { LessonMeta, LessonProvider } from '../domain/lessons/types'
+import type { PaceLevel } from '../domain/pacing'
 import type { Layout } from '../domain/types'
 import type { LessonProgress, LessonResult } from '../storage/progress'
 import { PlayScreen } from './PlayScreen'
@@ -30,6 +31,8 @@ const lesson: LessonProvider = {
     order: 1,
     difficulty: 1,
   } satisfies LessonMeta,
+  kind: 'drill',
+  templateCount: 1,
   createCues: () => [cueFromText(layout, 'ab', 'word')],
 }
 
@@ -39,11 +42,15 @@ const mismatchLesson: LessonProvider = {
     id: 'mismatch',
     layoutId: 'ru-jcuken',
   },
+  kind: 'drill',
+  templateCount: 1,
   createCues: () => [cueFromText(layout, 'ab', 'word')],
 }
 
 const twoCueLesson: LessonProvider = {
   meta: { ...lesson.meta, id: 'two' },
+  kind: 'drill',
+  templateCount: 1,
   createCues: () => [
     cueFromText(layout, 'a', 'word'),
     cueFromText(layout, 'b', 'word'),
@@ -52,11 +59,40 @@ const twoCueLesson: LessonProvider = {
 
 const timedLesson: LessonProvider = {
   meta: { ...lesson.meta, id: 'timed', timeLimitSec: 1 },
+  kind: 'drill',
+  templateCount: 1,
   createCues: () => [cueFromText(layout, 'ab', 'word')],
+}
+
+function generatedLessonFor(): {
+  provider: LessonProvider
+  texts: string[]
+} {
+  let count = 0
+  const texts: string[] = []
+  return {
+    texts,
+    provider: {
+      meta: {
+        ...lesson.meta,
+        id: 'generated',
+        focusCodes: ['KeyA', 'KeyS'],
+      },
+      kind: 'drill',
+      templateCount: 1,
+      createCues: () => {
+        count += 1
+        const text = `ab${count}`
+        texts.push(text)
+        return [cueFromText(layout, text, 'word')]
+      },
+    },
+  }
 }
 
 const bestRecord: LessonProgress = {
   lessonId: 'test',
+  paceLevel: 'off',
   bestNetWpm: 20,
   bestAccuracy: 0.9,
   stars: 1,
@@ -94,6 +130,8 @@ describe('PlayScreen', () => {
       layout?: Layout
       suspended?: boolean
       showFeedback?: boolean
+      generatedDrills?: boolean
+      paceLevel?: PaceLevel
       best?: LessonProgress
       onFinish?: (result: LessonResult) => void
     } = {},
@@ -106,6 +144,8 @@ describe('PlayScreen', () => {
           errorMode="block"
           strictShift={false}
           showFeedback={options.showFeedback ?? false}
+          generatedDrills={options.generatedDrills}
+          paceLevel={options.paceLevel}
           suspended={options.suspended ?? false}
           now={now}
           best={options.best}
@@ -143,6 +183,12 @@ describe('PlayScreen', () => {
         }),
       )
     })
+  }
+
+  function visibleCue(): string {
+    return [...container.querySelectorAll('.typing-char')]
+      .map((element) => element.textContent ?? '')
+      .join('')
   }
 
   async function pressShortcut(init: KeyboardEventInit = {}): Promise<void> {
@@ -393,8 +439,21 @@ describe('PlayScreen', () => {
       expect(vi.mocked(play)).not.toHaveBeenCalledWith('lessonFailure')
     })
 
-    it('plays the failure sound when the time limit runs out', async () => {
+    it('does not fail when the time limit runs out', async () => {
       await render({ lesson: timedLesson })
+
+      await click('Play')
+      await advance(3000)
+      await press('KeyA', 'a')
+      await advance(1200)
+      await press('KeyB', 'b')
+
+      expect(vi.mocked(play)).toHaveBeenCalledWith('lessonSuccess')
+      expect(vi.mocked(play)).not.toHaveBeenCalledWith('lessonFailure')
+    })
+
+    it('plays the failure sound when hardcore time runs out', async () => {
+      await render({ lesson: timedLesson, paceLevel: 'hardcore' })
 
       await click('Play')
       await advance(3000)
@@ -403,6 +462,7 @@ describe('PlayScreen', () => {
 
       expect(vi.mocked(play)).toHaveBeenCalledWith('lessonFailure')
       expect(vi.mocked(play)).not.toHaveBeenCalledWith('lessonSuccess')
+      expect(vi.mocked(play)).not.toHaveBeenCalledWith('starEarned')
     })
   })
 
@@ -422,13 +482,41 @@ describe('PlayScreen', () => {
 
       expect(onFinish).toHaveBeenCalledTimes(1)
       expect(onFinish).toHaveBeenCalledWith(
-        expect.objectContaining({ lessonId: 'test', completed: true }),
+        expect.objectContaining({
+          lessonId: 'test',
+          paceLevel: 'off',
+          completed: true,
+        }),
       )
     })
 
-    it('reports a failed result on a timed lesson', async () => {
+    it('reports a completed result on a timed lesson', async () => {
       const onFinish = vi.fn()
       await render({ lesson: timedLesson, onFinish })
+
+      await click('Play')
+      await advance(3000)
+      await press('KeyA', 'a')
+      await advance(1200)
+      await press('KeyB', 'b')
+
+      expect(onFinish).toHaveBeenCalledTimes(1)
+      expect(onFinish).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lessonId: 'timed',
+          paceLevel: 'off',
+          completed: true,
+        }),
+      )
+    })
+
+    it('reports a failed attempt when hardcore time runs out', async () => {
+      const onFinish = vi.fn()
+      await render({
+        lesson: timedLesson,
+        paceLevel: 'hardcore',
+        onFinish,
+      })
 
       await click('Play')
       await advance(3000)
@@ -439,10 +527,33 @@ describe('PlayScreen', () => {
       expect(onFinish).toHaveBeenCalledWith(
         expect.objectContaining({
           lessonId: 'timed',
+          paceLevel: 'hardcore',
           completed: false,
           stars: 0,
         }),
       )
+    })
+
+    it('generates a new drill combo on retry', async () => {
+      const { provider, texts } = generatedLessonFor()
+      await render({ lesson: provider, generatedDrills: true })
+
+      await click('Play')
+      await advance(3000)
+      const first = visibleCue()
+      expect(first).toContain('ab2')
+
+      await press('KeyA', 'a')
+      await press('KeyB', 'b')
+      await press('Digit2', '2')
+      expect(container.textContent).toContain('Lesson complete')
+      await click('Retry')
+      await advance(3000)
+      const second = visibleCue()
+
+      expect(second).toContain('ab3')
+      expect(second).not.toBe(first)
+      expect(texts).toEqual(['ab1', 'ab2', 'ab3'])
     })
 
     it('plays starEarned when the run beats the previous best stars', async () => {

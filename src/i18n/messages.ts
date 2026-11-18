@@ -29,6 +29,30 @@ export const messages = {
     stars: 'Stars',
     sound: 'Sound',
     showFeedback: 'Show feedback',
+    randomTemplates: 'Random templates',
+    generatedDrills: 'Generated drills',
+    generatedDrillsHint:
+      "Creates a new random key drill on every start from each lesson's focus keys. Replaces Random templates.",
+    pace: 'Difficulty',
+    'pace.off': 'Untimed',
+    'pace.offHint': 'No time limit. Speed only affects your stars.',
+    'pace.relaxed': 'Relaxed',
+    'pace.relaxedHint':
+      'A generous limit. Running out of time only lowers your stars.',
+    'pace.standard': 'Standard',
+    'pace.standardHint': 'A balanced limit based on the lesson text.',
+    'pace.challenging': 'Challenging',
+    'pace.challengingHint':
+      'A tight limit. Finish near the target pace for more stars.',
+    'pace.hardcore': 'Hardcore',
+    'pace.hardcoreHint':
+      'Time limit fails the lesson. Only attempts are saved.',
+    timeLeft: 'Time left',
+    overPace: 'Over pace',
+    clearScope: 'Clear progress for',
+    'clearScope.all': 'All levels',
+    'clearScope.current': 'Current level',
+    statsPace: 'Difficulty: {{pace}}',
     language: 'Language',
     contentLanguage: 'Content language',
     layout: 'Layout',
@@ -157,13 +181,38 @@ export const messages = {
     shiftHint: 'Shift не требовался',
     progress: 'Прогресс',
     accuracy: 'Точность',
-    wpm: 'Скорость',
+    wpm: 'Слов/мин',
     time: 'Время',
     errors: 'Ошибки',
-    best: 'Лучший',
+    best: 'Рекорд',
     stars: 'Звёзды',
     sound: 'Звук',
     showFeedback: 'Показывать обратную связь',
+    randomTemplates: 'Случайные шаблоны',
+    generatedDrills: 'Генерация упражнений',
+    generatedDrillsHint:
+      'Перед каждым началом создаёт случайное упражнение из клавиш урока. Вместо случайных шаблонов.',
+    pace: 'Сложность',
+    'pace.off': 'Без таймера',
+    'pace.offHint': 'Без лимита времени. Скорость влияет только на звёзды.',
+    'pace.relaxed': 'Спокойный',
+    'pace.relaxedHint':
+      'Щедрый лимит. При превышении времени снижается только оценка.',
+    'pace.standard': 'Обычный',
+    'pace.standardHint':
+      'Сбалансированный лимит, рассчитанный по тексту урока.',
+    'pace.challenging': 'Сложный',
+    'pace.challengingHint':
+      'Сжатый лимит. Укладывайтесь в норматив, чтобы получить больше звёзд.',
+    'pace.hardcore': 'Хардкор',
+    'pace.hardcoreHint':
+      'При превышении времени урок не засчитывается. Сохраняются только попытки.',
+    timeLeft: 'Осталось',
+    overPace: 'Медленнее нормы',
+    clearScope: 'Очистить прогресс',
+    'clearScope.all': 'Все уровни',
+    'clearScope.current': 'Текущий уровень',
+    statsPace: 'Сложность: {{pace}}',
     language: 'Язык интерфейса',
     contentLanguage: 'Язык упражнений',
     layout: 'Раскладка',
@@ -275,3 +324,7 @@ export const messages = {
 } as const
 
 export type MessageKey = keyof (typeof messages)['en']
+
+export function hasMessage(key: MessageKey): boolean {
+  return Object.prototype.hasOwnProperty.call(messages.en, key)
+}

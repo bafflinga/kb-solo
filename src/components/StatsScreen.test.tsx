@@ -40,6 +40,7 @@ const lessons: LessonMeta[] = [
 const progress: LessonProgress[] = [
   {
     lessonId: 'en-home-left',
+    paceLevel: 'off',
     bestNetWpm: 40,
     bestAccuracy: 0.98,
     stars: 3,
@@ -48,6 +49,7 @@ const progress: LessonProgress[] = [
   },
   {
     lessonId: 'ru-home-left',
+    paceLevel: 'off',
     bestNetWpm: 10,
     bestAccuracy: 0.8,
     stars: 1,
@@ -74,9 +76,23 @@ describe('StatsScreen', () => {
     container.remove()
   })
 
-  async function render(records: LessonProgress[]): Promise<void> {
+  async function render(
+    records: LessonProgress[],
+    paceLevel?:
+      | 'off'
+      | 'relaxed'
+      | 'standard'
+      | 'challenging'
+      | 'hardcore',
+  ): Promise<void> {
     await act(async () => {
-      root.render(<StatsScreen progress={records} lessons={lessons} />)
+      root.render(
+        <StatsScreen
+          progress={records}
+          lessons={lessons}
+          paceLevel={paceLevel}
+        />,
+      )
     })
   }
 
@@ -103,6 +119,30 @@ describe('StatsScreen', () => {
     expect(container.textContent).toContain('Ряд дома: левая рука')
     expect(container.textContent).not.toContain('Home row: right hand')
     expect(container.querySelectorAll('.stats-row')).toHaveLength(2)
+  })
+
+  it('labels the stats with the selected pace level', async () => {
+    await render(progress, 'challenging')
+    expect(container.textContent).toContain('Difficulty: Challenging')
+  })
+
+  it('counts attempt-only records without listing them as completed', async () => {
+    const attempted: LessonProgress = {
+      lessonId: 'en-home-right',
+      paceLevel: 'hardcore',
+      bestNetWpm: 0,
+      bestAccuracy: 0,
+      stars: 0,
+      attempts: 2,
+    }
+
+    await render([attempted], 'hardcore')
+
+    expect(container.textContent).toContain('Difficulty: Hardcore')
+    expect(container.textContent).toContain('0 lessons completed')
+    expect(overall('Attempts')).toBe('2')
+    expect(overall('Best WPM')).toBe('0')
+    expect(container.querySelectorAll('.stats-row')).toHaveLength(0)
   })
 
   it('shows an empty state before any lesson is completed', async () => {

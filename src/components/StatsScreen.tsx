@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import type { PaceLevel } from '../domain/pacing'
 import type { ContentLanguage } from '../domain/types'
 import type { LessonMeta } from '../domain/lessons/types'
 import type { LessonProgress } from '../storage/progress'
@@ -14,20 +15,23 @@ const LANGUAGES: readonly ContentLanguage[] = ['en', 'ru']
 export interface StatsScreenProps {
   progress: LessonProgress[]
   lessons: LessonMeta[]
+  paceLevel?: PaceLevel
 }
 
-export function StatsScreen({ progress, lessons }: StatsScreenProps) {
+export function StatsScreen({
+  progress,
+  lessons,
+  paceLevel = 'off',
+}: StatsScreenProps) {
   const { t, n } = useI18n()
-  const records = new Map(progress.map((item) => [item.lessonId, item]))
-  const completed = progress.filter(
-    (item) => item.completedAt !== undefined,
-  ).length
+  const scored = progress.filter((item) => item.completedAt !== undefined)
+  const records = new Map(scored.map((item) => [item.lessonId, item]))
+  const completed = scored.length
   const attempts = progress.reduce((sum, item) => sum + item.attempts, 0)
-  const bestWpm = progress.reduce(
+  const bestWpm = scored.reduce(
     (max, item) => Math.max(max, item.bestNetWpm),
     0,
   )
-  const scored = progress.filter((item) => item.completedAt !== undefined)
   const averageAccuracy =
     scored.length === 0
       ? 0
@@ -41,6 +45,9 @@ export function StatsScreen({ progress, lessons }: StatsScreenProps) {
     return (
       <section className="panel stats-screen">
         <h2>{t('stats')}</h2>
+        <p className="muted">
+          {t('statsPace', { pace: t(`pace.${paceLevel}` as MessageKey) })}
+        </p>
         <p className="muted">{t('statsEmpty')}</p>
       </section>
     )
@@ -49,6 +56,9 @@ export function StatsScreen({ progress, lessons }: StatsScreenProps) {
   return (
     <section className="panel stats-screen">
       <h2>{t('stats')}</h2>
+      <p className="muted">
+        {t('statsPace', { pace: t(`pace.${paceLevel}` as MessageKey) })}
+      </p>
       <p>{t('lessonCompleted', { count: completed })}</p>
       <dl className="stats-overall">
         <div>

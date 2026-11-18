@@ -1,5 +1,5 @@
 import { codeForChar, fingerFor } from './layout'
-import type { Cue, CueChar, Layout } from './types'
+import type { Code, Cue, CueChar, Layout } from './types'
 
 function cueCharFor(layout: Layout, char: string): CueChar {
   if (char === '\n') {
@@ -56,4 +56,50 @@ export function lineCues(layout: Layout, text: string): Cue[] {
 
 export function drillCues(layout: Layout, pattern: string): Cue[] {
   return wordCues(layout, pattern)
+}
+
+export interface RandomComboOptions {
+  chunkCount?: number
+  minLength?: number
+  maxLength?: number
+  rng?: () => number
+}
+
+export function randomComboCues(
+  layout: Layout,
+  codes: readonly Code[],
+  options: RandomComboOptions = {},
+): Cue[] {
+  const chars = codes
+    .map((code) => layout.legends[code]?.base)
+    .filter(
+      (char): char is string =>
+        typeof char === 'string' && char.length === 1 && !/\s/.test(char),
+    )
+  if (chars.length === 0) {
+    return []
+  }
+
+  const chunkCount = options.chunkCount ?? 10
+  const minLength = options.minLength ?? 2
+  const maxLength = options.maxLength ?? 5
+  const rng = options.rng ?? Math.random
+  const chunks: string[] = []
+
+  for (let index = 0; index < chunkCount; index += 1) {
+    const span = Math.max(0, maxLength - minLength)
+    const length =
+      minLength + Math.min(span, Math.floor(rng() * (span + 1)))
+    let chunk = ''
+    for (let position = 0; position < length; position += 1) {
+      const charIndex = Math.min(
+        chars.length - 1,
+        Math.floor(rng() * chars.length),
+      )
+      chunk += chars[charIndex]
+    }
+    chunks.push(chunk)
+  }
+
+  return wordCues(layout, chunks.join(' '))
 }

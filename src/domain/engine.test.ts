@@ -248,7 +248,7 @@ describe('engine', () => {
     expect(state.typed).toBe('')
   })
 
-  it('fails on the time limit without overwriting success', () => {
+  it('keeps running past the time limit and records elapsed time', () => {
     let state = start([cueFromText(layout, 'ab', 'word')], {
       timeLimitMs: 1000,
     })
@@ -257,15 +257,43 @@ describe('engine', () => {
     expect(state.elapsedMs).toBe(999)
 
     state = engineReducer(state, { type: 'TICK', elapsedMs: 1000 })
-    expect(state.status).toBe('failure')
+    expect(state.status).toBe('running')
+    expect(state.elapsedMs).toBe(1000)
     state = press(state)
-    expect(state.status).toBe('failure')
+    expect(state.status).toBe('running')
 
     let done = start([cueFromText(layout, 'a', 'word')], { timeLimitMs: 100 })
+    done = engineReducer(done, { type: 'TICK', elapsedMs: 500 })
+    expect(done.status).toBe('running')
     done = press(done)
     expect(done.status).toBe('success')
-    done = engineReducer(done, { type: 'TICK', elapsedMs: 500 })
-    expect(done.status).toBe('success')
+  })
+
+  it('fails on the time limit when failOnTimeout is set', () => {
+    let state = start([cueFromText(layout, 'ab', 'word')], {
+      timeLimitMs: 1000,
+      failOnTimeout: true,
+    })
+    state = engineReducer(state, { type: 'TICK', elapsedMs: 999 })
+    expect(state.status).toBe('running')
+
+    state = engineReducer(state, { type: 'TICK', elapsedMs: 1000 })
+    expect(state.status).toBe('failure')
+    expect(state.elapsedMs).toBe(1000)
+    expect(state.failOnTimeout).toBe(true)
+
+    const keystrokes = state.keystrokes
+    state = press(state)
+    expect(state.keystrokes).toBe(keystrokes)
+    expect(state.status).toBe('failure')
+  })
+
+  it('does not fail when no time limit is set', () => {
+    let state = start([cueFromText(layout, 'ab', 'word')], {
+      failOnTimeout: true,
+    })
+    state = engineReducer(state, { type: 'TICK', elapsedMs: 60000 })
+    expect(state.status).toBe('running')
   })
 
   it('pauses, resumes and resets while preserving config', () => {
@@ -289,6 +317,16 @@ describe('engine', () => {
     expect(reset.keystrokes).toBe(0)
     expect(reset.elapsedMs).toBe(0)
     expect(reset.timeLimitMs).toBe(1000)
+    expect(reset.failOnTimeout).toBe(false)
+  })
+
+  it('preserves failOnTimeout through a reset', () => {
+    const state = start([cueFromText(layout, 'a', 'word')], {
+      timeLimitMs: 1000,
+      failOnTimeout: true,
+    })
+    const reset = engineReducer(state, { type: 'RESET' })
+    expect(reset.failOnTimeout).toBe(true)
   })
 
   it('exposes score and star read-outs', () => {
@@ -298,7 +336,7 @@ describe('engine', () => {
 
     expect(scoreFor(state).netWpm).toBeCloseTo(0.2)
     expect(scoreFor(state).accuracy).toBe(1)
-    expect(starsFor(state)).toBe(2)
+    expect(starsFor(state)).toBe(1)
   })
 
   it('runs a synthetic layout and provider through the real engine', () => {
@@ -325,6 +363,8 @@ describe('engine', () => {
         order: 0,
         difficulty: 1,
       },
+      kind: 'drill',
+      templateCount: 1,
       createCues: () => [cueFromText(syntheticLayout, 'x x', 'word')],
     }
 

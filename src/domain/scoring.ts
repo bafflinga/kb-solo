@@ -39,7 +39,7 @@ export function computeStars(
   if (score.accuracy >= 0.97 && score.netWpm >= targetWpm) {
     return 3
   }
-  if (score.accuracy >= 0.9) {
+  if (score.accuracy >= 0.9 && score.netWpm >= targetWpm * 0.7) {
     return 2
   }
   return 1

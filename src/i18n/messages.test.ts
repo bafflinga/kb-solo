@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { allLessons } from '../domain/lessons/registry'
-import { messages } from './messages'
+import { PACE_LEVELS } from '../domain/pacing'
+import { hasMessage, messages } from './messages'
+import type { MessageKey } from './messages'
 
 const enKeys = Object.keys(messages.en)
 const ruKeys = Object.keys(messages.ru)
@@ -8,6 +10,19 @@ const ruKeys = Object.keys(messages.ru)
 describe('messages', () => {
   it('has identical key sets in both locales', () => {
     expect([...ruKeys].sort()).toEqual([...enKeys].sort())
+  })
+
+  it('defines a pace label and hint for every level in both locales', () => {
+    for (const level of PACE_LEVELS) {
+      const labelKey = `pace.${level}` as MessageKey
+      const hintKey = `pace.${level}Hint` as MessageKey
+      expect(messages.en[labelKey]).toBeTypeOf('string')
+      expect(messages.ru[labelKey]).toBeTypeOf('string')
+      expect(hasMessage(hintKey), hintKey).toBe(true)
+      expect(messages.en[hintKey]).toBeTypeOf('string')
+      expect(messages.ru[hintKey]).toBeTypeOf('string')
+    }
+    expect(hasMessage('pace.missingHint' as MessageKey)).toBe(false)
   })
 
   it('covers every lesson title key in both locales', () => {

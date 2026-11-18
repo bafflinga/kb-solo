@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { mapFocusCodes, resolveLessonLayout } from '../app/lessonLayout'
 import { routeKey } from '../app/navigation'
 import { loadSettings, updateSettings } from '../app/settings'
-import type { AppSettings } from '../app/settings'
+import type { AppSettings, ClearScope } from '../app/settings'
 import { navigate, useHashRoute } from '../app/useHashRoute'
 import { setMuted } from '../audio/audio'
 import { getLayout, layoutForProfile, profileOf } from '../domain/layout'
@@ -11,7 +11,7 @@ import type { Code, ContentLanguage } from '../domain/types'
 import { useI18n } from '../i18n'
 import {
   allProgress,
-  clearAllProgress,
+  clearProgress,
   completedLessonIds,
   loadProgress,
   mergeProgress,
@@ -66,13 +66,18 @@ export default function AppShell() {
     })
   }
 
-  function clearProgress(): void {
-    clearAllProgress()
+  function clear(scope: ClearScope): void {
+    clearProgress(scope === 'all' ? undefined : scope)
     setProgressVersion((version) => version + 1)
   }
 
   function handleFinish(result: LessonResult): void {
-    saveProgress(mergeProgress(loadProgress(result.lessonId), result))
+    saveProgress(
+      mergeProgress(
+        loadProgress(result.lessonId, result.paceLevel),
+        result,
+      ),
+    )
     setProgressVersion((version) => version + 1)
   }
 
@@ -91,7 +96,7 @@ export default function AppShell() {
     }
   }, [settingsOpen])
 
-  const progress = allProgress()
+  const progress = allProgress(settings.paceLevel)
   const completedIds = completedLessonIds()
 
   const lessons = allLessons().filter(
@@ -177,7 +182,11 @@ export default function AppShell() {
 
         <main id="main" className="app-main">
           {route.screen === 'stats' && (
-            <StatsScreen progress={progress} lessons={allLessons()} />
+            <StatsScreen
+              progress={progress}
+              lessons={allLessons()}
+              paceLevel={settings.paceLevel}
+            />
           )}
 
           {route.screen === 'lesson' &&
@@ -191,6 +200,9 @@ export default function AppShell() {
                 errorMode={settings.errorMode}
                 strictShift={settings.strictShift}
                 showFeedback={settings.showFeedback}
+                randomTemplates={settings.randomTemplates}
+                generatedDrills={settings.generatedDrills}
+                paceLevel={settings.paceLevel}
                 suspended={settingsOpen}
                 shortcuts={settings.shortcuts}
                 best={progress.find((item) => item.lessonId === lesson.meta.id)}
@@ -267,7 +279,7 @@ export default function AppShell() {
         <SettingsPanel
           settings={settings}
           onPatch={patch}
-          onClearProgress={clearProgress}
+          onClearProgress={clear}
           i18n={i18n}
         />
       </aside>

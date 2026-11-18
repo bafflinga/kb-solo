@@ -1,5 +1,7 @@
 import type { ErrorMode } from '../domain/engine'
 import { isLayoutId, layoutForProfile, profileOf } from '../domain/layout'
+import { isPaceLevel } from '../domain/pacing'
+import type { PaceLevel } from '../domain/pacing'
 import type { Code, ContentLanguage, Finger, LayoutId } from '../domain/types'
 import type { UiLocale } from '../i18n/messages'
 import { DEFAULT_SHORTCUTS, normalizeShortcutSettings } from './shortcuts'
@@ -15,11 +17,16 @@ export interface AppSettings {
   layoutId: LayoutId
   sound: boolean
   showFeedback: boolean
+  randomTemplates: boolean
+  generatedDrills: boolean
+  paceLevel: PaceLevel
   errorMode: ErrorMode
   strictShift: boolean
   fingerOverrides: Partial<Record<Code, Finger>>
   shortcuts: ShortcutSettings
 }
+
+export type ClearScope = PaceLevel | 'all'
 
 export interface SettingsStore {
   load(): AppSettings
@@ -41,6 +48,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   layoutId: layoutForProfile('pc', initialLocale),
   sound: true,
   showFeedback: false,
+  randomTemplates: false,
+  generatedDrills: false,
+  paceLevel: 'off',
   errorMode: 'block',
   strictShift: false,
   fingerOverrides: {},
@@ -62,6 +72,17 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
       const storedLayout = isLayoutId(parsed.layoutId)
         ? parsed.layoutId
         : DEFAULT_SETTINGS.layoutId
+      const generatedDrills =
+        typeof parsed.generatedDrills === 'boolean'
+          ? parsed.generatedDrills
+          : DEFAULT_SETTINGS.generatedDrills
+      const randomTemplates =
+        generatedDrills &&
+        typeof parsed.randomTemplates === 'boolean'
+          ? false
+          : typeof parsed.randomTemplates === 'boolean'
+            ? parsed.randomTemplates
+            : DEFAULT_SETTINGS.randomTemplates
       return {
         ...DEFAULT_SETTINGS,
         ...parsed,
@@ -71,6 +92,15 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
             : DEFAULT_SETTINGS.locale,
         contentLanguage,
         layoutId: layoutForProfile(profileOf(storedLayout), contentLanguage),
+        showFeedback:
+          typeof parsed.showFeedback === 'boolean'
+            ? parsed.showFeedback
+            : DEFAULT_SETTINGS.showFeedback,
+        randomTemplates,
+        generatedDrills,
+        paceLevel: isPaceLevel(parsed.paceLevel)
+          ? parsed.paceLevel
+          : DEFAULT_SETTINGS.paceLevel,
         shortcuts:
           normalizeShortcutSettings(parsed.shortcuts) ?? DEFAULT_SHORTCUTS,
       }
@@ -81,6 +111,13 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
 
   function update(patch: Partial<AppSettings>): AppSettings {
     const next = { ...load(), ...patch }
+    if (next.generatedDrills && next.randomTemplates) {
+      if (patch.generatedDrills === true) {
+        next.randomTemplates = false
+      } else {
+        next.generatedDrills = false
+      }
+    }
     storage.set(SETTINGS_KEY, JSON.stringify(next))
     return next
   }

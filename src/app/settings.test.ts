@@ -104,3 +104,128 @@ describe('settings shortcuts', () => {
     ).toEqual(altEnter)
   })
 })
+
+
+describe('settings randomTemplates', () => {
+  it('defaults to off', () => {
+    expect(DEFAULT_SETTINGS.randomTemplates).toBe(false)
+    expect(storeWith().store.load().randomTemplates).toBe(false)
+  })
+
+  it('defaults to off for settings saved before the option existed', () => {
+    const { store } = storeWith(JSON.stringify({ sound: false }))
+    expect(store.load().randomTemplates).toBe(false)
+  })
+
+  it('restores and persists an explicit value', () => {
+    const { store, values } = storeWith(JSON.stringify({ randomTemplates: true }))
+    expect(store.load().randomTemplates).toBe(true)
+    expect(
+      JSON.parse(values.get('kb-solo.settings') ?? '{}').randomTemplates,
+    ).toBe(true)
+  })
+})
+
+describe('settings generatedDrills', () => {
+  it('defaults to off', () => {
+    expect(DEFAULT_SETTINGS.generatedDrills).toBe(false)
+    expect(storeWith().store.load().generatedDrills).toBe(false)
+  })
+
+  it('defaults to off for settings saved before the option existed', () => {
+    const { store } = storeWith(JSON.stringify({ sound: false }))
+    expect(store.load().generatedDrills).toBe(false)
+  })
+
+  it('falls back to off for an invalid stored value', () => {
+    const { store } = storeWith(JSON.stringify({ generatedDrills: 'yes' }))
+    expect(store.load().generatedDrills).toBe(false)
+  })
+
+  it('restores and persists an explicit value', () => {
+    const { store, values } = storeWith(
+      JSON.stringify({ generatedDrills: true }),
+    )
+    expect(store.load().generatedDrills).toBe(true)
+    expect(
+      JSON.parse(values.get('kb-solo.settings') ?? '{}').generatedDrills,
+    ).toBe(true)
+  })
+
+  it('resolves a stored conflict in favour of generatedDrills', () => {
+    const { store } = storeWith(
+      JSON.stringify({ generatedDrills: true, randomTemplates: true }),
+    )
+    const loaded = store.load()
+    expect(loaded.generatedDrills).toBe(true)
+    expect(loaded.randomTemplates).toBe(false)
+  })
+
+  it('turning generatedDrills on turns randomTemplates off', () => {
+    const { store } = storeWith(JSON.stringify({ randomTemplates: true }))
+    const next = store.update({ generatedDrills: true })
+    expect(next.generatedDrills).toBe(true)
+    expect(next.randomTemplates).toBe(false)
+  })
+
+  it('turning randomTemplates on turns generatedDrills off', () => {
+    const { store } = storeWith(JSON.stringify({ generatedDrills: true }))
+    const next = store.update({ randomTemplates: true })
+    expect(next.randomTemplates).toBe(true)
+    expect(next.generatedDrills).toBe(false)
+  })
+
+  it('turning one off leaves both off', () => {
+    const { store } = storeWith(JSON.stringify({ generatedDrills: true }))
+    const next = store.update({ generatedDrills: false })
+    expect(next.generatedDrills).toBe(false)
+    expect(next.randomTemplates).toBe(false)
+  })
+
+  it('generatedDrills wins if both are patched on', () => {
+    const { store } = storeWith()
+    const next = store.update({
+      randomTemplates: true,
+      generatedDrills: true,
+    })
+    expect(next.generatedDrills).toBe(true)
+    expect(next.randomTemplates).toBe(false)
+  })
+})
+
+describe('settings paceLevel', () => {
+  it('defaults to off', () => {
+    expect(DEFAULT_SETTINGS.paceLevel).toBe('off')
+    expect(storeWith().store.load().paceLevel).toBe('off')
+  })
+
+  it('defaults to off for settings saved before the option existed', () => {
+    const { store } = storeWith(JSON.stringify({ sound: false }))
+    expect(store.load().paceLevel).toBe('off')
+  })
+
+  it('falls back to off for an invalid stored value', () => {
+    const { store } = storeWith(JSON.stringify({ paceLevel: 'turbo' }))
+    expect(store.load().paceLevel).toBe('off')
+  })
+
+  it('restores and persists an explicit value', () => {
+    const { store, values } = storeWith(
+      JSON.stringify({ paceLevel: 'challenging' }),
+    )
+    expect(store.load().paceLevel).toBe('challenging')
+    expect(
+      JSON.parse(values.get('kb-solo.settings') ?? '{}').paceLevel,
+    ).toBe('challenging')
+  })
+
+  it('accepts and persists the hardcore level', () => {
+    const { store, values } = storeWith(
+      JSON.stringify({ paceLevel: 'hardcore' }),
+    )
+    expect(store.load().paceLevel).toBe('hardcore')
+    expect(
+      JSON.parse(values.get('kb-solo.settings') ?? '{}').paceLevel,
+    ).toBe('hardcore')
+  })
+})

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { AppSettings } from '../app/settings'
+import type { AppSettings, ClearScope } from '../app/settings'
+import { PACE_LEVELS } from '../domain/pacing'
 import {
   DEFAULT_SHORTCUTS,
   formatShortcut,
@@ -8,6 +9,7 @@ import {
   needsModifier,
 } from '../app/shortcuts'
 import type { Shortcut, ShortcutSettings } from '../app/shortcuts'
+import { hasMessage } from '../i18n'
 import type { I18nValue } from '../i18n'
 import type { MessageKey } from '../i18n'
 import { estimateQuota } from '../storage/persistence'
@@ -18,7 +20,7 @@ import { LayoutSwitcher } from './LayoutSwitcher'
 interface SettingsPanelProps {
   settings: AppSettings
   onPatch(patch: Partial<AppSettings>): void
-  onClearProgress(): void
+  onClearProgress(scope: ClearScope): void
   i18n: I18nValue
 }
 
@@ -114,6 +116,8 @@ export function SettingsPanel({
     null,
   )
   const [shortcutError, setShortcutError] = useState<string>()
+  const [clearScope, setClearScope] = useState<ClearScope>('all')
+  const hintKey = `pace.${settings.paceLevel}Hint` as MessageKey
 
   useEffect(() => {
     let active = true
@@ -189,7 +193,7 @@ export function SettingsPanel({
 
   function clearProgress(): void {
     if (window.confirm(t('clearProgressConfirm'))) {
-      onClearProgress()
+      onClearProgress(clearScope)
     }
   }
 
@@ -212,6 +216,45 @@ export function SettingsPanel({
         />
         <span>{t('showFeedback')}</span>
       </label>
+      <label className="field checkbox">
+        <input
+          type="checkbox"
+          checked={settings.randomTemplates}
+          onChange={(event) =>
+            onPatch({ randomTemplates: event.target.checked })
+          }
+        />
+        <span>{t('randomTemplates')}</span>
+      </label>
+      <label className="field checkbox">
+        <input
+          type="checkbox"
+          checked={settings.generatedDrills}
+          onChange={(event) =>
+            onPatch({ generatedDrills: event.target.checked })
+          }
+        />
+        <span>{t('generatedDrills')}</span>
+      </label>
+      {settings.generatedDrills && (
+        <p className="muted">{t('generatedDrillsHint')}</p>
+      )}
+      <label className="field">
+        <span>{t('pace')}</span>
+        <select
+          value={settings.paceLevel}
+          onChange={(event) =>
+            onPatch({ paceLevel: event.target.value as AppSettings['paceLevel'] })
+          }
+        >
+          {PACE_LEVELS.map((level) => (
+            <option key={level} value={level}>
+              {t(`pace.${level}` as MessageKey)}
+            </option>
+          ))}
+        </select>
+      </label>
+      {hasMessage(hintKey) && <p className="muted">{t(hintKey)}</p>}
 
       <LayoutSwitcher
         value={settings.layoutId}
@@ -306,6 +349,16 @@ export function SettingsPanel({
           })}
         </p>
       )}
+      <label className="field">
+        <span>{t('clearScope')}</span>
+        <select
+          value={clearScope}
+          onChange={(event) => setClearScope(event.target.value as ClearScope)}
+        >
+          <option value="all">{t('clearScope.all')}</option>
+          <option value={settings.paceLevel}>{t('clearScope.current')}</option>
+        </select>
+      </label>
       <button type="button" className="danger" onClick={clearProgress}>
         {t('clearProgress')}
       </button>

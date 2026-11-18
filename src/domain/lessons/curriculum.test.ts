@@ -43,6 +43,53 @@ describe('curricula', () => {
     }
   })
 
+  it('keeps lesson variants distinct and within their focus codes', () => {
+    for (const meta of allLessons()) {
+      const provider = getLesson(meta.id)
+      expect(provider, meta.id).toBeDefined()
+      if (!provider) {
+        continue
+      }
+
+      const layout = getLayout(meta.layoutId)
+      const focusChars = new Set<string>([' ', '\n'])
+      for (const code of meta.focusCodes ?? []) {
+        const legend = layout.legends[code]
+        if (!legend) {
+          continue
+        }
+        focusChars.add(legend.base)
+        focusChars.add(legend.shift)
+        if (legend.alt) {
+          focusChars.add(legend.alt)
+        }
+      }
+
+      const seen = new Map<string, number>()
+      for (let index = 0; index < provider.templateCount; index++) {
+        const cues = provider.createCues(undefined, { variantIndex: index })
+        const text = cues.map((cue) => cue.text).join('')
+        expect(
+          seen.has(text),
+          `${meta.id}: variant ${index} repeats variant ${seen.get(text)}`,
+        ).toBe(false)
+        seen.set(text, index)
+
+        if (!meta.focusCodes?.length) {
+          continue
+        }
+        for (const cue of cues) {
+          for (const char of cue.chars) {
+            expect(
+              focusChars.has(char.char),
+              `${meta.id} variant ${index}: ${JSON.stringify(char.char)} is outside the focus codes`,
+            ).toBe(true)
+          }
+        }
+      }
+    }
+  })
+
   it('resolves every Russian lesson with the Mac layout', () => {
     const mac = getLayout('ru-jcuken-mac')
     const russian = allLessons().filter((meta) => meta.language === 'ru')
@@ -110,6 +157,38 @@ describe('curricula', () => {
     for (const code of typedCodes('ru-index-bottom')) {
       expect(focus.has(code), `ru-index-bottom: ${code}`).toBe(true)
     }
+  })
+
+  it('exposes the template kind on lesson providers', () => {
+    expect(getLesson('en-home-left')?.kind).toBe('drill')
+    expect(getLesson('en-words')?.kind).toBe('words')
+  })
+
+  it('keeps generated combos inside the lesson focus codes', () => {
+    const provider = getLesson('en-home-left')
+    const meta = provider?.meta
+    expect(provider).toBeDefined()
+    expect(meta?.focusCodes?.length).toBeGreaterThan(0)
+    const focus = new Set(meta?.focusCodes ?? [])
+
+    for (const cue of provider?.createCues(undefined, { generate: true }) ?? []) {
+      for (const char of cue.chars) {
+        if (char.code === undefined || char.code === 'Space') {
+          continue
+        }
+        expect(focus.has(char.code), `${char.code} is outside focus codes`).toBe(
+          true,
+        )
+      }
+    }
+  })
+
+  it('falls back to authored variants for drills without focus codes', () => {
+    const provider = getLesson('en-shift')
+    expect(provider?.meta.focusCodes).toBeUndefined()
+    expect(
+      provider?.createCues(undefined, { variantIndex: 0, generate: true }),
+    ).toEqual(provider?.createCues(undefined, { variantIndex: 0 }))
   })
 
   it('keeps the English home-words drill to the home row', () => {

@@ -101,6 +101,8 @@ describe('registry', () => {
         order: 0,
         difficulty: 1,
       },
+      kind: 'drill',
+      templateCount: 1,
       createCues: () => [cueFromText(syntheticLayout, 'xx x', 'word')],
     }
 
@@ -112,6 +114,8 @@ describe('registry', () => {
 
     const otherKind: LessonProvider = {
       meta: { ...syntheticProvider.meta, id: 'synthetic-line' },
+      kind: 'drill',
+      templateCount: 1,
       createCues: () => [cueFromText(syntheticLayout, 'x\nx', 'line')],
     }
     expect(countChars(otherKind.createCues())).toBe(3)

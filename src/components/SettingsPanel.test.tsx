@@ -4,9 +4,11 @@ import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from '../app/settings'
-import type { AppSettings } from '../app/settings'
+import type { AppSettings, ClearScope } from '../app/settings'
 import { DEFAULT_SHORTCUTS, formatShortcut } from '../app/shortcuts'
-import { useI18n } from '../i18n'
+import { PACE_LEVELS } from '../domain/pacing'
+import { messages, useI18n } from '../i18n'
+import type { MessageKey } from '../i18n'
 import { APP_VERSION } from '../version'
 import { SettingsPanel } from './SettingsPanel'
 
@@ -16,7 +18,7 @@ scope.IS_REACT_ACT_ENVIRONMENT = true
 interface HarnessProps {
   settings: AppSettings
   onPatch(patch: Partial<AppSettings>): void
-  onClearProgress(): void
+  onClearProgress(scope: ClearScope): void
 }
 
 function Harness({ settings, onPatch, onClearProgress }: HarnessProps) {
@@ -230,5 +232,116 @@ describe('SettingsPanel shortcuts', () => {
   it('shows the package version', async () => {
     await render()
     expect(container.textContent).toContain(`Version ${APP_VERSION}`)
+  })
+})
+
+describe('SettingsPanel pace', () => {
+  let container: HTMLDivElement
+  let root: Root
+  let onPatch: ReturnType<typeof vi.fn<(patch: Partial<AppSettings>) => void>>
+  let onClearProgress: ReturnType<typeof vi.fn<(scope: string) => void>>
+
+  beforeEach(() => {
+    localStorage.clear()
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    root = createRoot(container)
+    onPatch = vi.fn()
+    onClearProgress = vi.fn()
+  })
+
+  afterEach(() => {
+    act(() => {
+      root.unmount()
+    })
+    container.remove()
+    vi.restoreAllMocks()
+  })
+
+  async function render(settings = DEFAULT_SETTINGS): Promise<void> {
+    await act(async () => {
+      root.render(
+        <Harness
+          settings={settings}
+          onPatch={onPatch}
+          onClearProgress={onClearProgress}
+        />,
+      )
+    })
+  }
+
+  function selectFor(label: string): HTMLSelectElement {
+    const field = [...container.querySelectorAll('label')].find((element) =>
+      element.textContent?.includes(label),
+    )
+    const select = field?.querySelector('select')
+    expect(select).toBeDefined()
+    return select as HTMLSelectElement
+  }
+
+  it('toggles generated drills and shows its hint', async () => {
+    await render({ ...DEFAULT_SETTINGS, generatedDrills: true })
+    const label = [...container.querySelectorAll('label')].find(
+      (element) => element.textContent === 'Generated drills',
+    )
+    const input = label?.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement | null
+    expect(input).not.toBeNull()
+    expect(input?.checked).toBe(true)
+    expect(container.textContent).toContain(messages.en.generatedDrillsHint)
+
+    await act(async () => {
+      input?.click()
+    })
+    expect(onPatch).toHaveBeenCalledWith({ generatedDrills: false })
+  })
+
+  it('changes the pace level', async () => {
+    await render()
+    const select = selectFor('Difficulty')
+    expect(select.value).toBe('off')
+
+    await act(async () => {
+      select.value = 'standard'
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    expect(onPatch).toHaveBeenCalledWith({ paceLevel: 'standard' })
+  })
+
+  it('offers every pace level and shows its own hint', async () => {
+    await render()
+    expect(
+      [...selectFor('Difficulty').options].map((option) => option.value),
+    ).toEqual(PACE_LEVELS)
+
+    for (const level of PACE_LEVELS) {
+      await render({ ...DEFAULT_SETTINGS, paceLevel: level })
+      const hintKey = `pace.${level}Hint` as MessageKey
+
+      expect(selectFor('Difficulty').value).toBe(level)
+      expect(container.textContent).toContain(messages.en[hintKey])
+    }
+  })
+
+  it('clears all levels by default and the current level on request', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await render({ ...DEFAULT_SETTINGS, paceLevel: 'relaxed' })
+    const scope = selectFor('Clear progress for')
+    expect(scope.value).toBe('all')
+    const button = [...container.querySelectorAll('button')].find(
+      (element) => element.textContent === 'Clear all progress',
+    )
+    expect(button).toBeDefined()
+
+    await act(async () => button?.click())
+    expect(onClearProgress).toHaveBeenCalledWith('all')
+
+    await act(async () => {
+      scope.value = 'relaxed'
+      scope.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    await act(async () => button?.click())
+    expect(onClearProgress).toHaveBeenCalledWith('relaxed')
   })
 })

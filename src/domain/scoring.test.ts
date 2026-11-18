@@ -42,12 +42,15 @@ describe('scoring', () => {
     ).toBe(2)
   })
 
-  it('awards two stars at 90 percent accuracy and one star otherwise', () => {
+  it('awards two stars only with enough speed and 90 percent accuracy', () => {
     expect(
-      computeStars({ grossWpm: 20, netWpm: 18, accuracy: 0.9 }, true),
+      computeStars({ grossWpm: 25, netWpm: 22, accuracy: 0.9 }, true),
     ).toBe(2)
     expect(
-      computeStars({ grossWpm: 20, netWpm: 15, accuracy: 0.85 }, true),
+      computeStars({ grossWpm: 20, netWpm: 18, accuracy: 0.9 }, true),
+    ).toBe(1)
+    expect(
+      computeStars({ grossWpm: 20, netWpm: 22, accuracy: 0.85 }, true),
     ).toBe(1)
   })
 
