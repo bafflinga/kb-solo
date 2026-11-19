@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { faker } from '@faker-js/faker/locale/en'
 import { act, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
@@ -7,6 +8,10 @@ import { cueFromText } from '../domain/cues'
 import type { ErrorMode } from '../domain/engine'
 import type { PaceLevel } from '../domain/pacing'
 import { getLayout } from '../domain/layout'
+import type {
+  GenerationAreaId,
+  GenerationSentenceSource,
+} from '../domain/lessons/generationAreas'
 import type { LessonMeta, LessonProvider } from '../domain/lessons/types'
 import type { Cue } from '../domain/types'
 import { rollingWpm, useTypingSession } from './useTypingSession'
@@ -41,26 +46,48 @@ function lessonFor(
 function drillLessonFor(
   text: string,
   meta: Partial<LessonMeta> = {},
-): { provider: LessonProvider; calls: { generate?: boolean }[] } {
-  const calls: { generate?: boolean }[] = []
+): {
+  provider: LessonProvider
+  calls: { generate?: boolean; minPhraseWords?: number }[]
+} {
+  const calls: { generate?: boolean; minPhraseWords?: number }[] = []
+  const lessonMeta: LessonMeta = {
+    id: 'drill',
+    language: 'en',
+    layoutId: 'us-qwerty',
+    titleKey: 'lesson.en.homeLeft',
+    order: 1,
+    difficulty: 1,
+    focusCodes: ['KeyA', 'KeyS'],
+    ...meta,
+  }
   return {
     calls,
     provider: {
-      meta: {
-        id: 'drill',
-        language: 'en',
-        layoutId: 'us-qwerty',
-        titleKey: 'lesson.en.homeLeft',
-        order: 1,
-        difficulty: 1,
-        focusCodes: ['KeyA', 'KeyS'],
-        ...meta,
-      },
+      meta: lessonMeta,
       kind: 'drill',
       templateCount: 4,
       createCues: (_layout, options) => {
         calls.push({ generate: options?.generate })
         return [cueFromText(layout, `${text}${calls.length}`, 'word')]
+      },
+      createGeneratedCues: (_layout, options) => {
+        if (!lessonMeta.focusCodes?.length) {
+          return {
+            cues: [cueFromText(layout, `${text}${calls.length}`, 'word')],
+          }
+        }
+        calls.push({
+          generate: options?.generate,
+          minPhraseWords: options?.minPhraseWords,
+        })
+        return {
+          cues: [cueFromText(layout, `${text}${calls.length}`, 'word')],
+          generation: {
+            areaId: 'focus',
+            sentenceSource: options?.sentenceSource ?? 'lorem',
+          },
+        }
       },
     },
   }
@@ -77,7 +104,11 @@ interface HarnessProps {
   errorMode?: ErrorMode
   strictShift?: boolean
   randomTemplates?: boolean
-  generatedDrills?: boolean
+  generatedContent?: boolean
+  faker?: typeof faker
+  generationArea?: GenerationAreaId | 'random'
+  generationSentenceSource?: GenerationSentenceSource
+  generationMinPhraseWords?: number
   paceLevel?: PaceLevel
   now: () => number
   sessionRef: SessionRef
@@ -88,7 +119,11 @@ function Harness({
   errorMode = 'block',
   strictShift = false,
   randomTemplates = false,
-  generatedDrills = false,
+  generatedContent = false,
+  faker: generationFaker,
+  generationArea = 'random',
+  generationSentenceSource = 'lorem',
+  generationMinPhraseWords = 5,
   paceLevel = 'off',
   now,
   sessionRef,
@@ -99,7 +134,11 @@ function Harness({
     errorMode,
     strictShift,
     randomTemplates,
-    generatedDrills,
+    generatedContent,
+    faker: generationFaker,
+    generationArea,
+    generationSentenceSource,
+    generationMinPhraseWords,
     paceLevel,
     now,
   })
@@ -146,7 +185,11 @@ describe('useTypingSession', () => {
       errorMode?: ErrorMode
       strictShift?: boolean
       randomTemplates?: boolean
-      generatedDrills?: boolean
+      generatedContent?: boolean
+      faker?: typeof faker
+      generationArea?: GenerationAreaId | 'random'
+      generationSentenceSource?: GenerationSentenceSource
+      generationMinPhraseWords?: number
       paceLevel?: PaceLevel
     } = {},
   ): Promise<void> {
@@ -315,9 +358,9 @@ describe('useTypingSession', () => {
     expect(current().state.targetWpm).toBeLessThan(30)
   })
 
-  it('regenerates drill cues on every start when generatedDrills is on', async () => {
+  it('regenerates drill cues on every start when generatedContent is on', async () => {
     const { provider, calls } = drillLessonFor('ab')
-    await render(provider, { generatedDrills: true })
+    await render(provider, { generatedContent: true, faker })
 
     await act(async () => {
       current().start()
@@ -333,11 +376,28 @@ describe('useTypingSession', () => {
     expect(second).not.toBe(first)
   })
 
+  it('passes the minimum phrase length to generated cues', async () => {
+    const { provider, calls } = drillLessonFor('ab')
+    await render(provider, {
+      generatedContent: true,
+      faker,
+      generationMinPhraseWords: 12,
+    })
+
+    await act(async () => {
+      current().start()
+    })
+
+    expect(calls.find((call) => call.generate === true)?.minPhraseWords).toBe(
+      12,
+    )
+  })
+
   it('does not generate for drills without focus codes', async () => {
     const { provider, calls } = drillLessonFor('ab', {
       focusCodes: undefined,
     })
-    await render(provider, { generatedDrills: true })
+    await render(provider, { generatedContent: true, faker })
 
     await act(async () => {
       current().start()

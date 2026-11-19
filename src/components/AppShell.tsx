@@ -1,3 +1,4 @@
+import type { Faker } from '@faker-js/faker'
 import {
   Suspense,
   useCallback,
@@ -18,6 +19,7 @@ import {
   loadLanguage,
   refreshStatus,
 } from '../domain/lessons/contentStore'
+import { loadFaker } from '../domain/lessons/fakerGenerator'
 import { allLessons, getLessonMeta } from '../domain/lessons/registry'
 import type { Code, ContentLanguage } from '../domain/types'
 import { useI18n } from '../i18n'
@@ -51,12 +53,42 @@ export default function AppShell() {
   const [, setProgressVersion] = useState(0)
   const [contentVersion, setContentVersion] = useState(0)
   const [toast, setToast] = useState<ToastMessage | null>(null)
+  const [fakerState, setFakerState] = useState<{
+    language: ContentLanguage
+    instance: Faker
+  }>()
   const tRef = useRef(t)
   const currentKey = routeKey(route)
+  const faker =
+    settings.generatedContent &&
+    fakerState?.language === settings.contentLanguage
+      ? fakerState.instance
+      : undefined
 
   useEffect(() => {
     tRef.current = t
   }, [t])
+
+  useEffect(() => {
+    if (!settings.generatedContent) {
+      return
+    }
+    let active = true
+    void loadFaker(settings.contentLanguage)
+      .then((instance) => {
+        if (active) {
+          setFakerState({ language: settings.contentLanguage, instance })
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setFakerState(undefined)
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [settings.generatedContent, settings.contentLanguage])
 
   const notify = useCallback((text: string): void => {
     setToast({ id: Date.now() + Math.random(), text })
@@ -288,7 +320,11 @@ export default function AppShell() {
                     strictShift={settings.strictShift}
                     showFeedback={settings.showFeedback}
                     randomTemplates={settings.randomTemplates}
-                    generatedDrills={settings.generatedDrills}
+                    generatedContent={settings.generatedContent}
+                    faker={faker}
+                    generationArea={settings.generationArea}
+                    generationSentenceSource={settings.generationSentenceSource}
+                    generationMinPhraseWords={settings.generationMinPhraseWords}
                     paceLevel={settings.paceLevel}
                     suspended={settingsOpen}
                     shortcuts={settings.shortcuts}

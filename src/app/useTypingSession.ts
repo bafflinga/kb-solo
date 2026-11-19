@@ -1,3 +1,4 @@
+import type { Faker } from '@faker-js/faker'
 import {
   useCallback,
   useEffect,
@@ -15,7 +16,11 @@ import {
 import type { EngineConfig, EngineState, ErrorMode } from '../domain/engine'
 import { derivePacing } from '../domain/pacing'
 import type { PaceLevel } from '../domain/pacing'
-import type { LessonProvider } from '../domain/lessons/types'
+import type {
+  GenerationAreaId,
+  GenerationSentenceSource,
+} from '../domain/lessons/generationAreas'
+import type { GenerationInfo, LessonProvider } from '../domain/lessons/types'
 import type { Score, Stars } from '../domain/scoring'
 import type { Code, Cue, CueChar, Layout } from '../domain/types'
 import { useKeyboard } from './useKeyboard'
@@ -52,7 +57,11 @@ export interface TypingSessionOptions {
   errorMode: ErrorMode
   strictShift: boolean
   randomTemplates?: boolean
-  generatedDrills?: boolean
+  generatedContent?: boolean
+  faker?: Faker
+  generationArea?: GenerationAreaId | 'random'
+  generationSentenceSource?: GenerationSentenceSource
+  generationMinPhraseWords?: number
   paceLevel?: PaceLevel
   now?: () => number
 }
@@ -67,6 +76,7 @@ export interface TypingSession {
   countdown: number
   feedback?: CueFeedback
   lastKey?: LastKey
+  generation?: GenerationInfo
   start(): void
   pause(): void
   resume(): void
@@ -98,14 +108,19 @@ export function useTypingSession({
   errorMode,
   strictShift,
   randomTemplates = false,
-  generatedDrills = false,
+  generatedContent = false,
+  faker,
+  generationArea = 'random',
+  generationSentenceSource = 'lorem',
+  generationMinPhraseWords = 5,
   paceLevel = 'off',
   now = defaultNow,
 }: TypingSessionOptions): TypingSession {
-
   const pickVariant = useCallback(
     () =>
-      lesson ? Math.floor(Math.random() * Math.max(1, lesson.templateCount)) : 0,
+      lesson
+        ? Math.floor(Math.random() * Math.max(1, lesson.templateCount))
+        : 0,
     [lesson],
   )
 
@@ -122,10 +137,8 @@ export function useTypingSession({
   )
 
   const failOnTimeout = paceLevel === 'hardcore'
-  const useGeneratedDrills =
-    generatedDrills &&
-    lesson?.kind === 'drill' &&
-    (lesson.meta.focusCodes?.length ?? 0) > 0
+  const useGeneratedContent =
+    generatedContent && faker !== undefined && lesson?.kind !== 'code'
 
   const config = useMemo<Partial<EngineConfig>>(
     () => ({
@@ -148,6 +161,7 @@ export function useTypingSession({
   const [history, setHistory] = useState<KeystrokeSample[]>([])
   const [lastKey, setLastKey] = useState<LastKey>()
   const [feedback, setFeedback] = useState<CueFeedback>()
+  const [generation, setGeneration] = useState<GenerationInfo>()
 
   const startedAtRef = useRef<number | null>(null)
   const pausedAtRef = useRef<number | null>(null)
@@ -175,13 +189,22 @@ export function useTypingSession({
       return
     }
     const nextVariant = randomTemplates ? pickVariant() : variantIndex
-    const nextCues =
-      useGeneratedDrills || randomTemplates || nextVariant !== variantIndex
-        ? lesson.createCues(layout, {
-            variantIndex: nextVariant,
-            generate: useGeneratedDrills,
-          })
+    const authored =
+      randomTemplates || nextVariant !== variantIndex
+        ? lesson.createCues(layout, { variantIndex: nextVariant })
         : cues
+    const result = useGeneratedContent
+      ? (lesson.createGeneratedCues?.(layout, {
+          variantIndex: nextVariant,
+          generate: true,
+          faker,
+          area: generationArea,
+          sentenceSource: generationSentenceSource,
+          minPhraseWords: generationMinPhraseWords,
+        }) ?? { cues: authored })
+      : { cues: authored }
+    const nextCues = result.cues
+    setGeneration(result.generation)
     if (nextVariant !== variantIndex) {
       setVariantIndex(nextVariant)
     }
@@ -206,7 +229,11 @@ export function useTypingSession({
     strictShift,
     resetRuntime,
     randomTemplates,
-    useGeneratedDrills,
+    useGeneratedContent,
+    faker,
+    generationArea,
+    generationSentenceSource,
+    generationMinPhraseWords,
     paceLevel,
     failOnTimeout,
     pickVariant,
@@ -375,6 +402,7 @@ export function useTypingSession({
     countdown,
     feedback,
     lastKey,
+    generation,
     start,
     pause,
     resume,

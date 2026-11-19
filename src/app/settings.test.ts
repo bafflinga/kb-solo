@@ -152,70 +152,107 @@ describe('settings randomTemplates', () => {
   })
 })
 
-describe('settings generatedDrills', () => {
-  it('defaults to off', () => {
-    expect(DEFAULT_SETTINGS.generatedDrills).toBe(false)
-    expect(storeWith().store.load().generatedDrills).toBe(false)
+describe('settings generatedContent', () => {
+  it('defaults to off with lorem sentences and a random area', () => {
+    expect(DEFAULT_SETTINGS.generatedContent).toBe(false)
+    expect(DEFAULT_SETTINGS.generationSentenceSource).toBe('lorem')
+    expect(DEFAULT_SETTINGS.generationArea).toBe('random')
+    expect(DEFAULT_SETTINGS.generationMinPhraseWords).toBe(5)
+    const loaded = storeWith().store.load()
+    expect(loaded.generatedContent).toBe(false)
+    expect(loaded.generationSentenceSource).toBe('lorem')
+    expect(loaded.generationArea).toBe('random')
+    expect(loaded.generationMinPhraseWords).toBe(5)
   })
 
-  it('defaults to off for settings saved before the option existed', () => {
-    const { store } = storeWith(JSON.stringify({ sound: false }))
-    expect(store.load().generatedDrills).toBe(false)
+  it('migrates the old generatedDrills flag', () => {
+    const { store } = storeWith(JSON.stringify({ generatedDrills: true }))
+    expect(store.load().generatedContent).toBe(true)
+    expect(store.load()).not.toHaveProperty('generatedDrills')
   })
 
-  it('falls back to off for an invalid stored value', () => {
-    const { store } = storeWith(JSON.stringify({ generatedDrills: 'yes' }))
-    expect(store.load().generatedDrills).toBe(false)
-  })
-
-  it('restores and persists an explicit value', () => {
-    const { store, values } = storeWith(
-      JSON.stringify({ generatedDrills: true }),
-    )
-    expect(store.load().generatedDrills).toBe(true)
-    expect(
-      JSON.parse(values.get('kb-solo.settings') ?? '{}').generatedDrills,
-    ).toBe(true)
-  })
-
-  it('resolves a stored conflict in favour of generatedDrills', () => {
+  it('ignores invalid stored values', () => {
     const { store } = storeWith(
-      JSON.stringify({ generatedDrills: true, randomTemplates: true }),
+      JSON.stringify({
+        generatedContent: 'yes',
+        generationSentenceSource: 'unknown',
+        generationArea: 'unknown',
+        generationMinPhraseWords: 7,
+      }),
     )
     const loaded = store.load()
-    expect(loaded.generatedDrills).toBe(true)
+    expect(loaded.generatedContent).toBe(false)
+    expect(loaded.generationSentenceSource).toBe('lorem')
+    expect(loaded.generationArea).toBe('random')
+    expect(loaded.generationMinPhraseWords).toBe(5)
+  })
+
+  it('restores and persists explicit values', () => {
+    const { store, values } = storeWith(
+      JSON.stringify({
+        generatedContent: true,
+        generationSentenceSource: 'phrase',
+        generationArea: 'hacker',
+        generationMinPhraseWords: 12,
+      }),
+    )
+    expect(store.load().generationArea).toBe('hacker')
+    expect(store.load().generationMinPhraseWords).toBe(12)
+    expect(
+      JSON.parse(values.get('kb-solo.settings') ?? '{}').generationArea,
+    ).toBe('hacker')
+  })
+
+  it('falls back to the default minimum for an invalid patch', () => {
+    const { store } = storeWith()
+    const next = store.update({
+      generationMinPhraseWords: 7 as 5,
+    })
+    expect(next.generationMinPhraseWords).toBe(5)
+  })
+
+  it('resets non-phrase areas when switching to phrase sentences', () => {
+    const { store } = storeWith(JSON.stringify({ generationArea: 'commerce' }))
+    const next = store.update({ generationSentenceSource: 'phrase' })
+    expect(next.generationArea).toBe('random')
+  })
+
+  it('resets hacker area when switching back to lorem sentences', () => {
+    const { store } = storeWith(
+      JSON.stringify({
+        generationSentenceSource: 'phrase',
+        generationArea: 'hacker',
+      }),
+    )
+    const next = store.update({ generationSentenceSource: 'lorem' })
+    expect(next.generationArea).toBe('random')
+  })
+
+  it('resolves a stored conflict in favour of generatedContent', () => {
+    const { store } = storeWith(
+      JSON.stringify({ generatedContent: true, randomTemplates: true }),
+    )
+    const loaded = store.load()
+    expect(loaded.generatedContent).toBe(true)
     expect(loaded.randomTemplates).toBe(false)
   })
 
-  it('turning generatedDrills on turns randomTemplates off', () => {
+  it('enforces exclusivity when patching', () => {
     const { store } = storeWith(JSON.stringify({ randomTemplates: true }))
-    const next = store.update({ generatedDrills: true })
-    expect(next.generatedDrills).toBe(true)
-    expect(next.randomTemplates).toBe(false)
-  })
+    const on = store.update({ generatedContent: true })
+    expect(on.generatedContent).toBe(true)
+    expect(on.randomTemplates).toBe(false)
 
-  it('turning randomTemplates on turns generatedDrills off', () => {
-    const { store } = storeWith(JSON.stringify({ generatedDrills: true }))
-    const next = store.update({ randomTemplates: true })
-    expect(next.randomTemplates).toBe(true)
-    expect(next.generatedDrills).toBe(false)
-  })
+    const off = store.update({ randomTemplates: true })
+    expect(off.randomTemplates).toBe(true)
+    expect(off.generatedContent).toBe(false)
 
-  it('turning one off leaves both off', () => {
-    const { store } = storeWith(JSON.stringify({ generatedDrills: true }))
-    const next = store.update({ generatedDrills: false })
-    expect(next.generatedDrills).toBe(false)
-    expect(next.randomTemplates).toBe(false)
-  })
-
-  it('generatedDrills wins if both are patched on', () => {
-    const { store } = storeWith()
-    const next = store.update({
+    const both = store.update({
       randomTemplates: true,
-      generatedDrills: true,
+      generatedContent: true,
     })
-    expect(next.generatedDrills).toBe(true)
-    expect(next.randomTemplates).toBe(false)
+    expect(both.generatedContent).toBe(true)
+    expect(both.randomTemplates).toBe(false)
   })
 })
 

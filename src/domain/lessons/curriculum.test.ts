@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker/locale/en'
 import { describe, expect, it } from 'vitest'
 import { getLayout } from '../layout'
 import { allLessons, getLesson } from './registry'
@@ -171,14 +172,16 @@ describe('curricula', () => {
     expect(meta?.focusCodes?.length).toBeGreaterThan(0)
     const focus = new Set(meta?.focusCodes ?? [])
 
-    for (const cue of provider?.createCues(undefined, { generate: true }) ?? []) {
+    for (const cue of provider?.createCues(undefined, { generate: true }) ??
+      []) {
       for (const char of cue.chars) {
         if (char.code === undefined || char.code === 'Space') {
           continue
         }
-        expect(focus.has(char.code), `${char.code} is outside focus codes`).toBe(
-          true,
-        )
+        expect(
+          focus.has(char.code),
+          `${char.code} is outside focus codes`,
+        ).toBe(true)
       }
     }
   })
@@ -189,6 +192,50 @@ describe('curricula', () => {
     expect(
       provider?.createCues(undefined, { variantIndex: 0, generate: true }),
     ).toEqual(provider?.createCues(undefined, { variantIndex: 0 }))
+  })
+
+  it('generates word cues with area metadata', () => {
+    faker.seed(4321)
+    const result = getLesson('en-words')?.createGeneratedCues?.(undefined, {
+      generate: true,
+      faker,
+      area: 'commerce',
+      sentenceSource: 'lorem',
+    })
+
+    expect(result?.cues).toHaveLength(10)
+    expect(result?.generation).toEqual({
+      areaId: 'commerce',
+      sentenceSource: 'lorem',
+    })
+  })
+
+  it('generates prose cues with area metadata', () => {
+    faker.seed(4321)
+    const result = getLesson('en-prose')?.createGeneratedCues?.(undefined, {
+      generate: true,
+      faker,
+      area: 'music',
+      sentenceSource: 'phrase',
+    })
+
+    expect(result?.cues.length).toBeGreaterThan(0)
+    expect(result?.generation).toEqual({
+      areaId: 'music',
+      sentenceSource: 'phrase',
+    })
+  })
+
+  it('keeps code lessons on authored variants when generation is requested', () => {
+    const provider = getLesson('en-code')
+    const result = provider?.createGeneratedCues?.(undefined, {
+      generate: true,
+      faker,
+    })
+    expect(result?.generation).toBeUndefined()
+    expect(result?.cues).toEqual(
+      provider?.createCues(undefined, { variantIndex: 0 }),
+    )
   })
 
   it('keeps the English home-words drill to the home row', () => {

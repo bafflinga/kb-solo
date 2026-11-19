@@ -1,4 +1,9 @@
 import type { ErrorMode } from '../domain/engine'
+import { areaIdsForSource } from '../domain/lessons/generationAreas'
+import type {
+  GenerationAreaId,
+  GenerationSentenceSource,
+} from '../domain/lessons/generationAreas'
 import { isLayoutId, layoutForProfile, profileOf } from '../domain/layout'
 import { isPaceLevel } from '../domain/pacing'
 import type { PaceLevel } from '../domain/pacing'
@@ -18,7 +23,10 @@ export interface AppSettings {
   sound: boolean
   showFeedback: boolean
   randomTemplates: boolean
-  generatedDrills: boolean
+  generatedContent: boolean
+  generationSentenceSource: GenerationSentenceSource
+  generationArea: GenerationAreaId | 'random'
+  generationMinPhraseWords: GenerationMinPhraseWords
   paceLevel: PaceLevel
   errorMode: ErrorMode
   strictShift: boolean
@@ -26,6 +34,12 @@ export interface AppSettings {
   fingerOverrides: Partial<Record<Code, Finger>>
   shortcuts: ShortcutSettings
 }
+
+export type GenerationMinPhraseWords = 5 | 8 | 12
+
+export const MIN_PHRASE_WORD_OPTIONS: readonly GenerationMinPhraseWords[] = [
+  5, 8, 12,
+]
 
 export type ClearScope = PaceLevel | 'all'
 
@@ -50,7 +64,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   sound: true,
   showFeedback: false,
   randomTemplates: false,
-  generatedDrills: false,
+  generatedContent: false,
+  generationSentenceSource: 'lorem',
+  generationArea: 'random',
+  generationMinPhraseWords: 5,
   paceLevel: 'off',
   errorMode: 'block',
   strictShift: false,
@@ -66,7 +83,10 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
       return { ...DEFAULT_SETTINGS }
     }
     try {
-      const parsed = JSON.parse(raw) as Partial<AppSettings>
+      const stored = JSON.parse(raw) as Partial<AppSettings> & {
+        generatedDrills?: unknown
+      }
+      const { generatedDrills: legacyGeneratedDrills, ...parsed } = stored
       const contentLanguage =
         parsed.contentLanguage === 'en' || parsed.contentLanguage === 'ru'
           ? parsed.contentLanguage
@@ -74,16 +94,30 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
       const storedLayout = isLayoutId(parsed.layoutId)
         ? parsed.layoutId
         : DEFAULT_SETTINGS.layoutId
-      const generatedDrills =
-        typeof parsed.generatedDrills === 'boolean'
-          ? parsed.generatedDrills
-          : DEFAULT_SETTINGS.generatedDrills
+      const generatedContent =
+        typeof parsed.generatedContent === 'boolean'
+          ? parsed.generatedContent
+          : legacyGeneratedDrills === true
       const randomTemplates =
-        generatedDrills && typeof parsed.randomTemplates === 'boolean'
+        generatedContent && typeof parsed.randomTemplates === 'boolean'
           ? false
           : typeof parsed.randomTemplates === 'boolean'
             ? parsed.randomTemplates
             : DEFAULT_SETTINGS.randomTemplates
+      const generationSentenceSource =
+        parsed.generationSentenceSource === 'phrase' ? 'phrase' : 'lorem'
+      const allowedAreas = areaIdsForSource(generationSentenceSource)
+      const generationArea =
+        parsed.generationArea === 'random' ||
+        (typeof parsed.generationArea === 'string' &&
+          allowedAreas.includes(parsed.generationArea as GenerationAreaId))
+          ? (parsed.generationArea as GenerationAreaId | 'random')
+          : DEFAULT_SETTINGS.generationArea
+      const generationMinPhraseWords = MIN_PHRASE_WORD_OPTIONS.includes(
+        parsed.generationMinPhraseWords as GenerationMinPhraseWords,
+      )
+        ? (parsed.generationMinPhraseWords as GenerationMinPhraseWords)
+        : DEFAULT_SETTINGS.generationMinPhraseWords
       return {
         ...DEFAULT_SETTINGS,
         ...parsed,
@@ -98,7 +132,10 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
             ? parsed.showFeedback
             : DEFAULT_SETTINGS.showFeedback,
         randomTemplates,
-        generatedDrills,
+        generatedContent,
+        generationSentenceSource,
+        generationArea,
+        generationMinPhraseWords,
         paceLevel: isPaceLevel(parsed.paceLevel)
           ? parsed.paceLevel
           : DEFAULT_SETTINGS.paceLevel,
@@ -116,12 +153,26 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
 
   function update(patch: Partial<AppSettings>): AppSettings {
     const next = { ...load(), ...patch }
-    if (next.generatedDrills && next.randomTemplates) {
-      if (patch.generatedDrills === true) {
+    if (next.generatedContent && next.randomTemplates) {
+      if (patch.generatedContent === true) {
         next.randomTemplates = false
       } else {
-        next.generatedDrills = false
+        next.generatedContent = false
       }
+    }
+    const allowedAreas = areaIdsForSource(next.generationSentenceSource)
+    if (
+      next.generationArea !== 'random' &&
+      !allowedAreas.includes(next.generationArea)
+    ) {
+      next.generationArea = 'random'
+    }
+    if (
+      !MIN_PHRASE_WORD_OPTIONS.includes(
+        next.generationMinPhraseWords as GenerationMinPhraseWords,
+      )
+    ) {
+      next.generationMinPhraseWords = DEFAULT_SETTINGS.generationMinPhraseWords
     }
     storage.set(SETTINGS_KEY, JSON.stringify(next))
     return next

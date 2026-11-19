@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { faker } from '@faker-js/faker/locale/en'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
@@ -86,6 +87,15 @@ function generatedLessonFor(): {
         texts.push(text)
         return [cueFromText(layout, text, 'word')]
       },
+      createGeneratedCues: () => {
+        count += 1
+        const text = `ab${count}`
+        texts.push(text)
+        return {
+          cues: [cueFromText(layout, text, 'word')],
+          generation: { areaId: 'focus', sentenceSource: 'lorem' },
+        }
+      },
     },
   }
 }
@@ -130,7 +140,7 @@ describe('PlayScreen', () => {
       layout?: Layout
       suspended?: boolean
       showFeedback?: boolean
-      generatedDrills?: boolean
+      generatedContent?: boolean
       paceLevel?: PaceLevel
       best?: LessonProgress
       onFinish?: (result: LessonResult) => void
@@ -144,7 +154,8 @@ describe('PlayScreen', () => {
           errorMode="block"
           strictShift={false}
           showFeedback={options.showFeedback ?? false}
-          generatedDrills={options.generatedDrills}
+          generatedContent={options.generatedContent}
+          faker={options.generatedContent ? faker : undefined}
           paceLevel={options.paceLevel}
           suspended={options.suspended ?? false}
           now={now}
@@ -536,7 +547,7 @@ describe('PlayScreen', () => {
 
     it('generates a new drill combo on retry', async () => {
       const { provider, texts } = generatedLessonFor()
-      await render({ lesson: provider, generatedDrills: true })
+      await render({ lesson: provider, generatedContent: true })
 
       await click('Play')
       await advance(3000)

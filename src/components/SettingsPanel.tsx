@@ -1,5 +1,16 @@
 import { useEffect, useState } from 'react'
-import type { AppSettings, ClearScope } from '../app/settings'
+import {
+  MIN_PHRASE_WORD_OPTIONS,
+  type AppSettings,
+  type ClearScope,
+  type GenerationMinPhraseWords,
+} from '../app/settings'
+import { areaIdsForSource } from '../domain/lessons/generationAreas'
+import type {
+  GenerationAreaId,
+  GenerationSentenceSource,
+} from '../domain/lessons/generationAreas'
+import { getLayout, layoutForProfile, profileOf } from '../domain/layout'
 import { PACE_LEVELS } from '../domain/pacing'
 import {
   DEFAULT_SHORTCUTS,
@@ -15,6 +26,7 @@ import type { MessageKey } from '../i18n'
 import { estimateQuota } from '../storage/persistence'
 import type { QuotaInfo } from '../storage/persistence'
 import { APP_VERSION } from '../version'
+import { GenerationPreview } from './GenerationPreview'
 import { LayoutSwitcher } from './LayoutSwitcher'
 
 interface SettingsPanelProps {
@@ -102,6 +114,13 @@ function formatBytes(value: number, format: (value: number) => string): string {
     return `${format(value / 1024)} KB`
   }
   return `${format(value / (1024 * 1024))} MB`
+}
+
+function getPreviewLayout(
+  layoutId: AppSettings['layoutId'],
+  language: AppSettings['contentLanguage'],
+) {
+  return getLayout(layoutForProfile(profileOf(layoutId), language))
 }
 
 export function SettingsPanel({
@@ -198,188 +217,288 @@ export function SettingsPanel({
   }
 
   return (
-    <section className="panel" aria-label={t('settings')}>
+    <section className="panel settings-panel" aria-label={t('settings')}>
       <h2>{t('settings')}</h2>
-      <label className="field checkbox">
-        <input
-          type="checkbox"
-          checked={settings.sound}
-          onChange={(event) => onPatch({ sound: event.target.checked })}
-        />
-        <span>{t('sound')}</span>
-      </label>
-      <label className="field checkbox">
-        <input
-          type="checkbox"
-          checked={settings.showFeedback}
-          onChange={(event) => onPatch({ showFeedback: event.target.checked })}
-        />
-        <span>{t('showFeedback')}</span>
-      </label>
-      <label className="field checkbox">
-        <input
-          type="checkbox"
-          checked={settings.randomTemplates}
-          onChange={(event) =>
-            onPatch({ randomTemplates: event.target.checked })
-          }
-        />
-        <span>{t('randomTemplates')}</span>
-      </label>
-      <label className="field checkbox">
-        <input
-          type="checkbox"
-          checked={settings.generatedDrills}
-          onChange={(event) =>
-            onPatch({ generatedDrills: event.target.checked })
-          }
-        />
-        <span>{t('generatedDrills')}</span>
-      </label>
-      {settings.generatedDrills && (
-        <p className="muted">{t('generatedDrillsHint')}</p>
-      )}
-      <label className="field checkbox">
-        <input
-          type="checkbox"
-          checked={settings.showContentEditor}
-          onChange={(event) =>
-            onPatch({ showContentEditor: event.target.checked })
-          }
-        />
-        <span>{t('showContentEditor')}</span>
-      </label>
-      {settings.showContentEditor && (
-        <p className="muted">{t('showContentEditorHint')}</p>
-      )}
-      <label className="field">
-        <span>{t('pace')}</span>
-        <select
-          value={settings.paceLevel}
-          onChange={(event) =>
-            onPatch({
-              paceLevel: event.target.value as AppSettings['paceLevel'],
-            })
-          }
-        >
-          {PACE_LEVELS.map((level) => (
-            <option key={level} value={level}>
-              {t(`pace.${level}` as MessageKey)}
-            </option>
-          ))}
-        </select>
-      </label>
-      {hasMessage(hintKey) && <p className="muted">{t(hintKey)}</p>}
+      <div className="settings-grid">
+        <div className="settings-column">
+          <h3>{t('settingsTyping')}</h3>
+          <label className="field">
+            <span>{t('pace')}</span>
+            <select
+              value={settings.paceLevel}
+              onChange={(event) =>
+                onPatch({
+                  paceLevel: event.target.value as AppSettings['paceLevel'],
+                })
+              }
+            >
+              {PACE_LEVELS.map((level) => (
+                <option key={level} value={level}>
+                  {t(`pace.${level}` as MessageKey)}
+                </option>
+              ))}
+            </select>
+          </label>
+          {hasMessage(hintKey) && <p className="muted">{t(hintKey)}</p>}
+          <LayoutSwitcher
+            value={settings.layoutId}
+            language={settings.contentLanguage}
+            label={t('layout')}
+            onChange={(layoutId) => onPatch({ layoutId })}
+          />
+          <label className="field">
+            <span>{t('errorMode')}</span>
+            <select
+              value={settings.errorMode}
+              onChange={(event) =>
+                onPatch({
+                  errorMode: event.target.value as AppSettings['errorMode'],
+                })
+              }
+            >
+              <option value="block">{t('errorMode.block')}</option>
+              <option value="advance">{t('errorMode.advance')}</option>
+            </select>
+          </label>
+          <div className="shortcut-settings">
+            <h4>{t('shortcuts')}</h4>
+            <p className="muted">{t('shortcutHint')}</p>
+            <ShortcutField
+              label={t('startShortcut')}
+              value={settings.shortcuts.start}
+              recording={recording === 'start'}
+              disabled={recording !== null}
+              error={recording === 'start' ? shortcutError : undefined}
+              keyLabel={keyLabel}
+              i18n={i18n}
+              onRecord={() => {
+                setShortcutError(undefined)
+                setRecording('start')
+              }}
+              onCancel={() => {
+                setShortcutError(undefined)
+                setRecording(null)
+              }}
+              onReset={() =>
+                onPatch({
+                  shortcuts: {
+                    ...settings.shortcuts,
+                    start: DEFAULT_SHORTCUTS.start,
+                  },
+                })
+              }
+            />
+            <ShortcutField
+              label={t('pauseShortcut')}
+              value={settings.shortcuts.pause}
+              recording={recording === 'pause'}
+              disabled={recording !== null}
+              error={recording === 'pause' ? shortcutError : undefined}
+              keyLabel={keyLabel}
+              i18n={i18n}
+              onRecord={() => {
+                setShortcutError(undefined)
+                setRecording('pause')
+              }}
+              onCancel={() => {
+                setShortcutError(undefined)
+                setRecording(null)
+              }}
+              onReset={() =>
+                onPatch({
+                  shortcuts: {
+                    ...settings.shortcuts,
+                    pause: DEFAULT_SHORTCUTS.pause,
+                  },
+                })
+              }
+            />
+          </div>
+        </div>
 
-      <LayoutSwitcher
-        value={settings.layoutId}
-        language={settings.contentLanguage}
-        label={t('layout')}
-        onChange={(layoutId) => onPatch({ layoutId })}
-      />
+        <div className="settings-column">
+          <h3>{t('settingsGeneration')}</h3>
+          <label className="field checkbox">
+            <input
+              type="checkbox"
+              checked={settings.randomTemplates}
+              onChange={(event) =>
+                onPatch({ randomTemplates: event.target.checked })
+              }
+            />
+            <span>{t('randomTemplates')}</span>
+          </label>
+          <label className="field checkbox">
+            <input
+              type="checkbox"
+              checked={settings.generatedContent}
+              onChange={(event) =>
+                onPatch({ generatedContent: event.target.checked })
+              }
+            />
+            <span>{t('generatedContent')}</span>
+          </label>
+          {settings.generatedContent && (
+            <>
+              <p className="muted">{t('generatedContentHint')}</p>
+              <label className="field">
+                <span>{t('generationSentenceSource')}</span>
+                <select
+                  value={settings.generationSentenceSource}
+                  onChange={(event) =>
+                    onPatch({
+                      generationSentenceSource: event.target
+                        .value as GenerationSentenceSource,
+                    })
+                  }
+                >
+                  <option value="lorem">
+                    {t('generationSentenceSource.lorem')}
+                  </option>
+                  <option value="phrase">
+                    {t('generationSentenceSource.phrase')}
+                  </option>
+                </select>
+              </label>
+              <label className="field">
+                <span>{t('generationArea')}</span>
+                <select
+                  value={settings.generationArea}
+                  onChange={(event) =>
+                    onPatch({
+                      generationArea: event.target.value as
+                        GenerationAreaId | 'random',
+                    })
+                  }
+                >
+                  <option value="random">{t('generationArea.random')}</option>
+                  {areaIdsForSource(settings.generationSentenceSource).map(
+                    (id) => (
+                      <option key={id} value={id}>
+                        {t(`generationArea.${id}` as MessageKey)}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+              <p className="muted">
+                {t(
+                  settings.generationSentenceSource === 'phrase'
+                    ? 'generationAreaHintPhrase'
+                    : 'generationAreaHintLorem',
+                )}
+              </p>
+              <label className="field">
+                <span>{t('generationMinPhraseWords')}</span>
+                <select
+                  value={settings.generationMinPhraseWords}
+                  onChange={(event) =>
+                    onPatch({
+                      generationMinPhraseWords: Number(
+                        event.target.value,
+                      ) as GenerationMinPhraseWords,
+                    })
+                  }
+                >
+                  {MIN_PHRASE_WORD_OPTIONS.map((words) => (
+                    <option key={words} value={words}>
+                      {t(`generationMinPhraseWords.${words}` as MessageKey)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="muted">{t('generationMinPhraseWordsHint')}</p>
+              <GenerationPreview
+                language={settings.contentLanguage}
+                layout={getPreviewLayout(
+                  settings.layoutId,
+                  settings.contentLanguage,
+                )}
+                area={settings.generationArea}
+                source={settings.generationSentenceSource}
+                minWords={settings.generationMinPhraseWords}
+              />
+            </>
+          )}
+        </div>
 
-      <label className="field">
-        <span>{t('errorMode')}</span>
-        <select
-          value={settings.errorMode}
-          onChange={(event) =>
-            onPatch({
-              errorMode: event.target.value as AppSettings['errorMode'],
-            })
-          }
-        >
-          <option value="block">{t('errorMode.block')}</option>
-          <option value="advance">{t('errorMode.advance')}</option>
-        </select>
-      </label>
-      <label className="field checkbox">
-        <input
-          type="checkbox"
-          checked={settings.strictShift}
-          onChange={(event) => onPatch({ strictShift: event.target.checked })}
-        />
-        <span>{t('strictShift')}</span>
-      </label>
+        <div className="settings-column">
+          <h3>{t('settingsGeneral')}</h3>
+          <label className="field checkbox">
+            <input
+              type="checkbox"
+              checked={settings.sound}
+              onChange={(event) => onPatch({ sound: event.target.checked })}
+            />
+            <span>{t('sound')}</span>
+          </label>
+          <label className="field checkbox">
+            <input
+              type="checkbox"
+              checked={settings.showFeedback}
+              onChange={(event) =>
+                onPatch({ showFeedback: event.target.checked })
+              }
+            />
+            <span>{t('showFeedback')}</span>
+          </label>
+          <label className="field checkbox">
+            <input
+              type="checkbox"
+              checked={settings.strictShift}
+              onChange={(event) =>
+                onPatch({ strictShift: event.target.checked })
+              }
+            />
+            <span>{t('strictShift')}</span>
+          </label>
+          <label className="field checkbox">
+            <input
+              type="checkbox"
+              checked={settings.showContentEditor}
+              onChange={(event) =>
+                onPatch({ showContentEditor: event.target.checked })
+              }
+            />
+            <span>{t('showContentEditor')}</span>
+          </label>
+          {settings.showContentEditor && (
+            <p className="muted">{t('showContentEditorHint')}</p>
+          )}
+          <h4 className="settings-subhead">{t('settingsData')}</h4>
+          {quota && (
+            <p className="muted">
+              {t('quota', {
+                used: formatBytes(quota.usage, n),
+                total: formatBytes(quota.quota, n),
+              })}
+            </p>
+          )}
+          <label className="field">
+            <span>{t('clearScope')}</span>
+            <select
+              value={clearScope}
+              onChange={(event) =>
+                setClearScope(event.target.value as ClearScope)
+              }
+            >
+              <option value="all">{t('clearScope.all')}</option>
+              <option value={settings.paceLevel}>
+                {t('clearScope.current')}
+              </option>
+            </select>
+          </label>
+          <button type="button" className="danger" onClick={clearProgress}>
+            {t('clearProgress')}
+          </button>
+        </div>
 
-      <div className="shortcut-settings">
-        <h3>{t('shortcuts')}</h3>
-        <p className="muted">{t('shortcutHint')}</p>
-        <ShortcutField
-          label={t('startShortcut')}
-          value={settings.shortcuts.start}
-          recording={recording === 'start'}
-          disabled={recording !== null}
-          error={recording === 'start' ? shortcutError : undefined}
-          keyLabel={keyLabel}
-          i18n={i18n}
-          onRecord={() => {
-            setShortcutError(undefined)
-            setRecording('start')
-          }}
-          onCancel={() => {
-            setShortcutError(undefined)
-            setRecording(null)
-          }}
-          onReset={() =>
-            onPatch({
-              shortcuts: {
-                ...settings.shortcuts,
-                start: DEFAULT_SHORTCUTS.start,
-              },
-            })
-          }
-        />
-        <ShortcutField
-          label={t('pauseShortcut')}
-          value={settings.shortcuts.pause}
-          recording={recording === 'pause'}
-          disabled={recording !== null}
-          error={recording === 'pause' ? shortcutError : undefined}
-          keyLabel={keyLabel}
-          i18n={i18n}
-          onRecord={() => {
-            setShortcutError(undefined)
-            setRecording('pause')
-          }}
-          onCancel={() => {
-            setShortcutError(undefined)
-            setRecording(null)
-          }}
-          onReset={() =>
-            onPatch({
-              shortcuts: {
-                ...settings.shortcuts,
-                pause: DEFAULT_SHORTCUTS.pause,
-              },
-            })
-          }
-        />
+        <div className="settings-footer">
+          <p className="muted">
+            {t('version')} {APP_VERSION}
+          </p>
+        </div>
       </div>
-
-      {quota && (
-        <p className="muted">
-          {t('quota', {
-            used: formatBytes(quota.usage, n),
-            total: formatBytes(quota.quota, n),
-          })}
-        </p>
-      )}
-      <label className="field">
-        <span>{t('clearScope')}</span>
-        <select
-          value={clearScope}
-          onChange={(event) => setClearScope(event.target.value as ClearScope)}
-        >
-          <option value="all">{t('clearScope.all')}</option>
-          <option value={settings.paceLevel}>{t('clearScope.current')}</option>
-        </select>
-      </label>
-      <button type="button" className="danger" onClick={clearProgress}>
-        {t('clearProgress')}
-      </button>
-      <p className="muted">
-        {t('version')} {APP_VERSION}
-      </p>
     </section>
   )
 }

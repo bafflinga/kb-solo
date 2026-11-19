@@ -136,6 +136,16 @@
   border-color: #7cc4ff;
 }
 
+.generation-badge {
+  margin: 0;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid #3a3f4c;
+  border-radius: 999px;
+  color: #9dd1ff;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 @media (max-width: 600px) {
   .play-screen {
     gap: 14px;

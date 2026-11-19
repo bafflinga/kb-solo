@@ -10,6 +10,22 @@ import { PACE_LEVELS } from '../domain/pacing'
 import { messages, useI18n } from '../i18n'
 import type { MessageKey } from '../i18n'
 import { APP_VERSION } from '../version'
+
+vi.mock('../domain/lessons/fakerGenerator', () => ({
+  loadFaker: async () => ({}),
+  generateText: (
+    _faker: unknown,
+    _area: unknown,
+    _source: unknown,
+    _layout: unknown,
+    minWords = 5,
+  ) => ({
+    areaId: 'commerce',
+    sentenceSource: 'lorem',
+    words: ['alpha', 'beta', `gamma${minWords}`],
+    sentences: 'Alpha beta gamma.',
+  }),
+}))
 import { SettingsPanel } from './SettingsPanel'
 
 const scope = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -91,6 +107,37 @@ describe('SettingsPanel shortcuts', () => {
       )
     })
   }
+
+  it('uses three columns with a version footer', async () => {
+    await render()
+    await act(async () => {})
+
+    const grid = container.querySelector('.settings-grid')
+    expect(grid).not.toBeNull()
+    const columns = [
+      ...(grid as HTMLElement).querySelectorAll(':scope > .settings-column'),
+    ]
+    expect(columns).toHaveLength(3)
+
+    expect(columns[0]?.textContent).toContain('Typing')
+    expect(columns[0]?.textContent).toContain('Difficulty')
+    expect(columns[0]?.textContent).toContain('Layout')
+    expect(columns[0]?.textContent).toContain('Error mode')
+    expect(columns[0]?.textContent).toContain('Keyboard shortcuts')
+
+    expect(columns[1]?.textContent).toContain('Generation')
+    expect(columns[1]?.textContent).toContain('Random templates')
+
+    expect(columns[2]?.textContent).toContain('General')
+    expect(columns[2]?.textContent).toContain('Sound')
+    expect(columns[2]?.textContent).toContain('Data')
+
+    const footer = (grid as HTMLElement).lastElementChild
+    expect(footer?.classList.contains('settings-footer')).toBe(true)
+    expect(footer?.textContent).toContain(
+      `${messages.en.version} ${APP_VERSION}`,
+    )
+  })
 
   it('toggles the show feedback setting', async () => {
     await render()
@@ -295,22 +342,51 @@ describe('SettingsPanel pace', () => {
     return select as HTMLSelectElement
   }
 
-  it('toggles generated drills and shows its hint', async () => {
-    await render({ ...DEFAULT_SETTINGS, generatedDrills: true })
+  it('shows generated content controls and preview when enabled', async () => {
+    await render({
+      ...DEFAULT_SETTINGS,
+      generatedContent: true,
+      generationSentenceSource: 'phrase',
+      generationArea: 'book',
+      generationMinPhraseWords: 8,
+    })
+    await act(async () => {})
+
     const label = [...container.querySelectorAll('label')].find(
-      (element) => element.textContent === 'Generated drills',
+      (element) => element.textContent === 'Generated content',
     )
     const input = label?.querySelector(
       'input[type="checkbox"]',
     ) as HTMLInputElement | null
-    expect(input).not.toBeNull()
     expect(input?.checked).toBe(true)
-    expect(container.textContent).toContain(messages.en.generatedDrillsHint)
+    expect(container.textContent).toContain(messages.en.generatedContentHint)
+
+    const source = selectFor('Sentences')
+    expect(source.value).toBe('phrase')
+    const area = selectFor('Area')
+    expect(area.value).toBe('book')
+    expect([...area.options].map((option) => option.value)).toEqual([
+      'random',
+      'company',
+      'hacker',
+      'book',
+      'music',
+    ])
+    const minWords = selectFor('Minimum phrase length')
+    expect(minWords.value).toBe('8')
+    expect([...minWords.options].map((option) => option.value)).toEqual([
+      '5',
+      '8',
+      '12',
+    ])
+    expect(container.textContent).toContain('alpha beta gamma8')
+    const generationColumn = container.querySelectorAll('.settings-column')[1]
+    expect(generationColumn?.textContent).toContain('Minimum phrase length')
 
     await act(async () => {
       input?.click()
     })
-    expect(onPatch).toHaveBeenCalledWith({ generatedDrills: false })
+    expect(onPatch).toHaveBeenCalledWith({ generatedContent: false })
   })
 
   it('changes the pace level', async () => {

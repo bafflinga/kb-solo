@@ -1,5 +1,10 @@
+import type { Faker } from '@faker-js/faker'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ErrorMode } from '../domain/engine'
+import type {
+  GenerationAreaId,
+  GenerationSentenceSource,
+} from '../domain/lessons/generationAreas'
 import { nextLesson } from '../domain/lessons/registry'
 import type { LessonProvider } from '../domain/lessons/types'
 import type { Score, Stars } from '../domain/scoring'
@@ -15,6 +20,7 @@ import type { MessageKey } from '../i18n'
 import type { PaceLevel } from '../domain/pacing'
 import type { LessonProgress, LessonResult } from '../storage/progress'
 import { FingerGuide } from './FingerGuide/FingerGuide'
+import { GenerationBadge } from './GenerationBadge'
 import { Hud } from './Hud/Hud'
 import { Keyboard } from './Keyboard/Keyboard'
 import { KeyboardLiveRegion } from './Keyboard/KeyboardLiveRegion'
@@ -34,7 +40,11 @@ export interface PlayScreenProps {
   strictShift: boolean
   showFeedback?: boolean
   randomTemplates?: boolean
-  generatedDrills?: boolean
+  generatedContent?: boolean
+  faker?: Faker
+  generationArea?: GenerationAreaId | 'random'
+  generationSentenceSource?: GenerationSentenceSource
+  generationMinPhraseWords?: number
   paceLevel?: PaceLevel
   suspended?: boolean
   shortcuts?: ShortcutSettings
@@ -52,7 +62,11 @@ export function PlayScreen({
   strictShift,
   showFeedback = false,
   randomTemplates = false,
-  generatedDrills = false,
+  generatedContent = false,
+  faker,
+  generationArea = 'random',
+  generationSentenceSource = 'lorem',
+  generationMinPhraseWords = 5,
   paceLevel = 'off',
   suspended = false,
   shortcuts = DEFAULT_SHORTCUTS,
@@ -72,7 +86,11 @@ export function PlayScreen({
     errorMode,
     strictShift,
     randomTemplates,
-    generatedDrills,
+    generatedContent,
+    faker,
+    generationArea,
+    generationSentenceSource,
+    generationMinPhraseWords,
     paceLevel,
     now,
   })
@@ -85,6 +103,7 @@ export function PlayScreen({
     countdown,
     feedback,
     lastKey,
+    generation,
     start,
     pause,
     resume,
@@ -262,6 +281,7 @@ export function PlayScreen({
       {state.shiftHint && <p className="play-hint">{t('shiftHint')}</p>}
 
       <Hud state={state} score={score} liveWpm={liveWpm} />
+      <GenerationBadge generation={generation} />
 
       <div className="play-stage">
         <TypingArea

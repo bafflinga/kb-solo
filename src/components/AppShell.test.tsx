@@ -18,6 +18,16 @@ vi.mock('./PwaUpdatePrompt', () => ({
   default: () => null,
 }))
 
+vi.mock('../domain/lessons/fakerGenerator', () => ({
+  loadFaker: async () => ({}),
+  generateText: () => ({
+    areaId: 'commerce',
+    sentenceSource: 'lorem',
+    words: ['alpha', 'beta', 'gamma'],
+    sentences: 'Alpha beta gamma.',
+  }),
+}))
+
 const scope = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 scope.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -128,10 +138,10 @@ describe('AppShell', () => {
     expect(vi.mocked(setMuted)).toHaveBeenLastCalledWith(true)
   })
 
-  it('resolves conflicting template settings in favour of generated drills', async () => {
+  it('resolves conflicting template settings in favour of generated content', async () => {
     localStorage.setItem(
       'kb-solo.settings',
-      JSON.stringify({ generatedDrills: true, randomTemplates: true }),
+      JSON.stringify({ generatedContent: true, randomTemplates: true }),
     )
 
     await act(async () => {
@@ -144,7 +154,7 @@ describe('AppShell', () => {
           'input[type="checkbox"]',
         ),
       ].find((input) => input.parentElement?.textContent?.includes(label))
-    expect(checkbox('Generated drills')?.checked).toBe(true)
+    expect(checkbox('Generated content')?.checked).toBe(true)
     expect(checkbox('Random templates')?.checked).toBe(false)
   })
 
