@@ -95,6 +95,49 @@ describe('cues', () => {
     )
   })
 
+  it('resolves authored key references by physical key identity', () => {
+    const authored = getLayout('ru-jcuken-mac-iso')
+    const iso = getLayout('ru-jcuken-mac-iso')
+    const windows = getLayout('ru-jcuken')
+    const options = {
+      authoredLayout: authored,
+      identityCodes: ['KeyZ', 'Slash', 'IntlBackslash'],
+    }
+
+    const backslash = cueFromText(iso, ']', 'char', options).chars[0]
+    expect(backslash?.code).toBe('IntlBackslash')
+    expect(backslash?.char).toBe(']')
+    expect(backslash?.needsShift).toBe(false)
+
+    const slash = cueFromText(iso, '/', 'char', options).chars[0]
+    expect(slash?.code).toBe('Slash')
+    expect(slash?.char).toBe('/')
+    expect(slash?.finger).toBe('rp')
+
+    const shifted = cueFromText(iso, '?', 'char', options).chars[0]
+    expect(shifted?.code).toBe('Slash')
+    expect(shifted?.needsShift).toBe(true)
+
+    const windowsSlash = cueFromText(windows, '/', 'char', options).chars[0]
+    expect(windowsSlash?.code).toBe('Slash')
+    expect(windowsSlash?.char).toBe('.')
+    expect(windowsSlash?.needsShift).toBe(false)
+
+    const windowsShift = cueFromText(windows, '?', 'char', options).chars[0]
+    expect(windowsShift?.code).toBe('Slash')
+    expect(windowsShift?.char).toBe(',')
+    expect(windowsShift?.needsShift).toBe(true)
+  })
+
+  it('drops identity-bound keys that are absent from the active layout', () => {
+    const cue = cueFromText(getLayout('ru-jcuken'), ']', 'char', {
+      authoredLayout: getLayout('ru-jcuken-mac-iso'),
+      identityCodes: ['KeyZ', 'Slash', 'IntlBackslash'],
+    })
+    expect(cue.chars).toEqual([])
+    expect(cue.text).toBe('')
+  })
+
   it('builds word cues with a trailing space', () => {
     const cues = wordCues(getLayout('us-qwerty'), 'cat dog')
     expect(cues.map((cue) => cue.text)).toEqual(['cat ', 'dog '])
@@ -156,16 +199,12 @@ describe('randomComboCues', () => {
   })
 
   it('skips whitespace and multi-character legends', () => {
-    const cues = randomComboCues(
-      comboLayout,
-      ['Space', 'KeyA', 'ShiftLeft'],
-      {
-        chunkCount: 3,
-        minLength: 2,
-        maxLength: 2,
-        rng: () => 0,
-      },
-    )
+    const cues = randomComboCues(comboLayout, ['Space', 'KeyA', 'ShiftLeft'], {
+      chunkCount: 3,
+      minLength: 2,
+      maxLength: 2,
+      rng: () => 0,
+    })
 
     expect(cues.map((cue) => cue.text)).toEqual(['aa ', 'aa ', 'aa '])
   })

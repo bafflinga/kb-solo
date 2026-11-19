@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react'
 import { mapFocusCodes, resolveLessonLayout } from '../app/lessonLayout'
+import { usedCodesForLesson } from '../app/lessonPreview'
 import { routeKey } from '../app/navigation'
 import { loadSettings, updateSettings } from '../app/settings'
 import type { AppSettings, ClearScope } from '../app/settings'
@@ -17,10 +18,12 @@ import { getLayout, layoutForProfile, profileOf } from '../domain/layout'
 import {
   getContentStatus,
   loadLanguage,
+  loadLessonContentMap,
   refreshStatus,
 } from '../domain/lessons/contentStore'
 import { loadFaker } from '../domain/lessons/fakerGenerator'
 import { allLessons, getLessonMeta } from '../domain/lessons/registry'
+import type { LessonContentMap } from '../domain/lessons/types'
 import type { Code, ContentLanguage } from '../domain/types'
 import { useI18n } from '../i18n'
 import {
@@ -52,6 +55,10 @@ export default function AppShell() {
   const [settingsKey, setSettingsKey] = useState<string | null>(null)
   const [, setProgressVersion] = useState(0)
   const [contentVersion, setContentVersion] = useState(0)
+  const [previewContent, setPreviewContent] = useState<LessonContentMap>({})
+  const [hovered, setHovered] = useState<{ id: string; key: string } | null>(
+    null,
+  )
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [fakerState, setFakerState] = useState<{
     language: ContentLanguage
@@ -125,6 +132,24 @@ export default function AppShell() {
       cancelled = true
     }
   }, [settings.contentLanguage, notify])
+
+  useEffect(() => {
+    let cancelled = false
+    void loadLessonContentMap(settings.contentLanguage)
+      .then((map) => {
+        if (!cancelled) {
+          setPreviewContent(map)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPreviewContent({})
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [settings.contentLanguage, contentVersion])
 
   const settingsOpen = settingsKey === currentKey
 
@@ -215,12 +240,33 @@ export default function AppShell() {
     () =>
       lessonMeta
         ? mapFocusCodes(
-            lessonMeta.focusCodes,
+            lessonMeta.layoutFocusCodes?.[lessonLayout.id] ??
+              lessonMeta.focusCodes,
             getLayout(lessonMeta.layoutId),
             lessonLayout,
+            lessonMeta.identityCodes,
           )
         : undefined,
     [lessonMeta, lessonLayout],
+  )
+
+  const hoveredMeta =
+    route.screen === 'menu' && hovered?.key === currentKey
+      ? lessons.find((meta) => meta.id === hovered.id)
+      : undefined
+  const previewLayout = hoveredMeta
+    ? resolveLessonLayout(
+        hoveredMeta.language,
+        hoveredMeta.layoutId,
+        settings.layoutId,
+      )
+    : menuLayout
+  const previewCodes = useMemo(
+    () =>
+      hoveredMeta
+        ? usedCodesForLesson(hoveredMeta, previewContent, previewLayout)
+        : undefined,
+    [hoveredMeta, previewContent, previewLayout],
   )
 
   return (
@@ -277,6 +323,8 @@ export default function AppShell() {
             <ContentScreen
               key={settings.contentLanguage}
               language={settings.contentLanguage}
+              layoutId={settings.layoutId}
+              onLayoutChange={(next) => patch({ layoutId: next })}
               version={contentVersion}
               onChange={handleContentChange}
               notify={notify}
@@ -363,8 +411,9 @@ export default function AppShell() {
                   </label>
                 </div>
                 <Keyboard
-                  layout={menuLayout}
+                  layout={previewLayout}
                   controller={menuKeyboard}
+                  focusCodes={previewCodes}
                   labels={keyLabels}
                 />
               </section>
@@ -375,6 +424,9 @@ export default function AppShell() {
                 completedIds={completedIds}
                 onSelect={(id) =>
                   navigate(`#/lesson/${encodeURIComponent(id)}`)
+                }
+                onHover={(id) =>
+                  setHovered(id ? { id, key: currentKey } : null)
                 }
               />
             </>

@@ -42,6 +42,7 @@ describe('LessonCard', () => {
       bestNetWpm?: number
       unlocked?: boolean
       onSelect?: () => void
+      onHover?: (id: string | null) => void
     } = {},
   ): Promise<void> {
     await act(async () => {
@@ -53,6 +54,7 @@ describe('LessonCard', () => {
             bestNetWpm={options.bestNetWpm ?? 0}
             unlocked={options.unlocked ?? true}
             onSelect={options.onSelect ?? (() => {})}
+            onHover={options.onHover}
           />
         </ul>,
       )
@@ -91,7 +93,8 @@ describe('LessonCard', () => {
     await render({ unlocked: false, onSelect })
 
     const button = container.querySelector('button')
-    expect(button?.disabled).toBe(true)
+    expect(button?.disabled).toBe(false)
+    expect(button?.getAttribute('aria-disabled')).toBe('true')
     expect(button?.getAttribute('title')).toBe(
       'Complete the previous lesson to unlock',
     )
@@ -101,5 +104,63 @@ describe('LessonCard', () => {
     })
 
     expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  it('reports hover and focus for a locked lesson without selecting it', async () => {
+    const onSelect = vi.fn()
+    const onHover = vi.fn()
+    await render({ unlocked: false, onSelect, onHover })
+
+    const button = container.querySelector('button')
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    expect(onHover).toHaveBeenLastCalledWith('en-home-left')
+
+    await act(async () => {
+      button?.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+    })
+    expect(onHover).toHaveBeenLastCalledWith('en-home-left')
+
+    await act(async () => {
+      button?.click()
+    })
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  it('reports hover enter/leave and focus/blur with the lesson id and null', async () => {
+    const onHover = vi.fn()
+    await render({ onHover })
+
+    const button = container.querySelector('button')
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    expect(onHover).toHaveBeenLastCalledWith('en-home-left')
+
+    await act(async () => {
+      button?.dispatchEvent(
+        new MouseEvent('mouseout', {
+          bubbles: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(onHover).toHaveBeenLastCalledWith(null)
+
+    await act(async () => {
+      button?.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+    })
+    expect(onHover).toHaveBeenLastCalledWith('en-home-left')
+
+    await act(async () => {
+      button?.dispatchEvent(
+        new FocusEvent('focusout', {
+          bubbles: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(onHover).toHaveBeenLastCalledWith(null)
   })
 })

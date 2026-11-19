@@ -33,6 +33,8 @@ describe('ContentScreen', () => {
       root.render(
         <ContentScreen
           language="en"
+          layoutId="us-qwerty"
+          onLayoutChange={vi.fn<() => void>()}
           version={0}
           onChange={vi.fn<() => void>()}
           notify={vi.fn<(message: string) => void>()}
@@ -44,7 +46,7 @@ describe('ContentScreen', () => {
   it('lists lessons for the selected language and opens an editor', async () => {
     await render()
 
-    expect(container.querySelectorAll('.content-lesson-row')).toHaveLength(31)
+    expect(container.querySelectorAll('.content-lesson-row')).toHaveLength(28)
     expect(container.querySelector('.content-editor')).toBeNull()
     expect(
       container.querySelector('.content-editor-hint')?.textContent,
@@ -113,6 +115,6 @@ describe('ContentScreen', () => {
       }
     })
 
-    expect(container.querySelectorAll('.content-lesson-row')).toHaveLength(32)
+    expect(container.querySelectorAll('.content-lesson-row')).toHaveLength(28)
   })
 })

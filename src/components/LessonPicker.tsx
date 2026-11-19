@@ -12,6 +12,7 @@ export interface LessonPickerProps {
   progress: LessonProgress[]
   completedIds: ReadonlySet<string>
   onSelect(id: string): void
+  onHover?(id: string | null): void
 }
 
 export function LessonPicker({
@@ -20,6 +21,7 @@ export function LessonPicker({
   progress,
   completedIds,
   onSelect,
+  onHover,
 }: LessonPickerProps) {
   const { t } = useI18n()
   const records = new Map(progress.map((item) => [item.lessonId, item]))
@@ -42,6 +44,7 @@ export function LessonPicker({
               bestNetWpm={record?.bestNetWpm ?? 0}
               unlocked={isUnlocked(meta, completedIds)}
               onSelect={() => onSelect(meta.id)}
+              onHover={onHover}
             />
           )
         })}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n'
 import {
@@ -8,14 +8,22 @@ import {
   setOverride,
   validateLessonContent,
 } from '../domain/lessons/contentStore'
-import { focusCharsFor, focusKeyLabels } from '../domain/lessons/curriculum'
+import {
+  focusCharsForLayout,
+  focusKeyLabelsForLayout,
+} from '../domain/lessons/curriculum'
 import { getLessonMeta } from '../domain/lessons/registry'
 import type { LessonContent, LessonKind } from '../domain/lessons/types'
+import { resolveLessonLayout } from '../app/lessonLayout'
+import type { Layout, LayoutId } from '../domain/types'
 import { lessonsDb } from '../storage/lessonsDb'
+import { LayoutSwitcher } from './LayoutSwitcher'
 
 export interface ContentEditorProps {
   id: string
   version: number
+  layoutId: LayoutId
+  onLayoutChange(layoutId: LayoutId): void
   onChange(): void
   notify(message: string): void
 }
@@ -30,14 +38,37 @@ function serialize(document: LessonContent, kind: LessonKind): string[] {
 export function ContentEditor({
   id,
   version,
+  layoutId,
+  onLayoutChange,
   onChange,
   notify,
 }: ContentEditorProps) {
   const { t } = useI18n()
   const meta = getLessonMeta(id)
-  const allowedChars = meta ? focusCharsFor(meta) : undefined
-  const focusCharsLabel = meta ? focusKeyLabels(meta) : ''
+  const activeLayout = useMemo<Layout | undefined>(
+    () =>
+      meta
+        ? resolveLessonLayout(meta.language, meta.layoutId, layoutId)
+        : undefined,
+    [meta, layoutId],
+  )
+  const allowedChars = useMemo(
+    () =>
+      meta && activeLayout
+        ? focusCharsForLayout(meta, activeLayout)
+        : undefined,
+    [meta, activeLayout],
+  )
+  const focusCharsLabel = useMemo(
+    () =>
+      meta && activeLayout ? focusKeyLabelsForLayout(meta, activeLayout) : '',
+    [meta, activeLayout],
+  )
   const [shipped, setShipped] = useState<LessonContent | null>(null)
+  const [layoutVariants, setLayoutVariants] =
+    useState<LessonContent['layoutVariants']>()
+  const [defaultVariants, setDefaultVariants] = useState<unknown[]>([])
+  const [editingLayoutId, setEditingLayoutId] = useState<LayoutId>()
   const [draft, setDraft] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -57,16 +88,29 @@ export function ContentEditor({
     const base = language.lessons[id]
     const override = await lessonsDb.getOverride(id)
     const document = override?.document ?? base
+    if (!document || !activeLayout) {
+      return null
+    }
+    const overrideSet = document.layoutVariants?.[activeLayout.id]
     return {
       shipped: base ?? null,
-      draft: document ? serialize(document, current.kind) : [''],
+      layoutVariants: document.layoutVariants,
+      defaultVariants: document.variants,
+      editingLayoutId: overrideSet === undefined ? undefined : activeLayout.id,
+      draft: serialize(
+        { ...document, variants: overrideSet ?? document.variants },
+        current.kind,
+      ),
     }
-  }, [id])
+  }, [id, activeLayout])
 
   async function refresh(): Promise<void> {
     const result = await load()
     if (result) {
       setShipped(result.shipped)
+      setLayoutVariants(result.layoutVariants)
+      setDefaultVariants(result.defaultVariants)
+      setEditingLayoutId(result.editingLayoutId)
       setDraft(result.draft)
       setError(null)
     }
@@ -88,6 +132,9 @@ export function ContentEditor({
           return
         }
         setShipped(result.shipped)
+        setLayoutVariants(result.layoutVariants)
+        setDefaultVariants(result.defaultVariants)
+        setEditingLayoutId(result.editingLayoutId)
         setDraft(result.draft)
         setError(null)
       })
@@ -178,8 +225,22 @@ export function ContentEditor({
     const variants = draft.map((text) =>
       kind === 'words' ? text.trim().split(/\s+/).filter(Boolean) : text,
     )
-    const document = { formatVersion: CONTENT_FORMAT_VERSION, variants }
-    const issues = validateLessonContent(document, kind, allowedChars)
+    const nextLayoutVariants = editingLayoutId
+      ? { ...(layoutVariants ?? {}), [editingLayoutId]: variants }
+      : layoutVariants
+    const document = {
+      formatVersion: CONTENT_FORMAT_VERSION,
+      variants: editingLayoutId ? defaultVariants : variants,
+      ...(nextLayoutVariants ? { layoutVariants: nextLayoutVariants } : {}),
+    }
+    const issues = [
+      ...validateLessonContent(
+        { formatVersion: CONTENT_FORMAT_VERSION, variants },
+        kind,
+        allowedChars,
+      ),
+      ...validateLessonContent(document, kind),
+    ]
     if (issues.length > 0) {
       setError(
         issues[0]?.code === 'focus-keys'
@@ -229,6 +290,21 @@ export function ContentEditor({
         <p className="muted">{t('contentWordsHint')}</p>
       )}
       {meta.kind === 'code' && <p className="muted">{t('contentCodeHint')}</p>}
+      {activeLayout && (
+        <div className="content-layout-row">
+          <LayoutSwitcher
+            value={layoutId}
+            language={meta.language}
+            label={t('layout')}
+            onChange={onLayoutChange}
+          />
+          <p className="muted">
+            {t(
+              editingLayoutId ? 'contentLayoutSpecific' : 'contentLayoutShared',
+            )}
+          </p>
+        </div>
+      )}
       {allowedChars && (
         <p className="muted content-focus-hint">
           {t('contentFocusKeysHint', { chars: focusCharsLabel })}

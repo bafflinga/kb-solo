@@ -1,6 +1,12 @@
-import { drillCues, lineCues, randomComboCues, wordCues } from '../cues'
-import { getLayout } from '../layout'
-import type { Cue, Layout } from '../types'
+import {
+  drillCues,
+  lineCues,
+  randomComboCues,
+  wordCues,
+  type CueTextOptions,
+} from '../cues'
+import { getLayout, resolveKeyCode } from '../layout'
+import type { Code, Cue, Layout } from '../types'
 import { generateText } from './fakerGenerator'
 import type {
   CreateCuesOptions,
@@ -20,6 +26,62 @@ export function focusKeyLabels(meta: LessonMeta): string {
   return meta.focusCodes
     .map((code) => layout.legends[code]?.base ?? code)
     .join(' ')
+}
+
+function focusCodesFor(meta: LessonMeta, layout: Layout): Code[] | undefined {
+  return meta.layoutFocusCodes?.[layout.id] ?? meta.focusCodes
+}
+
+export function focusCharsForLayout(
+  meta: LessonMeta,
+  layout: Layout,
+): ReadonlySet<string> | undefined {
+  const codes = focusCodesFor(meta, layout)
+  if (!codes?.length) {
+    return undefined
+  }
+  const from = getLayout(meta.layoutId)
+  const chars = new Set<string>([' ', '\n'])
+  for (const code of codes) {
+    const resolved = resolveKeyCode(code, from, layout, meta.identityCodes)
+    if (resolved === undefined) {
+      continue
+    }
+    const fromLegend = from.legends[code]
+    if (meta.identityCodes?.includes(code) && fromLegend) {
+      chars.add(fromLegend.base)
+      chars.add(fromLegend.shift)
+      if (fromLegend.alt) {
+        chars.add(fromLegend.alt)
+      }
+    }
+    const legend = layout.legends[resolved]
+    if (!legend) {
+      continue
+    }
+    chars.add(legend.base)
+    chars.add(legend.shift)
+    if (legend.alt) {
+      chars.add(legend.alt)
+    }
+  }
+  return chars
+}
+
+export function focusKeyLabelsForLayout(
+  meta: LessonMeta,
+  layout: Layout,
+): string {
+  const codes = focusCodesFor(meta, layout)
+  if (!codes?.length) {
+    return ''
+  }
+  const from = getLayout(meta.layoutId)
+  const labels = codes.map((code) => {
+    const resolved = resolveKeyCode(code, from, layout, meta.identityCodes)
+    return (resolved && layout.legends[resolved]?.base) ?? code
+  })
+  return [...new Set(labels)].join(' ')
 }
 
 export function focusCharsFor(
@@ -64,6 +126,13 @@ export function makeProvider(
   const variants = content.variants
 
   function authoredCues(layout: Layout, options?: CreateCuesOptions): Cue[] {
+    const cueOptions: CueTextOptions = meta.identityCodes?.length
+      ? {
+          authoredLayout: getLayout(meta.layoutId),
+          identityCodes: meta.identityCodes,
+        }
+      : {}
+    const selected = content.layoutVariants?.[layout.id] ?? variants
     switch (kind) {
       case 'drill':
         if (options?.generate === true && meta.focusCodes?.length) {
@@ -71,25 +140,29 @@ export function makeProvider(
         }
         return drillCues(
           layout,
-          pickVariant(variants as string[], options?.variantIndex),
+          pickVariant(selected as string[], options?.variantIndex),
+          cueOptions,
         )
       case 'words':
         return wordCues(
           layout,
           pickVariant(
-            variants as (readonly string[])[],
+            selected as (readonly string[])[],
             options?.variantIndex,
           ).join(' '),
+          cueOptions,
         )
       case 'prose':
         return wordCues(
           layout,
-          pickVariant(variants as string[], options?.variantIndex),
+          pickVariant(selected as string[], options?.variantIndex),
+          cueOptions,
         )
       case 'code':
         return lineCues(
           layout,
-          pickVariant(variants as string[], options?.variantIndex),
+          pickVariant(selected as string[], options?.variantIndex),
+          cueOptions,
         )
       default:
         return []
@@ -152,15 +225,17 @@ export function makeProvider(
   }
 }
 
-export type LessonDef = Omit<LessonMeta, 'requires'> & { kind: LessonKind }
+export type LessonDef = Omit<LessonMeta, 'requires' | 'order'> & {
+  kind: LessonKind
+}
 
 export function chainDefs(defs: readonly LessonDef[]): LessonMeta[] {
-  const metas: LessonMeta[] = []
-  for (const def of defs) {
-    const previous = metas[metas.length - 1]
-    metas.push(previous ? { ...def, requires: [previous.id] } : { ...def })
-  }
-  return metas
+  return defs.map((def, index) => {
+    const previous = index > 0 ? defs[index - 1] : undefined
+    return previous
+      ? { ...def, order: index + 1, requires: [previous.id] }
+      : { ...def, order: index + 1 }
+  })
 }
 
 export function buildChainedLessons(

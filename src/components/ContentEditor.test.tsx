@@ -3,6 +3,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { LayoutId } from '../domain/types'
 import { lessonsDb } from '../storage/lessonsDb'
 import { ContentEditor } from './ContentEditor'
 
@@ -19,6 +20,7 @@ describe('ContentEditor', () => {
     localStorage.clear()
     await lessonsDb.removeOverride('en-home-left')
     await lessonsDb.removeOverride('en-home-right')
+    await lessonsDb.removeOverride('ru-pinky-top')
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
@@ -65,12 +67,18 @@ describe('ContentEditor', () => {
     })
   }
 
-  async function render(id: string): Promise<void> {
+  async function render(
+    id: string,
+    layoutId: LayoutId = 'us-qwerty',
+    onLayoutChange = vi.fn<(next: LayoutId) => void>(),
+  ): Promise<void> {
     await act(async () => {
       root.render(
         <ContentEditor
           id={id}
           version={0}
+          layoutId={layoutId}
+          onLayoutChange={onLayoutChange}
           onChange={onChange}
           notify={notify}
         />,
@@ -153,6 +161,59 @@ describe('ContentEditor', () => {
 
     expect(container.querySelector('.content-variant.invalid')).toBeNull()
     expect(container.querySelector('[role="alert"]')).toBeNull()
+  })
+
+  it('uses focus keys and variants for the selected layout', async () => {
+    await render('ru-pinky-top', 'ru-jcuken')
+
+    const winHint =
+      container.querySelector('.content-focus-hint')?.textContent ?? ''
+    expect(winHint).toContain('ё')
+    expect(textareas()[0]?.value).toContain('ё')
+
+    await render('ru-pinky-top', 'ru-jcuken-mac-iso')
+
+    const isoHint =
+      container.querySelector('.content-focus-hint')?.textContent ?? ''
+    expect(isoHint).not.toContain('ё')
+    expect(textareas()[0]?.value).not.toContain('ё')
+    expect(container.textContent).toContain('layout-specific variants')
+
+    await render('ru-pinky-top', 'ru-jcuken-mac')
+    const macHint =
+      container.querySelector('.content-focus-hint')?.textContent ?? ''
+    expect(macHint.split('ё').length - 1).toBe(1)
+  })
+
+  it('lets the user switch layout from the editor header', async () => {
+    const onLayoutChange = vi.fn<(next: LayoutId) => void>()
+    await render('ru-pinky-top', 'ru-jcuken', onLayoutChange)
+
+    const select = container.querySelector(
+      '.content-layout-row select',
+    ) as HTMLSelectElement
+    expect(select.value).toBe('ru-jcuken')
+
+    await act(async () => {
+      select.value = 'ru-jcuken-mac-iso'
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    expect(onLayoutChange).toHaveBeenCalledWith('ru-jcuken-mac-iso')
+  })
+
+  it('saves edits into the active layout variant set', async () => {
+    await render('ru-pinky-top', 'ru-jcuken-mac-iso')
+    const original = textareas()[0]?.value ?? ''
+
+    await type(textareas()[0] as HTMLTextAreaElement, `${original} й`)
+    await click(button('Save'))
+
+    const override = await lessonsDb.getOverride('ru-pinky-top')
+    expect(override?.document.layoutVariants?.['ru-jcuken-mac-iso']?.[0]).toBe(
+      `${original} й`,
+    )
+    expect(String(override?.document.variants[0]).endsWith(' й')).toBe(false)
   })
 
   it('rejects an empty variant', async () => {

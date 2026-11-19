@@ -62,6 +62,7 @@ describe('LessonPicker', () => {
     options: {
       completedIds?: ReadonlySet<string>
       onSelect?: (id: string) => void
+      onHover?: (id: string | null) => void
     } = {},
   ): Promise<void> {
     await act(async () => {
@@ -72,6 +73,7 @@ describe('LessonPicker', () => {
           progress={[record]}
           completedIds={options.completedIds ?? new Set()}
           onSelect={options.onSelect ?? (() => {})}
+          onHover={options.onHover}
         />,
       )
     })
@@ -99,8 +101,29 @@ describe('LessonPicker', () => {
     await render()
 
     const buttons = [...container.querySelectorAll('button')]
-    expect(buttons[0]?.disabled).toBe(false)
-    expect(buttons[1]?.disabled).toBe(true)
+    expect(buttons[0]?.getAttribute('aria-disabled')).toBeNull()
+    expect(buttons[1]?.getAttribute('aria-disabled')).toBe('true')
+  })
+
+  it('forwards hover callbacks from cards, including locked ones', async () => {
+    const onHover = vi.fn()
+    await render({ onHover })
+
+    const buttons = [...container.querySelectorAll('button')]
+    await act(async () => {
+      buttons[1]?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    expect(onHover).toHaveBeenLastCalledWith('en-home-right')
+
+    await act(async () => {
+      buttons[1]?.dispatchEvent(
+        new MouseEvent('mouseout', {
+          bubbles: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(onHover).toHaveBeenLastCalledWith(null)
   })
 
   it('forwards the selected lesson id', async () => {

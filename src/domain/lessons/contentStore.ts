@@ -1,9 +1,15 @@
 import { use, useEffect, useSyncExternalStore } from 'react'
 import { lessonsDb } from '../../storage/lessonsDb'
-import type { ContentLanguage } from '../types'
+import { isLayoutId } from '../layout'
+import type { ContentLanguage, LayoutId } from '../types'
 import { focusCharsFor } from './curriculum'
 import { allLessons, getLessonMeta, isKnownLessonId } from './registry'
-import type { LanguageContent, LessonContent, LessonKind } from './types'
+import type {
+  LanguageContent,
+  LessonContent,
+  LessonContentMap,
+  LessonKind,
+} from './types'
 
 export const CONTENT_FORMAT_VERSION = 1
 export const PACK_FORMAT = 'kb-solo-content-pack'
@@ -83,41 +89,79 @@ export function validateLessonContent(
       message: 'At least one variant is required',
     })
   }
-  value.variants.forEach((variant, index) => {
-    const position = index + 1
-    if (kind === 'words') {
-      if (
-        !Array.isArray(variant) ||
-        variant.length === 0 ||
-        variant.some((word) => typeof word !== 'string')
-      ) {
+
+  const sets: { variants: unknown[]; label: string }[] = [
+    { variants: value.variants, label: '' },
+  ]
+  if (value.layoutVariants !== undefined) {
+    if (!isRecord(value.layoutVariants)) {
+      issues.push({
+        code: 'variants',
+        message: 'layoutVariants must be an object',
+      })
+    } else {
+      for (const [layoutId, layoutSet] of Object.entries(
+        value.layoutVariants,
+      )) {
+        if (!isLayoutId(layoutId)) {
+          issues.push({
+            code: 'variants',
+            message: `Unknown layout in layoutVariants: ${layoutId}`,
+          })
+          continue
+        }
+        if (
+          !Array.isArray(layoutSet) ||
+          layoutSet.length !== value.variants.length
+        ) {
+          issues.push({
+            code: 'variants',
+            message: `Invalid layout variants for ${layoutId}`,
+          })
+          continue
+        }
+        sets.push({ variants: layoutSet, label: ` (${layoutId})` })
+      }
+    }
+  }
+
+  for (const set of sets) {
+    set.variants.forEach((variant, index) => {
+      const position = index + 1
+      if (kind === 'words') {
+        if (
+          !Array.isArray(variant) ||
+          variant.length === 0 ||
+          variant.some((word) => typeof word !== 'string')
+        ) {
+          issues.push({
+            code: 'variant-shape',
+            message: `Invalid words variant ${position}${set.label}`,
+          })
+        }
+      } else if (typeof variant !== 'string' || variant.trim().length === 0) {
         issues.push({
           code: 'variant-shape',
-          message: `Invalid words variant ${position}`,
-        })
-      }
-    } else if (typeof variant !== 'string' || variant.trim().length === 0) {
-      issues.push({
-        code: 'variant-shape',
-        message: `Invalid ${kind} variant ${position}`,
-      })
-    }
-  })
-  if (kind === 'drill' && allowedChars) {
-    value.variants.forEach((variant, index) => {
-      if (typeof variant !== 'string') {
-        return
-      }
-      const outside = Array.from(variant).find(
-        (char) => char.trim().length > 0 && !allowedChars.has(char),
-      )
-      if (outside !== undefined) {
-        issues.push({
-          code: 'focus-keys',
-          message: `Variant ${index + 1} uses ${JSON.stringify(outside)} outside the focus keys`,
+          message: `Invalid ${kind} variant ${position}${set.label}`,
         })
       }
     })
+    if (kind === 'drill' && allowedChars) {
+      set.variants.forEach((variant, index) => {
+        if (typeof variant !== 'string') {
+          return
+        }
+        const outside = Array.from(variant).find(
+          (char) => char.trim().length > 0 && !allowedChars.has(char),
+        )
+        if (outside !== undefined) {
+          issues.push({
+            code: 'focus-keys',
+            message: `Variant ${index + 1}${set.label} uses ${JSON.stringify(outside)} outside the focus keys`,
+          })
+        }
+      })
+    }
   }
   return issues
 }
@@ -132,10 +176,16 @@ function parseLessonContent(
     throw new Error(issues[0]?.message)
   }
   const record = value as Record<string, unknown>
-  return {
+  const parsed: LessonContent = {
     formatVersion: CONTENT_FORMAT_VERSION,
     variants: record.variants as unknown[],
   }
+  if (isRecord(record.layoutVariants)) {
+    parsed.layoutVariants = record.layoutVariants as Partial<
+      Record<LayoutId, unknown[]>
+    >
+  }
+  return parsed
 }
 
 function parseLanguageContent(
@@ -252,6 +302,20 @@ export function loadLanguage(
     }
   })
   return task
+}
+
+export async function loadLessonContentMap(
+  language: ContentLanguage,
+): Promise<LessonContentMap> {
+  const document = await loadLanguage(language)
+  const overrides = await lessonsDb.allOverrides()
+  const map: Record<string, LessonContent> = { ...document.lessons }
+  for (const override of overrides) {
+    if (getLessonMeta(override.id)?.language === language) {
+      map[override.id] = override.document
+    }
+  }
+  return map
 }
 
 const pending = new Map<string, Promise<LessonContent>>()

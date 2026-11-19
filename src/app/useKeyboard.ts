@@ -14,6 +14,7 @@ export interface UseKeyboardOptions {
   active: boolean
   onKey(input: KeyboardInput): void
   onBackspace(): void
+  inputCode?(code: Code): Code
 }
 
 const PREVENT_DEFAULT = new Set(['Tab', 'Backspace', 'Space', 'Enter'])
@@ -41,13 +42,16 @@ export function useKeyboard({
   active,
   onKey,
   onBackspace,
+  inputCode,
 }: UseKeyboardOptions): void {
   const onKeyRef = useRef(onKey)
   const onBackspaceRef = useRef(onBackspace)
+  const inputCodeRef = useRef(inputCode)
 
   useEffect(() => {
     onKeyRef.current = onKey
     onBackspaceRef.current = onBackspace
+    inputCodeRef.current = inputCode
   })
 
   useEffect(() => {
@@ -76,8 +80,9 @@ export function useKeyboard({
       if (PREVENT_DEFAULT.has(event.code)) {
         event.preventDefault()
       }
+      const normalize = inputCodeRef.current
       onKeyRef.current({
-        code: event.code,
+        code: normalize ? normalize(event.code) : event.code,
         char: charFor(event),
         shift: event.shiftKey,
         alt: event.altKey,

@@ -119,6 +119,59 @@ describe('AppShell', () => {
     ).toBe('true')
   })
 
+  it('previews the used keys on lesson hover and clears them on leave', async () => {
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    const button =
+      container.querySelectorAll<HTMLButtonElement>('.lesson-button')[0]
+    const focused = (code: string) =>
+      container
+        .querySelector(`.keycap[data-code="${code}"]`)
+        ?.getAttribute('data-focused')
+
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    expect(focused('KeyA')).toBe('true')
+    expect(focused('KeyJ')).toBe('false')
+
+    await act(async () => {
+      button?.dispatchEvent(
+        new MouseEvent('mouseout', {
+          bubbles: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(focused('KeyA')).toBe('false')
+  })
+
+  it('previews keys for locked lessons too', async () => {
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    const button =
+      container.querySelectorAll<HTMLButtonElement>('.lesson-button')[1]
+    expect(button?.getAttribute('aria-disabled')).toBe('true')
+
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    expect(
+      container
+        .querySelector('.keycap[data-code="KeyJ"]')
+        ?.getAttribute('data-focused'),
+    ).toBe('true')
+    expect(
+      container
+        .querySelector('.keycap[data-code="KeyA"]')
+        ?.getAttribute('data-focused'),
+    ).toBe('false')
+  })
+
   it('syncs the sound setting to the audio engine', async () => {
     await act(async () => {
       root.render(<AppShell />)
@@ -269,7 +322,7 @@ describe('AppShell', () => {
         layoutId: 'ru-jcuken-mac',
       }),
     )
-    window.location.hash = '#/lesson/ru-hard-sign'
+    window.location.hash = '#/lesson/ru-pinky-home-both'
 
     await act(async () => {
       root.render(<AppShell />)
@@ -280,12 +333,39 @@ describe('AppShell', () => {
     ).toContain('ё')
     expect(
       container
-        .querySelector('[data-code="Backslash"]')
+        .querySelector('[data-code="Semicolon"]')
         ?.getAttribute('data-focused'),
     ).toBe('true')
     expect(
       container
-        .querySelector('[data-code="Backquote"]')
+        .querySelector('[data-code="Backslash"]')
+        ?.getAttribute('data-focused'),
+    ).toBe('false')
+  })
+
+  it('does not ring Backslash on RU Windows for ru-pinky-home-both', async () => {
+    localStorage.setItem(
+      'kb-solo.settings',
+      JSON.stringify({
+        locale: 'en',
+        contentLanguage: 'ru',
+        layoutId: 'ru-jcuken',
+      }),
+    )
+    window.location.hash = '#/lesson/ru-pinky-home-both'
+
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    expect(
+      container
+        .querySelector('[data-code="Semicolon"]')
+        ?.getAttribute('data-focused'),
+    ).toBe('true')
+    expect(
+      container
+        .querySelector('[data-code="Backslash"]')
         ?.getAttribute('data-focused'),
     ).toBe('false')
   })
@@ -328,7 +408,7 @@ describe('AppShell', () => {
         layoutId: 'ru-jcuken-mac-iso',
       }),
     )
-    window.location.hash = '#/lesson/ru-hard-sign'
+    window.location.hash = '#/lesson/ru-pinky-home-both'
 
     await act(async () => {
       root.render(<AppShell />)
@@ -340,25 +420,51 @@ describe('AppShell', () => {
     ).toContain('ё')
     expect(
       container
+        .querySelector('[data-code="Semicolon"]')
+        ?.getAttribute('data-focused'),
+    ).toBe('true')
+    expect(
+      container
         .querySelector('[data-code="Backslash"]')
         ?.getAttribute('data-focused'),
     ).toBe('true')
     expect(
-      container
-        .querySelector('[data-code="Backquote"]')
-        ?.getAttribute('data-focused'),
-    ).toBe('false')
-    expect(
       container.querySelector('.finger-guide')?.getAttribute('aria-hidden'),
     ).toBe('true')
-    expect(
-      container
-        .querySelector('[data-finger="rp"]')
-        ?.getAttribute('data-active'),
-    ).toBe('true')
+    const activeFinger = container
+      .querySelector('.finger-guide [data-active="true"]')
+      ?.getAttribute('data-finger')
+    expect(['lp', 'rp']).toContain(activeFinger)
     expect(
       container.querySelectorAll('.finger-guide [data-active="true"]'),
     ).toHaveLength(1)
+  })
+
+  it('rings only top-row pinky keys on RU Mac ISO for ru-pinky-top', async () => {
+    localStorage.setItem(
+      'kb-solo.settings',
+      JSON.stringify({
+        locale: 'en',
+        contentLanguage: 'ru',
+        layoutId: 'ru-jcuken-mac-iso',
+      }),
+    )
+    window.location.hash = '#/lesson/ru-pinky-top'
+
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    const focused = (code: string) =>
+      container
+        .querySelector(`[data-code="${code}"]`)
+        ?.getAttribute('data-focused')
+    for (const code of ['KeyQ', 'KeyP', 'BracketLeft', 'BracketRight']) {
+      expect(focused(code), code).toBe('true')
+    }
+    for (const code of ['Backslash', 'IntlBackslash', 'Backquote']) {
+      expect(focused(code), code).toBe('false')
+    }
   })
 
   it('opens settings as a drawer without unmounting the lesson', async () => {
@@ -370,7 +476,7 @@ describe('AppShell', () => {
         layoutId: 'ru-jcuken-mac-iso',
       }),
     )
-    window.location.hash = '#/lesson/ru-hard-sign'
+    window.location.hash = '#/lesson/ru-pinky-home-both'
 
     await act(async () => {
       root.render(<AppShell />)
@@ -445,8 +551,8 @@ describe('AppShell', () => {
 
     expect(left?.querySelector('.stars')?.textContent).toBe('★★☆')
     expect(left?.textContent).toContain('Best: 33 WPM')
-    expect(right?.disabled).toBe(false)
-    expect(both?.disabled).toBe(true)
+    expect(right?.getAttribute('aria-disabled')).toBeNull()
+    expect(both?.getAttribute('aria-disabled')).toBe('true')
   })
 
   it('renders the stats screen from persisted progress', async () => {
@@ -542,7 +648,7 @@ describe('AppShell', () => {
     const right = [
       ...container.querySelectorAll<HTMLButtonElement>('.lesson-button'),
     ].find((button) => button.textContent?.includes('Home row: right hand'))
-    expect(right?.disabled).toBe(true)
+    expect(right?.getAttribute('aria-disabled')).toBe('true')
 
     vi.useRealTimers()
   })

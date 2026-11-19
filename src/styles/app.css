@@ -279,7 +279,7 @@
   cursor: pointer;
 }
 
-.lesson-button:hover:not(:disabled) {
+.lesson-button:hover:not([aria-disabled='true']) {
   border-color: #7cc4ff;
 }
 
@@ -293,7 +293,7 @@
   font-size: 0.8rem;
 }
 
-.lesson-button:disabled {
+.lesson-button[aria-disabled='true'] {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -396,6 +396,17 @@
 
 .content-column-list .content-lesson-list {
   grid-template-columns: 1fr;
+}
+
+.content-layout-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+
+.content-layout-row p {
+  margin: 0;
 }
 
 .content-editor-toolbar {

@@ -207,6 +207,43 @@ describe('lesson content store', () => {
     ).resolves.toBeUndefined()
   })
 
+  it('validates and preserves layout-specific variant sets', async () => {
+    const document = {
+      formatVersion: 1,
+      variants: ['asdf'],
+      layoutVariants: { 'us-qwerty': ['asdf'] },
+    }
+    const allowed = new Set('asdf')
+    expect(validateLessonContent(document, 'drill', allowed)).toEqual([])
+    expect(
+      validateLessonContent(
+        { ...document, layoutVariants: { 'us-qwerty': ['asdg'] } },
+        'drill',
+        allowed,
+      ).some((issue) => issue.code === 'focus-keys'),
+    ).toBe(true)
+    expect(
+      validateLessonContent(
+        { ...document, layoutVariants: { 'us-qwerty': ['asdf', 'asdf'] } },
+        'drill',
+        allowed,
+      ).some((issue) => issue.code === 'variants'),
+    ).toBe(true)
+    expect(
+      validateLessonContent(
+        { ...document, layoutVariants: { 'no-such-layout': ['asdf'] } },
+        'drill',
+        allowed,
+      ).some((issue) => issue.code === 'variants'),
+    ).toBe(true)
+
+    await setOverride('en-home-left', document)
+    expect(
+      (await lessonsDb.getOverride('en-home-left'))?.document.layoutVariants,
+    ).toEqual(document.layoutVariants)
+    await resetOverride('en-home-left')
+  })
+
   it('rejects empty or malformed variants', () => {
     expect(
       validateLessonContent({ formatVersion: 1, variants: [] }, 'drill'),

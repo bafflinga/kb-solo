@@ -1,3 +1,4 @@
+import type { FocusEvent } from 'react'
 import type { LessonMeta } from '../domain/lessons/types'
 import type { Stars } from '../domain/scoring'
 import { useI18n } from '../i18n'
@@ -10,6 +11,7 @@ export interface LessonCardProps {
   bestNetWpm: number
   unlocked: boolean
   onSelect(): void
+  onHover?(id: string | null): void
 }
 
 export function LessonCard({
@@ -18,6 +20,7 @@ export function LessonCard({
   bestNetWpm,
   unlocked,
   onSelect,
+  onHover,
 }: LessonCardProps) {
   const { t, n } = useI18n()
 
@@ -26,10 +29,23 @@ export function LessonCard({
       <button
         type="button"
         className="lesson-button"
-        disabled={!unlocked}
         aria-disabled={unlocked ? undefined : true}
         title={unlocked ? undefined : t('locked')}
-        onClick={onSelect}
+        onClick={() => {
+          if (unlocked) {
+            onSelect()
+          }
+        }}
+        onMouseEnter={() => onHover?.(meta.id)}
+        onMouseLeave={() => onHover?.(null)}
+        onFocus={() => onHover?.(meta.id)}
+        onBlur={(event: FocusEvent<HTMLButtonElement>) => {
+          if (
+            !event.currentTarget.contains(event.relatedTarget as Node | null)
+          ) {
+            onHover?.(null)
+          }
+        }}
       >
         <span className="lesson-card-main">
           <span className="lesson-title">{t(meta.titleKey as MessageKey)}</span>

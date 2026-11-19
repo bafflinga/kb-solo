@@ -4,7 +4,7 @@ import type { MessageKey } from '../i18n'
 import { exportPack, packToJson } from '../domain/lessons/contentStore'
 import type { ContentPack } from '../domain/lessons/contentStore'
 import { lessonsFor } from '../domain/lessons/registry'
-import type { ContentLanguage } from '../domain/types'
+import type { ContentLanguage, LayoutId } from '../domain/types'
 import { lessonsDb } from '../storage/lessonsDb'
 import { ContentEditor } from './ContentEditor'
 import { ContentTransferDialog } from './ContentTransferDialog'
@@ -24,6 +24,8 @@ function packFileName(pack: ContentPack): string {
 
 export interface ContentScreenProps {
   language: ContentLanguage
+  layoutId: LayoutId
+  onLayoutChange(layoutId: LayoutId): void
   version: number
   onChange(): void
   notify(message: string): void
@@ -31,6 +33,8 @@ export interface ContentScreenProps {
 
 export function ContentScreen({
   language,
+  layoutId,
+  onLayoutChange,
   version,
   onChange,
   notify,
@@ -166,6 +170,8 @@ export function ContentScreen({
             <ContentEditor
               id={selectedId}
               version={version}
+              layoutId={layoutId}
+              onLayoutChange={onLayoutChange}
               onChange={onChange}
               notify={notify}
             />

@@ -125,6 +125,31 @@ export function codeForChar(layout: Layout, char: string): Code | undefined {
   return undefined
 }
 
+export function resolveKeyCode(
+  code: Code,
+  from: Layout,
+  to: Layout,
+  identityCodes: readonly Code[] = [],
+): Code | undefined {
+  if (identityCodes.includes(code)) {
+    return to.legends[code] === undefined ? undefined : code
+  }
+  const base = from.legends[code]?.base
+  return base === undefined ? code : (codeForChar(to, base) ?? code)
+}
+
+export function inputCodeFor(layout: Layout, code: Code): Code {
+  if (layout.formFactor === 'iso') {
+    if (code === 'Backquote') {
+      return 'IntlBackslash'
+    }
+    if (code === 'IntlBackslash') {
+      return 'Backquote'
+    }
+  }
+  return code
+}
+
 export function expectedKeyFor(
   layout: Layout,
   code: Code,

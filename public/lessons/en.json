@@ -101,15 +101,6 @@
         "jk kj lk kl jl lj ;k k; l; ;l jkl klj ;lk"
       ]
     },
-    "en-home-words": {
-      "formatVersion": 1,
-      "variants": [
-        "as ask asks lad lads lass salad alaska fall falls",
-        "dad sad fad add adds flask flasks alfalfa salsa",
-        "all fall sad dad lad ask; a sad lad; dad falls;",
-        "add fad ads dads fads all asks lass alas salad;"
-      ]
-    },
     "en-index-both": {
       "formatVersion": 1,
       "variants": [
@@ -164,15 +155,6 @@
         "dk ie dc ki de ci d, k, e, i,"
       ]
     },
-    "en-middle": {
-      "formatVersion": 1,
-      "variants": [
-        "ec i, ce ,i ei c, ie ,c eci cie",
-        "i, ec ,i ce c, ei ,c ie cie eci",
-        "ce ,i ec i, ie c, ,c ei eci cie",
-        "ee cc ii ,, eci cie ie, ,ec eci,"
-      ]
-    },
     "en-pinky-both": {
       "formatVersion": 1,
       "variants": [
@@ -191,22 +173,22 @@
         "zz // z/ /z /zz z// z/z /z/"
       ]
     },
-    "en-pinky-right": {
+    "en-pinky-home-both": {
       "formatVersion": 1,
       "variants": [
-        "p[ 'p [p p' p[' 'p[ p[ p' 'p",
-        "'p p[ p' [p 'p[ [p' p[ 'p p[",
-        "p' [p 'p p[ [p' p[' 'p[ p[ p'",
-        "p[ p' 'p [p p[' [p' p' [p 'p"
+        "a; 'a ;a a' ;a '; a;'",
+        ";a '; a; ;' a' ;a ;' a",
+        "'a ;a a; '; a' ;a 'a",
+        "a;' ;a a' ;a '; a; '"
       ]
     },
     "en-pinky-top": {
       "formatVersion": 1,
       "variants": [
-        "qp [` ]q p[ q] `p q[ p] `q",
-        "[` qp ]q p[ `p q] p] q[ `q",
-        "qp p[ [` ]q `q q] p] q[ `p",
-        "q[ p] `q ]p [q p` qp [` ]q"
+        "qp ]p q[ p] qp[ ]q",
+        "pq [p q] p[ qp] [q",
+        "q[ p] ]q [p q] p[",
+        "qp[ ]q p[ q] [p"
       ]
     },
     "en-prose": {
@@ -234,15 +216,6 @@
         "xo sw xl wo x. s. xow wol",
         "swx ol. wox sl. xwo low",
         "s. x. wo xl sw xo sxo w.l"
-      ]
-    },
-    "en-ring": {
-      "formatVersion": 1,
-      "variants": [
-        "wo x. .w ox wx o. xw .o wox x.o",
-        "x. wo ox .w o. wx .o xw x.o wox",
-        "w. xo ow .x wo x. ox .w wox xo.",
-        "wx o. wo x. wxo o.x xwo .ow"
       ]
     },
     "en-top-both": {

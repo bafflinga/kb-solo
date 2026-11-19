@@ -8,7 +8,11 @@ import type {
 import { nextLesson } from '../domain/lessons/registry'
 import type { LessonProvider } from '../domain/lessons/types'
 import type { Score, Stars } from '../domain/scoring'
-import type { Code, Layout } from '../domain/types'
+import type { Code, Layout, LayoutId } from '../domain/types'
+import {
+  dismissLayoutMismatch,
+  loadDismissedLayoutMismatch,
+} from '../app/layoutMismatchNotice'
 import { DEFAULT_SHORTCUTS } from '../app/shortcuts'
 import type { ShortcutSettings } from '../app/shortcuts'
 import { useGlobalShortcut } from '../app/useGlobalShortcut'
@@ -76,7 +80,10 @@ export function PlayScreen({
 }: PlayScreenProps) {
   const { t, n } = useI18n()
   const [keyboard] = useState(createKeyboardController)
-  const [dismissedMismatch, setDismissedMismatch] = useState(false)
+  const [dismissedMismatch, setDismissedMismatch] = useState<
+    ReadonlySet<LayoutId>
+  >(loadDismissedLayoutMismatch)
+  const mismatchDismissed = dismissedMismatch.has(layout.id)
   const suspendedRef = useRef(false)
   const [previousBest] = useState(best)
 
@@ -120,7 +127,6 @@ export function PlayScreen({
   const playedFeedbackRef = useRef(0)
 
   const begin = useCallback(() => {
-    setDismissedMismatch(false)
     void unlockAudio()
     start()
   }, [start])
@@ -263,14 +269,15 @@ export function PlayScreen({
         )}
       </header>
 
-      {state.layoutMismatch && !dismissedMismatch && (
+      {state.layoutMismatch && !mismatchDismissed && (
         <div className="play-banner" role="status">
           <span>{t('layoutMismatch', { layout: layout.displayName })}</span>
           <button
             type="button"
             onClick={(event) => {
               event.currentTarget.blur()
-              setDismissedMismatch(true)
+              dismissLayoutMismatch(layout.id)
+              setDismissedMismatch(loadDismissedLayoutMismatch())
             }}
           >
             {t('dismiss')}

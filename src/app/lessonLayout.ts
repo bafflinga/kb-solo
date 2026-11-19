@@ -1,4 +1,4 @@
-import { codeForChar, getLayout } from '../domain/layout'
+import { getLayout, resolveKeyCode } from '../domain/layout'
 import type { Code, ContentLanguage, Layout, LayoutId } from '../domain/types'
 
 const FAMILY_PREFIX: Record<ContentLanguage, string> = {
@@ -22,17 +22,18 @@ export function mapFocusCodes(
   focusCodes: readonly Code[] | undefined,
   from: Layout,
   to: Layout,
+  identityCodes: readonly Code[] = [],
 ): Code[] | undefined {
   if (focusCodes === undefined) {
     return undefined
   }
   const mapped: Code[] = []
   for (const code of focusCodes) {
-    const base = from.legends[code]?.base
-    const next = base === undefined ? code : (codeForChar(to, base) ?? code)
-    if (!mapped.includes(next)) {
-      mapped.push(next)
+    const next = resolveKeyCode(code, from, to, identityCodes)
+    if (next === undefined || mapped.includes(next)) {
+      continue
     }
+    mapped.push(next)
   }
   return mapped
 }

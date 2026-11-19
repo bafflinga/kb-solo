@@ -13,13 +13,28 @@ import type { LessonContent, LessonKind } from '../domain/lessons/types'
 import { lessonsDb } from '../storage/lessonsDb'
 
 function formatVariants(document: LessonContent, kind: LessonKind): string {
-  return document.variants
-    .map((variant, index) => {
-      const text =
-        kind === 'words' ? (variant as string[]).join(' ') : String(variant)
-      return `${index + 1}. ${text}`
-    })
-    .join('\n')
+  const sets: { label: string; variants: unknown[] }[] = [
+    { label: '', variants: document.variants },
+  ]
+  for (const [layoutId, variants] of Object.entries(
+    document.layoutVariants ?? {},
+  )) {
+    sets.push({ label: `${layoutId}\n`, variants })
+  }
+  return sets
+    .map(({ label, variants }) =>
+      [
+        label,
+        ...variants.map((variant, index) => {
+          const text =
+            kind === 'words' ? (variant as string[]).join(' ') : String(variant)
+          return `${index + 1}. ${text}`
+        }),
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    )
+    .join('\n\n')
 }
 
 export interface ContentImportPanelProps {
@@ -217,8 +232,11 @@ export function ContentImportPanel({
               const current = currentById[item.id]
               const same =
                 current !== undefined &&
-                JSON.stringify(current.variants) ===
-                  JSON.stringify(item.document.variants)
+                JSON.stringify([current.variants, current.layoutVariants]) ===
+                  JSON.stringify([
+                    item.document.variants,
+                    item.document.layoutVariants,
+                  ])
               return (
                 <li key={item.id} className="content-import-item">
                   <label className="field checkbox">

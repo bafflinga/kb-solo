@@ -14,6 +14,7 @@ import {
   starsFor,
 } from '../domain/engine'
 import type { EngineConfig, EngineState, ErrorMode } from '../domain/engine'
+import { inputCodeFor } from '../domain/layout'
 import { derivePacing } from '../domain/pacing'
 import type { PaceLevel } from '../domain/pacing'
 import type {
@@ -377,6 +378,7 @@ export function useTypingSession({
     active: state.status === 'running',
     onKey,
     onBackspace,
+    inputCode: (code) => inputCodeFor(layout, code),
   })
 
   const activeCues = state.cues.length > 0 ? state.cues : cues

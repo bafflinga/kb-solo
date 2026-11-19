@@ -48,4 +48,15 @@ describe('lesson layout resolution', () => {
     ).toEqual(['Backslash', 'Digit4', 'Digit7'])
     expect(mapFocusCodes(undefined, from, iso)).toBeUndefined()
   })
+
+  it('preserves identity-bound codes across layouts', () => {
+    const iso = getLayout('ru-jcuken-mac-iso')
+    const mac = getLayout('ru-jcuken-mac')
+    const windows = getLayout('ru-jcuken')
+    const codes = ['KeyZ', 'Slash', 'IntlBackslash']
+
+    expect(mapFocusCodes(codes, iso, iso, codes)).toEqual(codes)
+    expect(mapFocusCodes(codes, iso, mac, codes)).toEqual(['KeyZ', 'Slash'])
+    expect(mapFocusCodes(codes, iso, windows, codes)).toEqual(['KeyZ', 'Slash'])
+  })
 })

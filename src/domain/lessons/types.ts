@@ -17,6 +17,10 @@ export interface LessonMeta {
   order: number
   difficulty: 1 | 2 | 3 | 4 | 5
   focusCodes?: Code[]
+  /** Codes whose physical key identity must be preserved when remapping across layouts. */
+  identityCodes?: Code[]
+  /** Focus codes used only when the active layout matches the key exactly. */
+  layoutFocusCodes?: Partial<Record<LayoutId, Code[]>>
   requires?: string[]
   /** Optional override. Real values are derived by `derivePacing` from the chosen pace and cues. */
   timeLimitSec?: number
@@ -27,6 +31,8 @@ export interface LessonMeta {
 export interface LessonContent {
   formatVersion: number
   variants: unknown[]
+  /** Variant sets used only when the active layout matches the key exactly. */
+  layoutVariants?: Partial<Record<LayoutId, unknown[]>>
 }
 
 export type LessonContentMap = Readonly<Record<string, LessonContent>>

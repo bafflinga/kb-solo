@@ -13,10 +13,11 @@ interface HarnessProps {
   active: boolean
   onKey(input: KeyboardInput): void
   onBackspace(): void
+  inputCode?(code: string): string
 }
 
-function Harness({ active, onKey, onBackspace }: HarnessProps) {
-  useKeyboard({ active, onKey, onBackspace })
+function Harness({ active, onKey, onBackspace, inputCode }: HarnessProps) {
+  useKeyboard({ active, onKey, onBackspace, inputCode })
   return null
 }
 
@@ -41,10 +42,18 @@ describe('useKeyboard', () => {
     container.remove()
   })
 
-  async function render(active = true): Promise<void> {
+  async function render(
+    active = true,
+    inputCode?: (code: string) => string,
+  ): Promise<void> {
     await act(async () => {
       root.render(
-        <Harness active={active} onKey={onKey} onBackspace={onBackspace} />,
+        <Harness
+          active={active}
+          onKey={onKey}
+          onBackspace={onBackspace}
+          inputCode={inputCode}
+        />,
       )
     })
   }
@@ -85,6 +94,17 @@ describe('useKeyboard', () => {
       isComposing: true,
     })
     expect(onBackspace).not.toHaveBeenCalled()
+  })
+
+  it('normalizes codes through the inputCode option', async () => {
+    await render(true, (code) =>
+      code === 'Backquote' ? 'IntlBackslash' : code,
+    )
+
+    press({ code: 'Backquote', key: ']' })
+
+    expect(onKey.mock.calls[0]?.[0].code).toBe('IntlBackslash')
+    expect(onKey.mock.calls[0]?.[0].char).toBe(']')
   })
 
   it('routes Backspace and prevents its default action', async () => {

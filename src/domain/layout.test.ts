@@ -4,6 +4,7 @@ import {
   codeForChar,
   expectedKeyFor,
   getLayout,
+  inputCodeFor,
   layoutForProfile,
   layoutsForLanguage,
   profileOf,
@@ -144,6 +145,14 @@ describe('layouts', () => {
     expect(expectedKeyFor(ruMacIso, 'Slash', { shift: true, alt: false })).toBe(
       '?',
     )
+  })
+
+  it('swaps Mac ISO section and grave codes on input', () => {
+    expect(inputCodeFor(ruMacIso, 'Backquote')).toBe('IntlBackslash')
+    expect(inputCodeFor(ruMacIso, 'IntlBackslash')).toBe('Backquote')
+    expect(inputCodeFor(ruMacIso, 'KeyZ')).toBe('KeyZ')
+    expect(inputCodeFor(ruMac, 'Backquote')).toBe('Backquote')
+    expect(inputCodeFor(usMacIso, 'Backquote')).toBe('IntlBackslash')
   })
 
   it('resolves Mac Russian characters to physical codes', () => {

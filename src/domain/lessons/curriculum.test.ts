@@ -1,7 +1,10 @@
 import { faker } from '@faker-js/faker/locale/en'
 import { describe, expect, it } from 'vitest'
+import { mapFocusCodes } from '../../app/lessonLayout'
 import { getLayout } from '../layout'
+import type { LayoutId } from '../types'
 import { allLessons, getLesson } from './registry'
+import type { LessonProvider } from './types'
 
 function typedCodes(id: string): Set<string> {
   const provider = getLesson(id)
@@ -18,9 +21,9 @@ function typedCodes(id: string): Set<string> {
 }
 
 describe('curricula', () => {
-  it('produces non-empty, fully resolved cues for all 63 lessons', () => {
+  it('produces non-empty, fully resolved cues for all 56 lessons', () => {
     const metas = allLessons()
-    expect(metas).toHaveLength(63)
+    expect(metas).toHaveLength(56)
 
     for (const meta of metas) {
       const provider = getLesson(meta.id)
@@ -113,6 +116,247 @@ describe('curricula', () => {
     }
   })
 
+  it('keeps ru-pinky-bottom on unshifted pinky keys across Russian layouts', () => {
+    const provider = getLesson('ru-pinky-bottom')
+    expect(provider).toBeDefined()
+    const expectedCodes = new Set(['KeyZ', 'Slash', 'IntlBackslash'])
+
+    for (const layoutId of [
+      'ru-jcuken',
+      'ru-jcuken-mac',
+      'ru-jcuken-mac-iso',
+    ] as const) {
+      const layout = getLayout(layoutId)
+      const seen = new Set<string>()
+      let hasIntlBackslash = false
+      for (let index = 0; index < (provider?.templateCount ?? 0); index += 1) {
+        const cues = provider?.createCues(layout, { variantIndex: index }) ?? []
+        expect(cues.length, `${layoutId} variant ${index}`).toBeGreaterThan(0)
+        const text = cues.map((cue) => cue.text).join('')
+        expect(seen.has(text), `${layoutId} variant ${index} repeats`).toBe(
+          false,
+        )
+        seen.add(text)
+        for (const cue of cues) {
+          for (const char of cue.chars) {
+            if (char.code === 'Space' || char.code === 'Enter') {
+              continue
+            }
+            expect(
+              expectedCodes.has(char.code ?? ''),
+              `${layoutId}: ${char.code}`,
+            ).toBe(true)
+            expect(['lp', 'rp'], char.finger).toContain(char.finger)
+            expect(char.needsShift, `${layoutId}: ${char.code}`).toBe(false)
+            if (char.code === 'IntlBackslash') {
+              hasIntlBackslash = true
+            }
+          }
+        }
+      }
+      expect(hasIntlBackslash, layoutId).toBe(layoutId === 'ru-jcuken-mac-iso')
+    }
+  })
+
+  it('keeps the merged pinky lessons on their keys across layouts', () => {
+    const ruLayouts: readonly LayoutId[] = [
+      'ru-jcuken',
+      'ru-jcuken-mac',
+      'ru-jcuken-mac-iso',
+    ]
+    const enLayouts: readonly LayoutId[] = [
+      'us-qwerty',
+      'us-qwerty-mac',
+      'us-qwerty-mac-iso',
+    ]
+    const cases = [
+      {
+        id: 'ru-pinky-top',
+        codes: [
+          'KeyQ',
+          'KeyP',
+          'BracketLeft',
+          'BracketRight',
+          'Backslash',
+          'Backquote',
+        ],
+        fingers: ['lp', 'rp'],
+        layouts: ruLayouts,
+      },
+      {
+        id: 'ru-pinky-home-both',
+        codes: ['KeyA', 'Semicolon', 'Quote', 'Backslash'],
+        fingers: ['lp', 'rp'],
+        layouts: ruLayouts,
+      },
+      {
+        id: 'en-pinky-top',
+        codes: ['KeyQ', 'KeyP', 'BracketLeft', 'BracketRight'],
+        fingers: ['lp', 'rp'],
+        layouts: enLayouts,
+      },
+      {
+        id: 'en-pinky-home-both',
+        codes: ['KeyA', 'Semicolon', 'Quote'],
+        fingers: ['lp', 'rp'],
+        layouts: enLayouts,
+      },
+    ]
+
+    for (const { id, codes, fingers, layouts } of cases) {
+      const provider = getLesson(id)
+      expect(provider, id).toBeDefined()
+      const expectedCodes = new Set(codes)
+      for (const layoutId of layouts) {
+        const layout = getLayout(layoutId)
+        for (
+          let index = 0;
+          index < (provider?.templateCount ?? 0);
+          index += 1
+        ) {
+          const cues =
+            provider?.createCues(layout, { variantIndex: index }) ?? []
+          expect(
+            cues.length,
+            `${id} ${layoutId} variant ${index}`,
+          ).toBeGreaterThan(0)
+          for (const cue of cues) {
+            for (const char of cue.chars) {
+              if (char.code === 'Space' || char.code === 'Enter') {
+                continue
+              }
+              expect(
+                expectedCodes.has(char.code ?? ''),
+                `${id} ${layoutId}: ${char.code}`,
+              ).toBe(true)
+              expect(fingers, `${id} ${layoutId}: ${char.finger}`).toContain(
+                char.finger,
+              )
+              expect(char.needsShift, `${id} ${layoutId}: ${char.code}`).toBe(
+                false,
+              )
+            }
+          }
+        }
+      }
+    }
+  })
+
+  it('keeps ё on the intended pinky keys across layouts', () => {
+    const cuesFor = (
+      provider: LessonProvider | undefined,
+      layoutId: LayoutId,
+    ) =>
+      (provider?.createCues(getLayout(layoutId)) ?? []).flatMap(
+        (cue) => cue.chars,
+      )
+    const yoCodeFor = (
+      provider: LessonProvider | undefined,
+      layoutId: LayoutId,
+    ) => cuesFor(provider, layoutId).find((char) => char.char === 'ё')?.code
+
+    const top = getLesson('ru-pinky-top')
+    const home = getLesson('ru-pinky-home-both')
+
+    expect(yoCodeFor(top, 'ru-jcuken')).toBe('Backquote')
+    expect(yoCodeFor(top, 'ru-jcuken-mac')).toBe('Backslash')
+    expect(yoCodeFor(top, 'ru-jcuken-mac-iso')).toBeUndefined()
+
+    const backslashCodeFor = (layoutId: LayoutId) =>
+      cuesFor(top, layoutId).find((char) => char.char === '\\')?.code
+    expect(backslashCodeFor('ru-jcuken')).toBe('Backslash')
+    expect(backslashCodeFor('ru-jcuken-mac')).toBeUndefined()
+    expect(backslashCodeFor('ru-jcuken-mac-iso')).toBeUndefined()
+
+    expect(yoCodeFor(home, 'ru-jcuken')).toBeUndefined()
+    expect(yoCodeFor(home, 'ru-jcuken-mac')).toBeUndefined()
+    expect(yoCodeFor(home, 'ru-jcuken-mac-iso')).toBe('Backslash')
+  })
+
+  it('keeps Slash identity-bound for Russian bottom-row lessons on Mac', () => {
+    for (const id of ['ru-bottom-right', 'ru-bottom-both']) {
+      const provider = getLesson(id)
+      expect(provider, id).toBeDefined()
+      for (const layoutId of ['ru-jcuken-mac', 'ru-jcuken-mac-iso'] as const) {
+        const layout = getLayout(layoutId)
+        const meta = provider?.meta
+        expect(meta, id).toBeDefined()
+        const focus =
+          meta &&
+          mapFocusCodes(
+            meta.layoutFocusCodes?.[layout.id] ?? meta.focusCodes,
+            getLayout(meta.layoutId),
+            layout,
+            meta.identityCodes,
+          )
+        expect(focus, `${id} ${layoutId}`).toContain('Slash')
+        const cues = provider?.createCues(layout, { variantIndex: 0 }) ?? []
+        const slash = cues
+          .flatMap((cue) => cue.chars)
+          .find((char) => char.code === 'Slash')
+        expect(slash?.char, `${id} ${layoutId}`).toBe('/')
+      }
+    }
+  })
+
+  it('scopes top-row punctuation across Russian layouts', () => {
+    for (const id of ['ru-top-right', 'ru-top-both']) {
+      const provider = getLesson(id)
+      expect(provider, id).toBeDefined()
+      const textFor = (layoutId: LayoutId) =>
+        (provider?.createCues(getLayout(layoutId)) ?? [])
+          .map((cue) => cue.text)
+          .join('')
+
+      const win = textFor('ru-jcuken')
+      const mac = textFor('ru-jcuken-mac')
+      const iso = textFor('ru-jcuken-mac-iso')
+      for (const text of [win, mac, iso]) {
+        expect(text, id).toContain('х')
+        expect(text, id).toContain('ъ')
+      }
+      expect(win, id).toContain('\\')
+      expect(win, id).not.toContain('ё')
+      expect(mac, id).toContain('ё')
+      expect(mac, id).not.toContain('\\')
+      expect(iso, id).not.toContain('ё')
+      expect(iso, id).not.toContain('\\')
+    }
+  })
+
+  it('scopes pinky-both punctuation across Russian layouts', () => {
+    const provider = getLesson('ru-pinky-both')
+    expect(provider).toBeDefined()
+    const textFor = (layoutId: LayoutId) =>
+      (provider?.createCues(getLayout(layoutId)) ?? [])
+        .map((cue) => cue.text)
+        .join('')
+
+    const win = textFor('ru-jcuken')
+    const mac = textFor('ru-jcuken-mac')
+    const iso = textFor('ru-jcuken-mac-iso')
+    for (const text of [win, mac, iso]) {
+      for (const char of ['ф', 'й', 'я', 'ж', 'з', 'х', 'ъ', 'э']) {
+        expect(text).toContain(char)
+      }
+    }
+    expect(win).toContain('.')
+    expect(win).toContain('\\')
+    expect(win).toContain('ё')
+    expect(win).not.toContain(']')
+    expect(win).not.toContain('>')
+    expect(mac).toContain('/')
+    expect(mac).toContain('ё')
+    expect(mac).toContain(']')
+    expect(mac).not.toContain('\\')
+    expect(mac).not.toContain('>')
+    expect(iso).toContain('/')
+    expect(iso).toContain('ё')
+    expect(iso).toContain('>')
+    expect(iso).toContain(']')
+    expect(iso).not.toContain('\\')
+  })
+
   it('resolves every English lesson with the Mac ISO layout', () => {
     const macIso = getLayout('us-qwerty-mac-iso')
     const english = allLessons().filter((meta) => meta.language === 'en')
@@ -143,7 +387,7 @@ describe('curricula', () => {
     const right = allLessons().find((lesson) => lesson.id === 'ru-home-right')
     expect([...(right?.focusCodes ?? [])].sort()).toEqual([...homeKeys].sort())
 
-    for (const id of ['ru-home-both', 'ru-home-words']) {
+    for (const id of ['ru-home-both']) {
       const meta = allLessons().find((lesson) => lesson.id === id)
       const focus = new Set(meta?.focusCodes ?? [])
       for (const code of homeKeys) {
@@ -236,21 +480,5 @@ describe('curricula', () => {
     expect(result?.cues).toEqual(
       provider?.createCues(undefined, { variantIndex: 0 }),
     )
-  })
-
-  it('keeps the English home-words drill to the home row', () => {
-    const focus = new Set([
-      'KeyA',
-      'KeyS',
-      'KeyD',
-      'KeyF',
-      'KeyJ',
-      'KeyK',
-      'KeyL',
-      'Semicolon',
-    ])
-    for (const code of typedCodes('en-home-words')) {
-      expect(focus.has(code), `en-home-words: ${code}`).toBe(true)
-    }
   })
 })

@@ -287,6 +287,7 @@ describe('PlayScreen', () => {
     expect(container.textContent).not.toContain('Switch to Русская (Windows)')
 
     await press('KeyB', 'b')
+    expect(container.textContent).not.toContain('Switch to Русская (Windows)')
     expect(container.textContent).toContain('Lesson complete')
   })
 
