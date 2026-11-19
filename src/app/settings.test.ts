@@ -49,6 +49,31 @@ describe('settings showFeedback', () => {
   })
 })
 
+describe('settings showContentEditor', () => {
+  it('defaults to hidden, including for older saved settings', () => {
+    expect(DEFAULT_SETTINGS.showContentEditor).toBe(false)
+    expect(storeWith().store.load().showContentEditor).toBe(false)
+    expect(
+      storeWith(JSON.stringify({ sound: false })).store.load()
+        .showContentEditor,
+    ).toBe(false)
+  })
+
+  it('ignores non-boolean values and restores an explicit one', () => {
+    expect(
+      storeWith(JSON.stringify({ showContentEditor: 'yes' })).store.load()
+        .showContentEditor,
+    ).toBe(false)
+    const { store, values } = storeWith(
+      JSON.stringify({ showContentEditor: true }),
+    )
+    expect(store.load().showContentEditor).toBe(true)
+    expect(
+      JSON.parse(values.get('kb-solo.settings') ?? '{}').showContentEditor,
+    ).toBe(true)
+  })
+})
+
 describe('settings shortcuts', () => {
   it('uses the platform defaults when nothing is stored', () => {
     const { store } = storeWith()
@@ -105,7 +130,6 @@ describe('settings shortcuts', () => {
   })
 })
 
-
 describe('settings randomTemplates', () => {
   it('defaults to off', () => {
     expect(DEFAULT_SETTINGS.randomTemplates).toBe(false)
@@ -118,7 +142,9 @@ describe('settings randomTemplates', () => {
   })
 
   it('restores and persists an explicit value', () => {
-    const { store, values } = storeWith(JSON.stringify({ randomTemplates: true }))
+    const { store, values } = storeWith(
+      JSON.stringify({ randomTemplates: true }),
+    )
     expect(store.load().randomTemplates).toBe(true)
     expect(
       JSON.parse(values.get('kb-solo.settings') ?? '{}').randomTemplates,
@@ -214,9 +240,9 @@ describe('settings paceLevel', () => {
       JSON.stringify({ paceLevel: 'challenging' }),
     )
     expect(store.load().paceLevel).toBe('challenging')
-    expect(
-      JSON.parse(values.get('kb-solo.settings') ?? '{}').paceLevel,
-    ).toBe('challenging')
+    expect(JSON.parse(values.get('kb-solo.settings') ?? '{}').paceLevel).toBe(
+      'challenging',
+    )
   })
 
   it('accepts and persists the hardcore level', () => {
@@ -224,8 +250,8 @@ describe('settings paceLevel', () => {
       JSON.stringify({ paceLevel: 'hardcore' }),
     )
     expect(store.load().paceLevel).toBe('hardcore')
-    expect(
-      JSON.parse(values.get('kb-solo.settings') ?? '{}').paceLevel,
-    ).toBe('hardcore')
+    expect(JSON.parse(values.get('kb-solo.settings') ?? '{}').paceLevel).toBe(
+      'hardcore',
+    )
   })
 })

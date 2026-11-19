@@ -108,6 +108,22 @@ describe('SettingsPanel shortcuts', () => {
     expect(onPatch).toHaveBeenCalledWith({ showFeedback: true })
   })
 
+  it('toggles the show content editor setting', async () => {
+    await render()
+    const label = [...container.querySelectorAll('label')].find(
+      (element) => element.textContent === 'Show content editor',
+    )
+    const checkbox = label?.querySelector('input[type="checkbox"]')
+    expect(checkbox).toBeDefined()
+    const input = checkbox as HTMLInputElement
+    expect(input.checked).toBe(false)
+
+    await act(async () => {
+      input.click()
+    })
+    expect(onPatch).toHaveBeenCalledWith({ showContentEditor: true })
+  })
+
   it('shows the configured shortcuts', async () => {
     await render()
     expect(container.textContent).toContain('Keyboard shortcuts')

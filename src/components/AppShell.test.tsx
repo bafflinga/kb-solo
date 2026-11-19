@@ -64,6 +64,39 @@ describe('AppShell', () => {
     vi.useRealTimers()
   })
 
+  it('shows content cache status as a transient toast instead of a header label', async () => {
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    expect(container.querySelector('.content-status')).toBeNull()
+    expect(container.querySelector('.content-toast')?.textContent).toContain(
+      'Content cached',
+    )
+    expect(
+      [...container.querySelectorAll('.app-nav a')].some(
+        (link) => link.getAttribute('href') === '#/content',
+      ),
+    ).toBe(false)
+  })
+
+  it('shows the content editor menu item only when the setting is enabled', async () => {
+    localStorage.setItem(
+      'kb-solo.settings',
+      JSON.stringify({ showContentEditor: true }),
+    )
+
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+
+    expect(
+      [...container.querySelectorAll('.app-nav a')].some(
+        (link) => link.getAttribute('href') === '#/content',
+      ),
+    ).toBe(true)
+  })
+
   it('renders the menu with the keyboard board', async () => {
     await act(async () => {
       root.render(<AppShell />)
@@ -481,9 +514,7 @@ describe('AppShell', () => {
       flushProgress()
     })
 
-    const raw = localStorage.getItem(
-      'kb-solo.progress.hardcore.en-home-left',
-    )
+    const raw = localStorage.getItem('kb-solo.progress.hardcore.en-home-left')
     expect(raw).toBeDefined()
     const record = JSON.parse(raw ?? '{}')
     expect(record).toMatchObject({
@@ -498,9 +529,9 @@ describe('AppShell', () => {
     await act(async () => {
       window.dispatchEvent(new Event('hashchange'))
     })
-    const right = [...container.querySelectorAll<HTMLButtonElement>('.lesson-button')].find(
-      (button) => button.textContent?.includes('Home row: right hand'),
-    )
+    const right = [
+      ...container.querySelectorAll<HTMLButtonElement>('.lesson-button'),
+    ].find((button) => button.textContent?.includes('Home row: right hand'))
     expect(right?.disabled).toBe(true)
 
     vi.useRealTimers()

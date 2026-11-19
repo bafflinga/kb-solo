@@ -10,6 +10,38 @@ import type {
   LessonProvider,
 } from './types'
 
+export function focusKeyLabels(meta: LessonMeta): string {
+  if (!meta.focusCodes?.length) {
+    return ''
+  }
+  const layout = getLayout(meta.layoutId)
+  return meta.focusCodes
+    .map((code) => layout.legends[code]?.base ?? code)
+    .join(' ')
+}
+
+export function focusCharsFor(
+  meta: LessonMeta,
+): ReadonlySet<string> | undefined {
+  if (!meta.focusCodes?.length) {
+    return undefined
+  }
+  const layout = getLayout(meta.layoutId)
+  const chars = new Set<string>([' ', '\n'])
+  for (const code of meta.focusCodes) {
+    const legend = layout.legends[code]
+    if (!legend) {
+      continue
+    }
+    chars.add(legend.base)
+    chars.add(legend.shift)
+    if (legend.alt) {
+      chars.add(legend.alt)
+    }
+  }
+  return chars
+}
+
 function pickVariant<T>(variants: readonly T[], index?: number): T {
   if (variants.length === 0) {
     throw new Error('Lesson templates must include at least one variant')

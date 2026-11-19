@@ -1,10 +1,11 @@
 import { use, useEffect, useSyncExternalStore } from 'react'
 import { lessonsDb } from '../../storage/lessonsDb'
 import type { ContentLanguage } from '../types'
+import { focusCharsFor } from './curriculum'
 import { allLessons, getLessonMeta, isKnownLessonId } from './registry'
 import type { LanguageContent, LessonContent, LessonKind } from './types'
 
-const CONTENT_FORMAT_VERSION = 1
+export const CONTENT_FORMAT_VERSION = 1
 export const PACK_FORMAT = 'kb-solo-content-pack'
 const BASE_URL = import.meta.env.BASE_URL ?? '/'
 
@@ -22,11 +23,13 @@ export interface ContentPack {
   format: string
   formatVersion: number
   exportedAt: number
+  description: string
   items: Record<string, LessonContent>
 }
 
 export interface ParsedPack {
   exportedAt: number
+  description: string
   items: { id: string; document: LessonContent }[]
   skipped: string[]
 }
@@ -44,28 +47,95 @@ function isLanguage(value: unknown): value is ContentLanguage {
   return value === 'en' || value === 'ru'
 }
 
-function parseLessonContent(value: unknown, kind: LessonKind): LessonContent {
+export type ContentValidationCode =
+  'format' | 'variants' | 'variant-shape' | 'focus-keys'
+
+export interface ContentValidationIssue {
+  code: ContentValidationCode
+  message: string
+}
+
+export function validateLessonContent(
+  value: unknown,
+  kind: LessonKind,
+  allowedChars?: ReadonlySet<string>,
+): ContentValidationIssue[] {
   if (!isRecord(value)) {
-    throw new Error('Lesson content must be an object')
+    return [{ code: 'format', message: 'Lesson content must be an object' }]
   }
+  const issues: ContentValidationIssue[] = []
   if (value.formatVersion !== CONTENT_FORMAT_VERSION) {
-    throw new Error(
-      `Unsupported content format: ${String(value.formatVersion)}`,
-    )
+    issues.push({
+      code: 'format',
+      message: `Unsupported content format: ${String(value.formatVersion)}`,
+    })
   }
   if (!Array.isArray(value.variants)) {
-    throw new Error('Lesson content must contain a variants array')
+    issues.push({
+      code: 'variants',
+      message: 'Lesson content must contain a variants array',
+    })
+    return issues
   }
-  const valid = value.variants.every((variant) =>
-    kind === 'words'
-      ? Array.isArray(variant) &&
-        variant.every((word) => typeof word === 'string')
-      : typeof variant === 'string',
-  )
-  if (!valid) {
-    throw new Error(`Invalid ${kind} variants`)
+  if (value.variants.length === 0) {
+    issues.push({
+      code: 'variants',
+      message: 'At least one variant is required',
+    })
   }
-  return { formatVersion: CONTENT_FORMAT_VERSION, variants: value.variants }
+  value.variants.forEach((variant, index) => {
+    const position = index + 1
+    if (kind === 'words') {
+      if (
+        !Array.isArray(variant) ||
+        variant.length === 0 ||
+        variant.some((word) => typeof word !== 'string')
+      ) {
+        issues.push({
+          code: 'variant-shape',
+          message: `Invalid words variant ${position}`,
+        })
+      }
+    } else if (typeof variant !== 'string' || variant.trim().length === 0) {
+      issues.push({
+        code: 'variant-shape',
+        message: `Invalid ${kind} variant ${position}`,
+      })
+    }
+  })
+  if (kind === 'drill' && allowedChars) {
+    value.variants.forEach((variant, index) => {
+      if (typeof variant !== 'string') {
+        return
+      }
+      const outside = Array.from(variant).find(
+        (char) => char.trim().length > 0 && !allowedChars.has(char),
+      )
+      if (outside !== undefined) {
+        issues.push({
+          code: 'focus-keys',
+          message: `Variant ${index + 1} uses ${JSON.stringify(outside)} outside the focus keys`,
+        })
+      }
+    })
+  }
+  return issues
+}
+
+function parseLessonContent(
+  value: unknown,
+  kind: LessonKind,
+  allowedChars?: ReadonlySet<string>,
+): LessonContent {
+  const issues = validateLessonContent(value, kind, allowedChars)
+  if (issues.length > 0) {
+    throw new Error(issues[0]?.message)
+  }
+  const record = value as Record<string, unknown>
+  return {
+    formatVersion: CONTENT_FORMAT_VERSION,
+    variants: record.variants as unknown[],
+  }
 }
 
 function parseLanguageContent(
@@ -86,7 +156,7 @@ function parseLanguageContent(
     if (!meta?.kind) {
       throw new Error(`Unknown lesson in ${language} content: ${id}`)
     }
-    lessons[id] = parseLessonContent(raw, meta.kind)
+    lessons[id] = parseLessonContent(raw, meta.kind, focusCharsFor(meta))
   }
   return {
     formatVersion: CONTENT_FORMAT_VERSION,
@@ -268,7 +338,7 @@ export async function setOverride(
   if (!meta?.kind) {
     throw new Error(`Unknown lesson: ${id}`)
   }
-  const parsed = parseLessonContent(document, meta.kind)
+  const parsed = parseLessonContent(document, meta.kind, focusCharsFor(meta))
   await lessonsDb.putOverride({ id, document: parsed, updatedAt: Date.now() })
   pending.delete(id)
   void refreshStatus()
@@ -280,7 +350,10 @@ export async function resetOverride(id: string): Promise<void> {
   void refreshStatus()
 }
 
-export async function exportPack(ids: readonly string[]): Promise<ContentPack> {
+export async function exportPack(
+  ids: readonly string[],
+  description = '',
+): Promise<ContentPack> {
   const items: Record<string, LessonContent> = {}
   for (const id of ids) {
     if (!isKnownLessonId(id)) {
@@ -292,6 +365,7 @@ export async function exportPack(ids: readonly string[]): Promise<ContentPack> {
     format: PACK_FORMAT,
     formatVersion: CONTENT_FORMAT_VERSION,
     exportedAt: Date.now(),
+    description: description.trim(),
     items,
   }
 }
@@ -319,13 +393,18 @@ export function parsePack(text: string): ParsedPack {
       continue
     }
     try {
-      items.push({ id, document: parseLessonContent(raw, meta.kind) })
+      items.push({
+        id,
+        document: parseLessonContent(raw, meta.kind, focusCharsFor(meta)),
+      })
     } catch {
       skipped.push(id)
     }
   }
   return {
     exportedAt: typeof value.exportedAt === 'number' ? value.exportedAt : 0,
+    description:
+      typeof value.description === 'string' ? value.description.trim() : '',
     items,
     skipped,
   }
@@ -333,13 +412,15 @@ export function parsePack(text: string): ParsedPack {
 
 export async function applyPack(
   pack: ParsedPack,
-  overwrite = false,
+  overwrite: boolean | ReadonlySet<string> = false,
 ): Promise<ApplyResult> {
   const applied: string[] = []
   const conflicts: string[] = []
   for (const { id, document } of pack.items) {
     const existing = await lessonsDb.getOverride(id)
-    if (existing && !overwrite) {
+    const approved =
+      overwrite === true || (overwrite instanceof Set && overwrite.has(id))
+    if (existing && !approved) {
       conflicts.push(id)
       continue
     }

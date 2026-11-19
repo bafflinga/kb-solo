@@ -3,12 +3,16 @@ import { useEffect, useState } from 'react'
 export type Route =
   | { screen: 'menu' }
   | { screen: 'stats' }
+  | { screen: 'content' }
   | { screen: 'lesson'; lessonId: string }
 
 export function parseHash(hash: string): Route {
   const path = hash.replace(/^#\/?/, '')
   if (path === 'stats') {
     return { screen: 'stats' }
+  }
+  if (path === 'content') {
+    return { screen: 'content' }
   }
   if (path.startsWith('lesson/')) {
     const lessonId = path.slice('lesson/'.length)

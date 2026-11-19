@@ -1,4 +1,11 @@
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { mapFocusCodes, resolveLessonLayout } from '../app/lessonLayout'
 import { routeKey } from '../app/navigation'
 import { loadSettings, updateSettings } from '../app/settings'
@@ -7,8 +14,9 @@ import { navigate, useHashRoute } from '../app/useHashRoute'
 import { setMuted } from '../audio/audio'
 import { getLayout, layoutForProfile, profileOf } from '../domain/layout'
 import {
+  getContentStatus,
   loadLanguage,
-  useContentCacheStatus,
+  refreshStatus,
 } from '../domain/lessons/contentStore'
 import { allLessons, getLessonMeta } from '../domain/lessons/registry'
 import type { Code, ContentLanguage } from '../domain/types'
@@ -24,6 +32,9 @@ import {
 import type { LessonResult } from '../storage/progress'
 import { Keyboard } from './Keyboard/Keyboard'
 import { createKeyboardController } from './Keyboard/keyboardController'
+import { ContentScreen } from './ContentScreen'
+import { ContentToast } from './ContentToast'
+import type { ToastMessage } from './ContentToast'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { ContentErrorBoundary, LessonGate } from './LessonGate'
 import { LessonPicker } from './LessonPicker'
@@ -34,22 +45,54 @@ import { StatsScreen } from './StatsScreen'
 export default function AppShell() {
   const i18n = useI18n()
   const { t, locale, setLocale } = i18n
-  const cacheStatus = useContentCacheStatus()
   const route = useHashRoute()
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings())
   const [settingsKey, setSettingsKey] = useState<string | null>(null)
   const [, setProgressVersion] = useState(0)
+  const [contentVersion, setContentVersion] = useState(0)
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+  const tRef = useRef(t)
   const currentKey = routeKey(route)
+
+  useEffect(() => {
+    tRef.current = t
+  }, [t])
+
+  const notify = useCallback((text: string): void => {
+    setToast({ id: Date.now() + Math.random(), text })
+  }, [])
+  const dismissToast = useCallback((): void => setToast(null), [])
+  const handleContentChange = useCallback((): void => {
+    setContentVersion((version) => version + 1)
+  }, [])
 
   useEffect(() => {
     setMuted(!settings.sound)
   }, [settings.sound])
 
   useEffect(() => {
-    void loadLanguage(settings.contentLanguage).catch((error: unknown) => {
-      console.error(error)
-    })
-  }, [settings.contentLanguage])
+    let cancelled = false
+    void (async () => {
+      try {
+        await loadLanguage(settings.contentLanguage)
+        await refreshStatus()
+        if (!cancelled) {
+          const status = getContentStatus()
+          notify(
+            tRef.current('contentCached', {
+              cached: status.cached,
+              total: status.total,
+            }),
+          )
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [settings.contentLanguage, notify])
 
   const settingsOpen = settingsKey === currentKey
 
@@ -156,14 +199,6 @@ export default function AppShell() {
         </a>
         <header className="app-header">
           <h1>{t('appName')}</h1>
-          {cacheStatus.total > 0 && (
-            <span className="content-status">
-              {t('contentCached', {
-                cached: cacheStatus.cached,
-                total: cacheStatus.total,
-              })}
-            </span>
-          )}
           <LanguageSwitcher
             locale={locale}
             onChange={changeLocale}
@@ -184,6 +219,15 @@ export default function AppShell() {
             >
               {t('stats')}
             </a>
+            {settings.showContentEditor && (
+              <a
+                href="#/content"
+                className={route.screen === 'content' ? 'active' : ''}
+                onClick={closeSettings}
+              >
+                {t('contentEditor')}
+              </a>
+            )}
             <button
               type="button"
               className={settingsOpen ? 'active' : ''}
@@ -197,6 +241,16 @@ export default function AppShell() {
         </header>
 
         <main id="main" className="app-main">
+          {route.screen === 'content' && (
+            <ContentScreen
+              key={settings.contentLanguage}
+              language={settings.contentLanguage}
+              version={contentVersion}
+              onChange={handleContentChange}
+              notify={notify}
+            />
+          )}
+
           {route.screen === 'stats' && (
             <StatsScreen
               progress={progress}
@@ -225,7 +279,7 @@ export default function AppShell() {
                   }
                 >
                   <LessonGate
-                    key={lessonMeta.id}
+                    key={`${lessonMeta.id}:${contentVersion}`}
                     lessonId={lessonMeta.id}
                     layout={lessonLayout}
                     focusCodes={focusCodes}
@@ -321,6 +375,7 @@ export default function AppShell() {
         />
       </aside>
       <PwaUpdatePrompt />
+      <ContentToast message={toast} onDismiss={dismissToast} />
     </div>
   )
 }

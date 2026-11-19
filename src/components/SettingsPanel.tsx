@@ -239,12 +239,27 @@ export function SettingsPanel({
       {settings.generatedDrills && (
         <p className="muted">{t('generatedDrillsHint')}</p>
       )}
+      <label className="field checkbox">
+        <input
+          type="checkbox"
+          checked={settings.showContentEditor}
+          onChange={(event) =>
+            onPatch({ showContentEditor: event.target.checked })
+          }
+        />
+        <span>{t('showContentEditor')}</span>
+      </label>
+      {settings.showContentEditor && (
+        <p className="muted">{t('showContentEditorHint')}</p>
+      )}
       <label className="field">
         <span>{t('pace')}</span>
         <select
           value={settings.paceLevel}
           onChange={(event) =>
-            onPatch({ paceLevel: event.target.value as AppSettings['paceLevel'] })
+            onPatch({
+              paceLevel: event.target.value as AppSettings['paceLevel'],
+            })
           }
         >
           {PACE_LEVELS.map((level) => (

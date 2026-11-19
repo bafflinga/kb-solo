@@ -22,6 +22,7 @@ export interface AppSettings {
   paceLevel: PaceLevel
   errorMode: ErrorMode
   strictShift: boolean
+  showContentEditor: boolean
   fingerOverrides: Partial<Record<Code, Finger>>
   shortcuts: ShortcutSettings
 }
@@ -53,6 +54,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   paceLevel: 'off',
   errorMode: 'block',
   strictShift: false,
+  showContentEditor: false,
   fingerOverrides: {},
   shortcuts: DEFAULT_SHORTCUTS,
 }
@@ -77,8 +79,7 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
           ? parsed.generatedDrills
           : DEFAULT_SETTINGS.generatedDrills
       const randomTemplates =
-        generatedDrills &&
-        typeof parsed.randomTemplates === 'boolean'
+        generatedDrills && typeof parsed.randomTemplates === 'boolean'
           ? false
           : typeof parsed.randomTemplates === 'boolean'
             ? parsed.randomTemplates
@@ -101,6 +102,10 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
         paceLevel: isPaceLevel(parsed.paceLevel)
           ? parsed.paceLevel
           : DEFAULT_SETTINGS.paceLevel,
+        showContentEditor:
+          typeof parsed.showContentEditor === 'boolean'
+            ? parsed.showContentEditor
+            : DEFAULT_SETTINGS.showContentEditor,
         shortcuts:
           normalizeShortcutSettings(parsed.shortcuts) ?? DEFAULT_SHORTCUTS,
       }

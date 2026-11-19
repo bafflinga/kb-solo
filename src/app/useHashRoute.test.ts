@@ -6,6 +6,7 @@ describe('parseHash', () => {
     expect(parseHash('')).toEqual({ screen: 'menu' })
     expect(parseHash('#/')).toEqual({ screen: 'menu' })
     expect(parseHash('#/stats')).toEqual({ screen: 'stats' })
+    expect(parseHash('#/content')).toEqual({ screen: 'content' })
     expect(parseHash('#/lesson/en-home-left')).toEqual({
       screen: 'lesson',
       lessonId: 'en-home-left',
