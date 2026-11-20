@@ -307,7 +307,9 @@
           "city",
           "class",
           "cloth",
-          "coast",
+          "coast"
+        ],
+        [
           "coin",
           "color",
           "comb",
@@ -379,7 +381,9 @@
           "power",
           "price",
           "problem",
-          "product",
+          "product"
+        ],
+        [
           "program",
           "project",
           "queen",
@@ -451,7 +455,9 @@
           "trade",
           "train",
           "travel",
-          "tree",
+          "tree"
+        ],
+        [
           "trip",
           "truck",
           "truth",
@@ -523,7 +529,9 @@
           "farmer",
           "feather",
           "field",
-          "fire",
+          "fire"
+        ],
+        [
           "fish",
           "flag",
           "flower",

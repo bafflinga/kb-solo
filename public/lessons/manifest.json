@@ -4,12 +4,12 @@
     {
       "language": "en",
       "file": "en.json",
-      "hash": "9e6ae9848d1469322f8f08f0db96dffdfb0d2995d28eaa59e8ea9dcf7e82cce3"
+      "hash": "120cf4b4ae894c41df470375b526f24525ae72fe52d6fcd80b05b500ed6186ea"
     },
     {
       "language": "ru",
       "file": "ru.json",
-      "hash": "1e30a3ac6c044f5e4ee4481ffd7bcfdc37405f269bb7c31796ec0bf6318df713"
+      "hash": "85d89f50c7ee66ed03417519c0650096b0d131b19a9417d52605ea45eae619f0"
     }
   ]
 }
