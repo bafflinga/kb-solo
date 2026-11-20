@@ -6,7 +6,13 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.homeLeft',
-    focus: { keys: { codes: ['KeyA', 'KeyS', 'KeyD', 'KeyF'] } },
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['home'],
+        exclude: ['KeyG'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -14,7 +20,13 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.homeRight',
-    focus: { keys: { codes: ['KeyJ', 'KeyK', 'KeyL', 'Semicolon'] } },
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['home'],
+        exclude: ['KeyH', 'Quote', 'Backslash'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -24,16 +36,9 @@ const defs: LessonDef[] = [
     titleKey: 'lesson.ru.homeBoth',
     focus: {
       keys: {
-        codes: [
-          'KeyA',
-          'KeyS',
-          'KeyD',
-          'KeyF',
-          'KeyJ',
-          'KeyK',
-          'KeyL',
-          'Semicolon',
-        ],
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['home'],
+        exclude: ['KeyG', 'KeyH', 'Quote', 'Backslash'],
       },
     },
     kind: 'drill',
@@ -43,7 +48,7 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.indexTopLeft',
-    focus: { keys: { codes: ['KeyR', 'KeyT'] } },
+    focus: { keys: { fingers: ['li'], rows: ['top'] } },
     kind: 'drill',
   },
   {
@@ -51,7 +56,7 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.indexTopRight',
-    focus: { keys: { codes: ['KeyY', 'KeyU'] } },
+    focus: { keys: { fingers: ['ri'], rows: ['top'] } },
     kind: 'drill',
   },
   {
@@ -59,7 +64,13 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.indexMid',
-    focus: { keys: { codes: ['KeyG', 'KeyH'] } },
+    focus: {
+      keys: {
+        fingers: ['li', 'ri'],
+        rows: ['home'],
+        exclude: ['KeyF', 'KeyJ'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -67,7 +78,7 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.indexBottom',
-    focus: { keys: { codes: ['KeyV', 'KeyB', 'KeyN', 'KeyM'] } },
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['bottom'] } },
     kind: 'drill',
   },
   {
@@ -92,7 +103,11 @@ const defs: LessonDef[] = [
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.digitsLeft',
     focus: {
-      keys: { codes: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'] },
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['digits'],
+        exclude: ['Backquote'],
+      },
     },
     kind: 'drill',
   },
@@ -102,7 +117,11 @@ const defs: LessonDef[] = [
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.digitsRight',
     focus: {
-      keys: { codes: ['Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'] },
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['digits'],
+        exclude: ['Minus', 'Equal'],
+      },
     },
     kind: 'drill',
   },
@@ -111,7 +130,7 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken-mac-iso',
     titleKey: 'lesson.ru.pinkyBottom',
-    focus: { keys: { codes: ['KeyZ', 'Slash', 'IntlBackslash'] } },
+    focus: { keys: { fingers: ['lp', 'rp'], rows: ['bottom'] } },
     kind: 'drill',
   },
   {
@@ -119,7 +138,13 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.pinkyTop',
-    focus: { keys: { fingers: ['lp', 'rp'], rows: ['top'] } },
+    focus: {
+      keys: {
+        fingers: ['lp', 'rp'],
+        rows: ['top', 'digits'],
+        exclude: ['Digit0', 'Digit1', 'Minus', 'Equal'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -135,11 +160,7 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.bottomRight',
-    focus: {
-      keys: {
-        codes: ['KeyN', 'KeyM', 'Comma', 'Period', 'Slash'],
-      },
-    },
+    focus: { keys: { fingers: ['ri', 'rm', 'rr', 'rp'], rows: ['bottom'] } },
     kind: 'drill',
   },
   {
@@ -183,24 +204,7 @@ const defs: LessonDef[] = [
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.indexBoth',
-    focus: {
-      keys: {
-        codes: [
-          'KeyF',
-          'KeyG',
-          'KeyR',
-          'KeyT',
-          'KeyV',
-          'KeyB',
-          'KeyN',
-          'KeyM',
-          'KeyJ',
-          'KeyH',
-          'KeyY',
-          'KeyU',
-        ],
-      },
-    },
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['top', 'home', 'bottom'] } },
     kind: 'drill',
   },
   {
@@ -210,18 +214,9 @@ const defs: LessonDef[] = [
     titleKey: 'lesson.ru.bottomBoth',
     focus: {
       keys: {
-        codes: [
-          'KeyZ',
-          'KeyX',
-          'KeyC',
-          'KeyV',
-          'KeyB',
-          'KeyN',
-          'KeyM',
-          'Comma',
-          'Period',
-          'Slash',
-        ],
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['bottom'],
+        exclude: ['IntlBackslash'],
       },
     },
     kind: 'drill',
@@ -246,20 +241,9 @@ const defs: LessonDef[] = [
     titleKey: 'lesson.ru.pinkyBoth',
     focus: {
       keys: {
-        codes: [
-          'KeyA',
-          'KeyQ',
-          'KeyZ',
-          'Semicolon',
-          'KeyP',
-          'BracketLeft',
-          'BracketRight',
-          'Quote',
-          'Slash',
-          'Backslash',
-          'Backquote',
-          'IntlBackslash',
-        ],
+        fingers: ['lp', 'rp'],
+        rows: ['digits', 'top', 'home', 'bottom'],
+        exclude: ['Digit0', 'Digit1', 'Minus', 'Equal'],
       },
     },
     kind: 'drill',

@@ -13,7 +13,7 @@ import {
   dismissLayoutMismatch,
   loadDismissedLayoutMismatch,
 } from '../app/layoutMismatchNotice'
-import { DEFAULT_SHORTCUTS } from '../app/shortcuts'
+import { DEFAULT_SHORTCUTS, NEXT_LESSON_SHORTCUT } from '../app/shortcuts'
 import type { ShortcutSettings } from '../app/shortcuts'
 import { useGlobalShortcut } from '../app/useGlobalShortcut'
 import { useTypingSession } from '../app/useTypingSession'
@@ -229,6 +229,17 @@ export function PlayScreen({
   const language = lesson.meta.language === 'ru' ? 'ru' : 'en'
   const next = nextLesson(lesson.meta)
 
+  const goToNext = useCallback(() => {
+    if (next) {
+      navigate(`#/lesson/${encodeURIComponent(next.id)}`)
+    }
+  }, [next])
+
+  useGlobalShortcut({
+    shortcut: NEXT_LESSON_SHORTCUT,
+    enabled: !suspended && next !== undefined,
+    onTrigger: goToNext,
+  })
   useGlobalShortcut({
     shortcut: shortcuts.start,
     enabled: !suspended && (state.status === 'idle' || finished),
@@ -350,11 +361,7 @@ export function PlayScreen({
             previousBest={previousBest}
             hasNext={next !== undefined}
             onRetry={begin}
-            onNext={() => {
-              if (next) {
-                navigate(`#/lesson/${encodeURIComponent(next.id)}`)
-              }
-            }}
+            onNext={goToNext}
             onBack={() => navigate('#/')}
           />
         )}

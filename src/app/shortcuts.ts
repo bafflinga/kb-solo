@@ -55,13 +55,14 @@ export function isModifierCode(code: string): boolean {
   return MODIFIER_CODES.has(code)
 }
 
+function primaryModifier(): Pick<Shortcut, 'ctrl' | 'meta'> {
+  return isMac() ? { ctrl: false, meta: true } : { ctrl: true, meta: false }
+}
+
 export function defaultShortcuts(): ShortcutSettings {
-  const primary = isMac()
-    ? { ctrl: false, meta: true }
-    : { ctrl: true, meta: false }
   const start: Shortcut = {
     code: 'Enter',
-    ...primary,
+    ...primaryModifier(),
     alt: false,
     shift: false,
   }
@@ -69,6 +70,17 @@ export function defaultShortcuts(): ShortcutSettings {
 }
 
 export const DEFAULT_SHORTCUTS: ShortcutSettings = defaultShortcuts()
+
+export function defaultNextLessonShortcut(): Shortcut {
+  return {
+    code: 'ArrowRight',
+    ...primaryModifier(),
+    alt: false,
+    shift: false,
+  }
+}
+
+export const NEXT_LESSON_SHORTCUT: Shortcut = defaultNextLessonShortcut()
 
 export function matchesShortcut(
   event: KeyboardEvent,

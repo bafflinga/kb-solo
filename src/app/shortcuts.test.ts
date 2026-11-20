@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
 import {
+  defaultNextLessonShortcut,
   defaultShortcuts,
   formatShortcut,
   isMac,
@@ -61,6 +62,26 @@ describe('shortcuts', () => {
     setPlatform('MacIntel')
     expect(defaultShortcuts().start).toEqual({
       code: 'Enter',
+      ctrl: false,
+      meta: true,
+      alt: false,
+      shift: false,
+    })
+  })
+
+  it('builds a platform-appropriate next-lesson shortcut', () => {
+    setPlatform('Win32')
+    expect(defaultNextLessonShortcut()).toEqual({
+      code: 'ArrowRight',
+      ctrl: true,
+      meta: false,
+      alt: false,
+      shift: false,
+    })
+
+    setPlatform('MacIntel')
+    expect(defaultNextLessonShortcut()).toEqual({
+      code: 'ArrowRight',
       ctrl: false,
       meta: true,
       alt: false,

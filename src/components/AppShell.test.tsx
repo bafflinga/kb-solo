@@ -462,7 +462,8 @@ describe('AppShell', () => {
     for (const code of ['KeyQ', 'KeyP', 'BracketLeft', 'BracketRight']) {
       expect(focused(code), code).toBe('true')
     }
-    for (const code of ['Backslash', 'IntlBackslash', 'Backquote']) {
+    expect(focused('Backquote'), 'Backquote').toBe('true')
+    for (const code of ['Backslash', 'IntlBackslash']) {
       expect(focused(code), code).toBe('false')
     }
   })

@@ -4,7 +4,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DEFAULT_SHORTCUTS } from '../app/shortcuts'
+import { DEFAULT_SHORTCUTS, NEXT_LESSON_SHORTCUT } from '../app/shortcuts'
 import { play, unlockAudio } from '../audio/audio'
 import { cueFromText } from '../domain/cues'
 import { getLayout } from '../domain/layout'
@@ -41,6 +41,13 @@ const mismatchLesson: LessonProvider = {
     id: 'mismatch',
     layoutId: 'ru-jcuken',
   },
+  kind: 'drill',
+  templateCount: 1,
+  createCues: () => [cueFromText(layout, 'ab', 'word')],
+}
+
+const chainedLesson: LessonProvider = {
+  meta: { ...lesson.meta, id: 'en-home-left' },
   kind: 'drill',
   templateCount: 1,
   createCues: () => [cueFromText(layout, 'ab', 'word')],
@@ -117,6 +124,7 @@ describe('PlayScreen', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     localStorage.clear()
+    window.location.hash = ''
     clock = 0
     container = document.createElement('div')
     document.body.appendChild(container)
@@ -189,6 +197,23 @@ describe('PlayScreen', () => {
           cancelable: true,
           code,
           key,
+        }),
+      )
+    })
+  }
+
+  async function pressNextLessonShortcut(): Promise<void> {
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          code: NEXT_LESSON_SHORTCUT.code,
+          key: 'ArrowRight',
+          ctrlKey: NEXT_LESSON_SHORTCUT.ctrl,
+          metaKey: NEXT_LESSON_SHORTCUT.meta,
+          altKey: NEXT_LESSON_SHORTCUT.alt,
+          shiftKey: NEXT_LESSON_SHORTCUT.shift,
         }),
       )
     })
@@ -398,6 +423,27 @@ describe('PlayScreen', () => {
       await pressShortcut()
       await press('KeyB', 'b')
       expect(container.textContent).toContain('Lesson complete')
+    })
+
+    it('goes to the next lesson with the next-lesson shortcut', async () => {
+      await render({ lesson: chainedLesson })
+
+      await pressNextLessonShortcut()
+      expect(window.location.hash).toBe('#/lesson/en-home-right')
+    })
+
+    it('ignores the next-lesson shortcut when there is no next lesson', async () => {
+      await render()
+
+      await pressNextLessonShortcut()
+      expect(window.location.hash).toBe('')
+    })
+
+    it('ignores the next-lesson shortcut while suspended', async () => {
+      await render({ lesson: chainedLesson, suspended: true })
+
+      await pressNextLessonShortcut()
+      expect(window.location.hash).toBe('')
     })
 
     it('ignores unconfigured combinations', async () => {

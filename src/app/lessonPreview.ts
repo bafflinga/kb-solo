@@ -10,6 +10,13 @@ export function usedCodesForLesson(
   contentMap: LessonContentMap | undefined,
   layout: Layout,
 ): Code[] {
+  const focusCodes = (resolveFocus(meta, layout)?.codes ?? []).filter(
+    (code) => !IGNORED_CODES.has(code),
+  )
+  if (focusCodes.length > 0) {
+    return focusCodes
+  }
+
   const codes = new Set<Code>()
   const content = contentMap?.[meta.id]
   if (content) {
@@ -30,9 +37,5 @@ export function usedCodesForLesson(
       codes.clear()
     }
   }
-  if (codes.size > 0) {
-    return [...codes]
-  }
-  const mapped = resolveFocus(meta, layout)?.codes ?? []
-  return mapped.filter((code) => !IGNORED_CODES.has(code))
+  return [...codes]
 }

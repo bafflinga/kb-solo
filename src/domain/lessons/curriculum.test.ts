@@ -251,7 +251,7 @@ describe('curricula', () => {
     const top = getLesson('ru-pinky-top')
     const home = getLesson('ru-pinky-home-both')
 
-    expect(yoCodeFor(top, 'ru-jcuken')).toBeUndefined()
+    expect(yoCodeFor(top, 'ru-jcuken')).toBe('Backquote')
     expect(yoCodeFor(top, 'ru-jcuken-mac')).toBe('Backslash')
     expect(yoCodeFor(top, 'ru-jcuken-mac-iso')).toBeUndefined()
 

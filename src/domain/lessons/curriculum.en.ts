@@ -6,7 +6,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeLeft',
-    focus: { keys: { codes: ['KeyA', 'KeyS', 'KeyD', 'KeyF'] } },
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['home'],
+        exclude: ['KeyG'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -14,7 +20,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeRight',
-    focus: { keys: { codes: ['KeyJ', 'KeyK', 'KeyL', 'Semicolon'] } },
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['home'],
+        exclude: ['KeyH', 'Quote', 'Backslash'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -24,16 +36,9 @@ const defs: LessonDef[] = [
     titleKey: 'lesson.en.homeBoth',
     focus: {
       keys: {
-        codes: [
-          'KeyA',
-          'KeyS',
-          'KeyD',
-          'KeyF',
-          'KeyJ',
-          'KeyK',
-          'KeyL',
-          'Semicolon',
-        ],
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['home'],
+        exclude: ['KeyG', 'KeyH', 'Quote', 'Backslash'],
       },
     },
     kind: 'drill',
@@ -43,7 +48,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexTopLeft',
-    focus: { keys: { codes: ['KeyR', 'KeyT'] } },
+    focus: { keys: { fingers: ['li'], rows: ['top'] } },
     kind: 'drill',
   },
   {
@@ -51,7 +56,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexTopRight',
-    focus: { keys: { codes: ['KeyY', 'KeyU'] } },
+    focus: { keys: { fingers: ['ri'], rows: ['top'] } },
     kind: 'drill',
   },
   {
@@ -59,7 +64,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexMid',
-    focus: { keys: { codes: ['KeyG', 'KeyH'] } },
+    focus: {
+      keys: {
+        fingers: ['li', 'ri'],
+        rows: ['home'],
+        exclude: ['KeyF', 'KeyJ'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -67,7 +78,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexBottom',
-    focus: { keys: { codes: ['KeyV', 'KeyB', 'KeyN', 'KeyM'] } },
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['bottom'] } },
     kind: 'drill',
   },
   {
@@ -75,24 +86,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexBoth',
-    focus: {
-      keys: {
-        codes: [
-          'KeyF',
-          'KeyG',
-          'KeyR',
-          'KeyT',
-          'KeyV',
-          'KeyB',
-          'KeyN',
-          'KeyM',
-          'KeyJ',
-          'KeyH',
-          'KeyY',
-          'KeyU',
-        ],
-      },
-    },
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['top', 'home', 'bottom'] } },
     kind: 'drill',
   },
   {
@@ -153,7 +147,11 @@ const defs: LessonDef[] = [
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.digitsLeft',
     focus: {
-      keys: { codes: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'] },
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['digits'],
+        exclude: ['Backquote'],
+      },
     },
     kind: 'drill',
   },
@@ -163,7 +161,11 @@ const defs: LessonDef[] = [
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.digitsRight',
     focus: {
-      keys: { codes: ['Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'] },
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['digits'],
+        exclude: ['Minus', 'Equal'],
+      },
     },
     kind: 'drill',
   },
@@ -258,15 +260,9 @@ const defs: LessonDef[] = [
     titleKey: 'lesson.en.pinkyBoth',
     focus: {
       keys: {
-        codes: [
-          'KeyA',
-          'KeyQ',
-          'KeyZ',
-          'Semicolon',
-          'KeyP',
-          'BracketLeft',
-          'Quote',
-        ],
+        fingers: ['lp', 'rp'],
+        rows: ['top', 'home', 'bottom'],
+        exclude: ['BracketRight', 'Backslash', 'Slash', 'IntlBackslash'],
       },
     },
     kind: 'drill',

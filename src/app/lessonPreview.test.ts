@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getLayout } from '../domain/layout'
+import { getLessonMeta } from '../domain/lessons/registry'
 import type { LessonContentMap, LessonMeta } from '../domain/lessons/types'
 import { usedCodesForLesson } from './lessonPreview'
 
@@ -20,22 +21,22 @@ const contentFor = (variants: unknown[]): LessonContentMap => ({
 })
 
 describe('usedCodesForLesson', () => {
-  it('collects codes from every authored variant, deduped', () => {
+  it('previews the full focus zone, not just codes used by variants', () => {
     const codes = usedCodesForLesson(
       meta,
       contentFor(['aa', 's']),
       getLayout('us-qwerty'),
     )
-    expect(codes).toEqual(['KeyA', 'KeyS'])
+    expect(codes).toEqual(['KeyA', 'KeyS', 'KeyD'])
   })
 
-  it('uses overridden content from the map', () => {
+  it('previews the focus zone regardless of overrides in the map', () => {
     const codes = usedCodesForLesson(
       meta,
       contentFor(['d']),
       getLayout('us-qwerty'),
     )
-    expect(codes).toEqual(['KeyD'])
+    expect(codes).toEqual(['KeyA', 'KeyS', 'KeyD'])
   })
 
   it('excludes Space and Enter', () => {
@@ -48,12 +49,35 @@ describe('usedCodesForLesson', () => {
     expect(codes).not.toContain('Enter')
   })
 
-  it('falls back to mapped focus codes when content is missing', () => {
+  it('previews the focus zone when content is missing', () => {
     const codes = usedCodesForLesson(
       meta,
       undefined,
       getLayout('us-qwerty-mac'),
     )
     expect(codes).toEqual(['KeyA', 'KeyS', 'KeyD'])
+  })
+
+  it('falls back to content codes for lessons without a focus', () => {
+    const withoutFocus: LessonMeta = { ...meta, focus: undefined }
+    const codes = usedCodesForLesson(
+      withoutFocus,
+      contentFor(['aa', 's']),
+      getLayout('us-qwerty'),
+    )
+    expect(codes).toEqual(['KeyA', 'KeyS'])
+  })
+
+  it('previews Backquote for ru-pinky-top on every Russian layout', () => {
+    const pinkyTop = getLessonMeta('ru-pinky-top')
+    expect(pinkyTop).toBeDefined()
+    for (const id of [
+      'ru-jcuken',
+      'ru-jcuken-mac',
+      'ru-jcuken-mac-iso',
+    ] as const) {
+      const codes = usedCodesForLesson(pinkyTop!, undefined, getLayout(id))
+      expect(codes, id).toContain('Backquote')
+    }
   })
 })

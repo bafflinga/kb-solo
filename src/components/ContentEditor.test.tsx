@@ -168,7 +168,7 @@ describe('ContentEditor', () => {
 
     const winHint =
       container.querySelector('.content-focus-hint')?.textContent ?? ''
-    expect(winHint).not.toContain('ё')
+    expect(winHint).toContain('ё')
     expect(winHint).toContain('\\')
 
     await render('ru-pinky-top', 'ru-jcuken-mac-iso')
@@ -177,7 +177,7 @@ describe('ContentEditor', () => {
       container.querySelector('.content-focus-hint')?.textContent ?? ''
     expect(isoHint).not.toContain('ё')
     expect(isoHint).not.toContain('\\')
-    expect(container.textContent).toContain('shared variants')
+    expect(container.textContent).toContain('layout-specific variants')
 
     await render('ru-pinky-top', 'ru-jcuken-mac')
     const macHint =
