@@ -20,13 +20,7 @@ export function hydrateLessons(content: LessonContentMap): void {
 }
 
 function compareMeta(a: LessonMeta, b: LessonMeta): number {
-  if (a.language !== b.language) {
-    return a.language.localeCompare(b.language)
-  }
-  if (a.order !== b.order) {
-    return a.order - b.order
-  }
-  return a.id.localeCompare(b.id)
+  return a.language.localeCompare(b.language)
 }
 
 export function allLessons(): LessonMeta[] {
@@ -54,7 +48,7 @@ export function isUnlocked(
 
 /** The following lesson in the same language, or `undefined` at the end. */
 export function nextLesson(meta: LessonMeta): LessonMeta | undefined {
-  return lessonsFor(meta.language).find(
-    (candidate) => candidate.order > meta.order,
-  )
+  const lessons = lessonsFor(meta.language)
+  const index = lessons.findIndex((candidate) => candidate.id === meta.id)
+  return index >= 0 ? lessons[index + 1] : undefined
 }

@@ -1,5 +1,6 @@
 import type { Faker } from '@faker-js/faker'
-import type { Code, ContentLanguage, Cue, Layout, LayoutId } from '../types'
+import type { ContentLanguage, Cue, Layout, LayoutId } from '../types'
+import type { LessonFocus } from '../keyZones'
 import type {
   GenerationAreaId,
   GenerationSentenceSource,
@@ -14,13 +15,8 @@ export interface LessonMeta {
   titleKey: string
   kind?: LessonKind
   descriptionKey?: string
-  order: number
-  difficulty: 1 | 2 | 3 | 4 | 5
-  focusCodes?: Code[]
-  /** Codes whose physical key identity must be preserved when remapping across layouts. */
-  identityCodes?: Code[]
-  /** Focus codes used only when the active layout matches the key exactly. */
-  layoutFocusCodes?: Partial<Record<LayoutId, Code[]>>
+  /** Physical key zones or character goals. Characters are derived per layout. */
+  focus?: LessonFocus
   requires?: string[]
   /** Optional override. Real values are derived by `derivePacing` from the chosen pace and cues. */
   timeLimitSec?: number
@@ -31,7 +27,9 @@ export interface LessonMeta {
 export interface LessonContent {
   formatVersion: number
   variants: unknown[]
-  /** Variant sets used only when the active layout matches the key exactly. */
+  /** Layout the authored drill text is written in. Defaults to the lesson layout. */
+  canonicalLayout?: LayoutId
+  /** Legacy per-layout variant sets, read for backwards compatibility only. */
   layoutVariants?: Partial<Record<LayoutId, unknown[]>>
 }
 

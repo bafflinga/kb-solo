@@ -238,15 +238,7 @@ export default function AppShell() {
     : menuLayout
   const focusCodes = useMemo(
     () =>
-      lessonMeta
-        ? mapFocusCodes(
-            lessonMeta.layoutFocusCodes?.[lessonLayout.id] ??
-              lessonMeta.focusCodes,
-            getLayout(lessonMeta.layoutId),
-            lessonLayout,
-            lessonMeta.identityCodes,
-          )
-        : undefined,
+      lessonMeta ? mapFocusCodes(lessonMeta, lessonLayout) : undefined,
     [lessonMeta, lessonLayout],
   )
 

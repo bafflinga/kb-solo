@@ -1,59 +1,11 @@
-import { codeForChar, fingerFor, resolveKeyCode } from './layout'
+import { codeForChar, fingerFor } from './layout'
 import type { Code, Cue, CueChar, Layout } from './types'
 
 export interface CueTextOptions {
-  authoredLayout?: Layout
-  identityCodes?: readonly Code[]
-}
-
-function slotOf(
-  legend: { base: string; shift: string; alt?: string },
-  char: string,
-) {
-  if (legend.shift === char) {
-    return 'shift' as const
-  }
-  if (legend.alt === char) {
-    return 'alt' as const
-  }
-  return 'base' as const
-}
-
-function keyCentricChar(
-  authored: Layout,
-  active: Layout,
-  char: string,
-  identityCodes: readonly Code[],
-): CueChar | undefined {
-  const authoredCode = codeForChar(authored, char)
-  if (authoredCode === undefined) {
-    return undefined
-  }
-  const authoredLegend = authored.legends[authoredCode]
-  if (!authoredLegend) {
-    return undefined
-  }
-  const code = resolveKeyCode(authoredCode, authored, active, identityCodes)
-  if (code === undefined) {
-    return undefined
-  }
-  const legend = active.legends[code]
-  if (!legend) {
-    return undefined
-  }
-  const slot = slotOf(authoredLegend, char)
-  const nextChar =
-    slot === 'shift'
-      ? legend.shift
-      : slot === 'alt'
-        ? (legend.alt ?? legend.base)
-        : legend.base
-  return {
-    char: nextChar,
-    code,
-    finger: fingerFor(code),
-    needsShift: legend.shift !== legend.base && nextChar === legend.shift,
-  }
+  /** Layout-independent character mapper. Returning undefined drops the char. */
+  charMap?: (char: string) => CueChar | undefined
+  /** Drop characters the active layout cannot produce instead of throwing. */
+  dropMissing?: boolean
 }
 
 function cueCharFor(
@@ -65,17 +17,15 @@ function cueCharFor(
     return { char, code: 'Enter', needsShift: false }
   }
 
-  if (options?.authoredLayout) {
-    return keyCentricChar(
-      options.authoredLayout,
-      layout,
-      char,
-      options.identityCodes ?? [],
-    )
+  if (options?.charMap) {
+    return options.charMap(char)
   }
 
   const code = codeForChar(layout, char)
   if (code === undefined) {
+    if (options?.dropMissing) {
+      return undefined
+    }
     throw new Error(
       `Character ${JSON.stringify(char)} is not available in layout ${layout.id}`,
     )
@@ -83,6 +33,9 @@ function cueCharFor(
 
   const legend = layout.legends[code]
   if (!legend) {
+    if (options?.dropMissing) {
+      return undefined
+    }
     throw new Error(`Missing legend for code ${code} in layout ${layout.id}`)
   }
 

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getLayout } from '../domain/layout'
 import type { LessonContentMap, LessonMeta } from '../domain/lessons/types'
-import type { LayoutId } from '../domain/types'
 import { usedCodesForLesson } from './lessonPreview'
 
 const meta: LessonMeta = {
@@ -10,19 +9,13 @@ const meta: LessonMeta = {
   layoutId: 'us-qwerty',
   titleKey: 'lesson.en.homeLeft',
   kind: 'drill',
-  order: 1,
-  difficulty: 1,
-  focusCodes: ['KeyA', 'KeyS'],
+  focus: { keys: { codes: ['KeyA', 'KeyS', 'KeyD'] } },
 }
 
-const contentFor = (
-  variants: unknown[],
-  layoutVariants?: Partial<Record<LayoutId, unknown[]>>,
-): LessonContentMap => ({
+const contentFor = (variants: unknown[]): LessonContentMap => ({
   'test-preview': {
     formatVersion: 1,
     variants,
-    ...(layoutVariants ? { layoutVariants } : {}),
   },
 })
 
@@ -34,15 +27,6 @@ describe('usedCodesForLesson', () => {
       getLayout('us-qwerty'),
     )
     expect(codes).toEqual(['KeyA', 'KeyS'])
-  })
-
-  it('uses layout-specific variants when present', () => {
-    const codes = usedCodesForLesson(
-      meta,
-      contentFor(['a'], { 'us-qwerty-mac': ['x'] }),
-      getLayout('us-qwerty-mac'),
-    )
-    expect(codes).toEqual(['KeyX'])
   })
 
   it('uses overridden content from the map', () => {
@@ -70,6 +54,6 @@ describe('usedCodesForLesson', () => {
       undefined,
       getLayout('us-qwerty-mac'),
     )
-    expect(codes).toEqual(['KeyA', 'KeyS'])
+    expect(codes).toEqual(['KeyA', 'KeyS', 'KeyD'])
   })
 })

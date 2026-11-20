@@ -33,8 +33,6 @@ function lessonFor(
       language: 'en',
       layoutId: 'us-qwerty',
       titleKey: 'lesson.en.homeLeft',
-      order: 1,
-      difficulty: 1,
       ...meta,
     },
     kind: 'drill',
@@ -56,9 +54,7 @@ function drillLessonFor(
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeLeft',
-    order: 1,
-    difficulty: 1,
-    focusCodes: ['KeyA', 'KeyS'],
+    focus: { keys: { codes: ['KeyA', 'KeyS'] } },
     ...meta,
   }
   return {
@@ -72,7 +68,7 @@ function drillLessonFor(
         return [cueFromText(layout, `${text}${calls.length}`, 'word')]
       },
       createGeneratedCues: (_layout, options) => {
-        if (!lessonMeta.focusCodes?.length) {
+        if (!lessonMeta.focus?.keys) {
           return {
             cues: [cueFromText(layout, `${text}${calls.length}`, 'word')],
           }
@@ -395,7 +391,7 @@ describe('useTypingSession', () => {
 
   it('does not generate for drills without focus codes', async () => {
     const { provider, calls } = drillLessonFor('ab', {
-      focusCodes: undefined,
+      focus: undefined,
     })
     await render(provider, { generatedContent: true, faker })
 

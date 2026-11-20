@@ -6,8 +6,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeLeft',
-    difficulty: 1,
-    focusCodes: ['KeyA', 'KeyS', 'KeyD', 'KeyF'],
+    focus: { keys: { codes: ['KeyA', 'KeyS', 'KeyD', 'KeyF'] } },
     kind: 'drill',
   },
   {
@@ -15,8 +14,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeRight',
-    difficulty: 1,
-    focusCodes: ['KeyJ', 'KeyK', 'KeyL', 'Semicolon'],
+    focus: { keys: { codes: ['KeyJ', 'KeyK', 'KeyL', 'Semicolon'] } },
     kind: 'drill',
   },
   {
@@ -24,17 +22,20 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeBoth',
-    difficulty: 2,
-    focusCodes: [
-      'KeyA',
-      'KeyS',
-      'KeyD',
-      'KeyF',
-      'KeyJ',
-      'KeyK',
-      'KeyL',
-      'Semicolon',
-    ],
+    focus: {
+      keys: {
+        codes: [
+          'KeyA',
+          'KeyS',
+          'KeyD',
+          'KeyF',
+          'KeyJ',
+          'KeyK',
+          'KeyL',
+          'Semicolon',
+        ],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -42,8 +43,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexTopLeft',
-    difficulty: 2,
-    focusCodes: ['KeyR', 'KeyT'],
+    focus: { keys: { codes: ['KeyR', 'KeyT'] } },
     kind: 'drill',
   },
   {
@@ -51,8 +51,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexTopRight',
-    difficulty: 2,
-    focusCodes: ['KeyY', 'KeyU'],
+    focus: { keys: { codes: ['KeyY', 'KeyU'] } },
     kind: 'drill',
   },
   {
@@ -60,8 +59,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexMid',
-    difficulty: 2,
-    focusCodes: ['KeyG', 'KeyH'],
+    focus: { keys: { codes: ['KeyG', 'KeyH'] } },
     kind: 'drill',
   },
   {
@@ -69,8 +67,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexBottom',
-    difficulty: 2,
-    focusCodes: ['KeyV', 'KeyB', 'KeyN', 'KeyM'],
+    focus: { keys: { codes: ['KeyV', 'KeyB', 'KeyN', 'KeyM'] } },
     kind: 'drill',
   },
   {
@@ -78,21 +75,24 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.indexBoth',
-    difficulty: 2,
-    focusCodes: [
-      'KeyF',
-      'KeyG',
-      'KeyR',
-      'KeyT',
-      'KeyV',
-      'KeyB',
-      'KeyN',
-      'KeyM',
-      'KeyJ',
-      'KeyH',
-      'KeyY',
-      'KeyU',
-    ],
+    focus: {
+      keys: {
+        codes: [
+          'KeyF',
+          'KeyG',
+          'KeyR',
+          'KeyT',
+          'KeyV',
+          'KeyB',
+          'KeyN',
+          'KeyM',
+          'KeyJ',
+          'KeyH',
+          'KeyY',
+          'KeyU',
+        ],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -100,8 +100,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.middleBoth',
-    difficulty: 2,
-    focusCodes: ['KeyD', 'KeyE', 'KeyC', 'KeyK', 'KeyI', 'Comma'],
+    focus: { keys: { fingers: ['lm', 'rm'], rows: ['top', 'home', 'bottom'] } },
     kind: 'drill',
   },
   {
@@ -109,8 +108,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.ringBoth',
-    difficulty: 2,
-    focusCodes: ['KeyS', 'KeyW', 'KeyX', 'KeyL', 'KeyO', 'Period'],
+    focus: { keys: { fingers: ['lr', 'rr'], rows: ['top', 'home', 'bottom'] } },
     kind: 'drill',
   },
   {
@@ -118,8 +116,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.pinkyBottom',
-    difficulty: 2,
-    focusCodes: ['KeyZ', 'Slash'],
+    focus: {
+      keys: {
+        fingers: ['lp', 'rp'],
+        rows: ['bottom'],
+        exclude: ['IntlBackslash'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -127,8 +130,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.pinkyTop',
-    difficulty: 2,
-    focusCodes: ['KeyQ', 'KeyP', 'BracketLeft', 'BracketRight'],
+    focus: {
+      keys: {
+        fingers: ['lp', 'rp'],
+        rows: ['top'],
+        exclude: ['Backslash'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -136,8 +144,7 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.pinkyHomeBoth',
-    difficulty: 2,
-    focusCodes: ['KeyA', 'Semicolon', 'Quote'],
+    focus: { keys: { fingers: ['lp', 'rp'], rows: ['home'] } },
     kind: 'drill',
   },
   {
@@ -145,8 +152,9 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.digitsLeft',
-    difficulty: 2,
-    focusCodes: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'],
+    focus: {
+      keys: { codes: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'] },
+    },
     kind: 'drill',
   },
   {
@@ -154,8 +162,9 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.digitsRight',
-    difficulty: 2,
-    focusCodes: ['Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'],
+    focus: {
+      keys: { codes: ['Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'] },
+    },
     kind: 'drill',
   },
   {
@@ -163,8 +172,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.bottomRight',
-    difficulty: 2,
-    focusCodes: ['KeyN', 'KeyM', 'Comma', 'Period'],
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['bottom'],
+        exclude: ['Slash'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -172,8 +186,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.bottomLeft',
-    difficulty: 2,
-    focusCodes: ['KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB'],
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['bottom'],
+        exclude: ['IntlBackslash'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -181,18 +200,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.bottomBoth',
-    difficulty: 3,
-    focusCodes: [
-      'KeyZ',
-      'KeyX',
-      'KeyC',
-      'KeyV',
-      'KeyB',
-      'KeyN',
-      'KeyM',
-      'Comma',
-      'Period',
-    ],
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['bottom'],
+        exclude: ['IntlBackslash', 'Slash'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -200,8 +214,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.topLeft',
-    difficulty: 2,
-    focusCodes: ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT'],
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['top'],
+        exclude: ['Backquote'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -209,8 +228,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.topRight',
-    difficulty: 2,
-    focusCodes: ['KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP'],
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['top'],
+        exclude: ['Backslash', 'BracketLeft', 'BracketRight'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -218,19 +242,13 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.topBoth',
-    difficulty: 3,
-    focusCodes: [
-      'KeyQ',
-      'KeyW',
-      'KeyE',
-      'KeyR',
-      'KeyT',
-      'KeyY',
-      'KeyU',
-      'KeyI',
-      'KeyO',
-      'KeyP',
-    ],
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['top'],
+        exclude: ['Backquote', 'Backslash', 'BracketLeft', 'BracketRight'],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -238,16 +256,19 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.pinkyBoth',
-    difficulty: 3,
-    focusCodes: [
-      'KeyA',
-      'KeyQ',
-      'KeyZ',
-      'Semicolon',
-      'KeyP',
-      'BracketLeft',
-      'Quote',
-    ],
+    focus: {
+      keys: {
+        codes: [
+          'KeyA',
+          'KeyQ',
+          'KeyZ',
+          'Semicolon',
+          'KeyP',
+          'BracketLeft',
+          'Quote',
+        ],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -255,7 +276,6 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.allLetters',
-    difficulty: 4,
     kind: 'drill',
   },
   {
@@ -263,7 +283,6 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.caps',
-    difficulty: 4,
     kind: 'drill',
   },
   {
@@ -271,19 +290,22 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.punctuation',
-    difficulty: 4,
-    focusCodes: [
-      'Minus',
-      'Equal',
-      'BracketLeft',
-      'BracketRight',
-      'Semicolon',
-      'Quote',
-      'Comma',
-      'Period',
-      'Slash',
-      'Backslash',
-    ],
+    focus: {
+      keys: {
+        codes: [
+          'Minus',
+          'Equal',
+          'BracketLeft',
+          'BracketRight',
+          'Semicolon',
+          'Quote',
+          'Comma',
+          'Period',
+          'Slash',
+          'Backslash',
+        ],
+      },
+    },
     kind: 'drill',
   },
   {
@@ -291,7 +313,6 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.words',
-    difficulty: 5,
     kind: 'words',
   },
   {
@@ -299,7 +320,6 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.prose',
-    difficulty: 5,
     kind: 'prose',
   },
   {
@@ -307,7 +327,6 @@ const defs: LessonDef[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.code',
-    difficulty: 5,
     kind: 'code',
   },
 ]

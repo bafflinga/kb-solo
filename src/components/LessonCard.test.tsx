@@ -14,8 +14,6 @@ const meta: LessonMeta = {
   language: 'en',
   layoutId: 'us-qwerty',
   titleKey: 'lesson.en.homeLeft',
-  order: 1,
-  difficulty: 1,
 }
 
 describe('LessonCard', () => {

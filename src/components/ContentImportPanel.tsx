@@ -14,13 +14,11 @@ import { lessonsDb } from '../storage/lessonsDb'
 
 function formatVariants(document: LessonContent, kind: LessonKind): string {
   const sets: { label: string; variants: unknown[] }[] = [
-    { label: '', variants: document.variants },
+    {
+      label: document.canonicalLayout ? `${document.canonicalLayout}\n` : '',
+      variants: document.variants,
+    },
   ]
-  for (const [layoutId, variants] of Object.entries(
-    document.layoutVariants ?? {},
-  )) {
-    sets.push({ label: `${layoutId}\n`, variants })
-  }
   return sets
     .map(({ label, variants }) =>
       [
@@ -232,10 +230,13 @@ export function ContentImportPanel({
               const current = currentById[item.id]
               const same =
                 current !== undefined &&
-                JSON.stringify([current.variants, current.layoutVariants]) ===
+                JSON.stringify([
+                  current.variants,
+                  current.canonicalLayout,
+                ]) ===
                   JSON.stringify([
                     item.document.variants,
-                    item.document.layoutVariants,
+                    item.document.canonicalLayout,
                   ])
               return (
                 <li key={item.id} className="content-import-item">

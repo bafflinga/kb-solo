@@ -1,6 +1,12 @@
 export type Finger =
   'lp' | 'lr' | 'lm' | 'li' | 'ri' | 'rm' | 'rr' | 'rp' | 'thumb'
 
+export type Side = 'left' | 'right'
+
+export type Row = 'digits' | 'top' | 'home' | 'bottom'
+
+export type KeyLevel = 'base' | 'shift' | 'alt'
+
 export type Code = string
 
 export type LayoutId =

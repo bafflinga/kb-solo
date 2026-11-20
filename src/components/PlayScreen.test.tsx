@@ -29,8 +29,6 @@ const lesson: LessonProvider = {
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeLeft',
-    order: 1,
-    difficulty: 1,
   } satisfies LessonMeta,
   kind: 'drill',
   templateCount: 1,
@@ -77,7 +75,7 @@ function generatedLessonFor(): {
       meta: {
         ...lesson.meta,
         id: 'generated',
-        focusCodes: ['KeyA', 'KeyS'],
+        focus: { keys: { codes: ['KeyA', 'KeyS'] } },
       },
       kind: 'drill',
       templateCount: 1,

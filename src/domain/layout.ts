@@ -1,4 +1,10 @@
-import type { Code, ContentLanguage, Layout, LayoutId } from './types'
+import type {
+  Code,
+  ContentLanguage,
+  KeyLevel,
+  Layout,
+  LayoutId,
+} from './types'
 import { ANSI_GEOMETRY, ISO_GEOMETRY } from './geometry'
 import { LEGEND_SETS } from './legends'
 
@@ -125,17 +131,57 @@ export function codeForChar(layout: Layout, char: string): Code | undefined {
   return undefined
 }
 
-export function resolveKeyCode(
-  code: Code,
-  from: Layout,
-  to: Layout,
-  identityCodes: readonly Code[] = [],
-): Code | undefined {
-  if (identityCodes.includes(code)) {
-    return to.legends[code] === undefined ? undefined : code
+export interface KeySlot {
+  code: Code
+  level: KeyLevel
+}
+
+export function slotForChar(
+  layout: Layout,
+  char: string,
+  allowedCodes?: ReadonlySet<Code>,
+): KeySlot | undefined {
+  const codes = Object.keys(layout.legends)
+  for (const code of codes) {
+    if (allowedCodes && !allowedCodes.has(code)) {
+      continue
+    }
+    if (layout.legends[code]?.base === char) {
+      return { code, level: 'base' }
+    }
   }
-  const base = from.legends[code]?.base
-  return base === undefined ? code : (codeForChar(to, base) ?? code)
+  for (const code of codes) {
+    if (allowedCodes && !allowedCodes.has(code)) {
+      continue
+    }
+    if (layout.legends[code]?.shift === char) {
+      return { code, level: 'shift' }
+    }
+  }
+  for (const code of codes) {
+    if (allowedCodes && !allowedCodes.has(code)) {
+      continue
+    }
+    if (layout.legends[code]?.alt === char) {
+      return { code, level: 'alt' }
+    }
+  }
+  return undefined
+}
+
+export function charForSlot(
+  layout: Layout,
+  code: Code,
+  level: KeyLevel,
+): string | undefined {
+  const legend = layout.legends[code]
+  if (!legend) {
+    return undefined
+  }
+  if (level === 'alt') {
+    return legend.alt ?? legend.base
+  }
+  return level === 'shift' ? legend.shift : legend.base
 }
 
 export function inputCodeFor(layout: Layout, code: Code): Code {

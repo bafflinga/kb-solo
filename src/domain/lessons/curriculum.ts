@@ -1,12 +1,11 @@
+import { drillCues, lineCues, randomComboCues, wordCues } from '../cues'
 import {
-  drillCues,
-  lineCues,
-  randomComboCues,
-  wordCues,
-  type CueTextOptions,
-} from '../cues'
-import { getLayout, resolveKeyCode } from '../layout'
-import type { Code, Cue, Layout } from '../types'
+  focusLabels,
+  mapCanonicalChar,
+  resolveFocus,
+} from '../keyZones'
+import { codeForChar, getLayout } from '../layout'
+import type { Cue, Layout } from '../types'
 import { generateText } from './fakerGenerator'
 import type {
   CreateCuesOptions,
@@ -19,91 +18,7 @@ import type {
 } from './types'
 
 export function focusKeyLabels(meta: LessonMeta): string {
-  if (!meta.focusCodes?.length) {
-    return ''
-  }
-  const layout = getLayout(meta.layoutId)
-  return meta.focusCodes
-    .map((code) => layout.legends[code]?.base ?? code)
-    .join(' ')
-}
-
-function focusCodesFor(meta: LessonMeta, layout: Layout): Code[] | undefined {
-  return meta.layoutFocusCodes?.[layout.id] ?? meta.focusCodes
-}
-
-export function focusCharsForLayout(
-  meta: LessonMeta,
-  layout: Layout,
-): ReadonlySet<string> | undefined {
-  const codes = focusCodesFor(meta, layout)
-  if (!codes?.length) {
-    return undefined
-  }
-  const from = getLayout(meta.layoutId)
-  const chars = new Set<string>([' ', '\n'])
-  for (const code of codes) {
-    const resolved = resolveKeyCode(code, from, layout, meta.identityCodes)
-    if (resolved === undefined) {
-      continue
-    }
-    const fromLegend = from.legends[code]
-    if (meta.identityCodes?.includes(code) && fromLegend) {
-      chars.add(fromLegend.base)
-      chars.add(fromLegend.shift)
-      if (fromLegend.alt) {
-        chars.add(fromLegend.alt)
-      }
-    }
-    const legend = layout.legends[resolved]
-    if (!legend) {
-      continue
-    }
-    chars.add(legend.base)
-    chars.add(legend.shift)
-    if (legend.alt) {
-      chars.add(legend.alt)
-    }
-  }
-  return chars
-}
-
-export function focusKeyLabelsForLayout(
-  meta: LessonMeta,
-  layout: Layout,
-): string {
-  const codes = focusCodesFor(meta, layout)
-  if (!codes?.length) {
-    return ''
-  }
-  const from = getLayout(meta.layoutId)
-  const labels = codes.map((code) => {
-    const resolved = resolveKeyCode(code, from, layout, meta.identityCodes)
-    return (resolved && layout.legends[resolved]?.base) ?? code
-  })
-  return [...new Set(labels)].join(' ')
-}
-
-export function focusCharsFor(
-  meta: LessonMeta,
-): ReadonlySet<string> | undefined {
-  if (!meta.focusCodes?.length) {
-    return undefined
-  }
-  const layout = getLayout(meta.layoutId)
-  const chars = new Set<string>([' ', '\n'])
-  for (const code of meta.focusCodes) {
-    const legend = layout.legends[code]
-    if (!legend) {
-      continue
-    }
-    chars.add(legend.base)
-    chars.add(legend.shift)
-    if (legend.alt) {
-      chars.add(legend.alt)
-    }
-  }
-  return chars
+  return focusLabels(meta, getLayout(meta.layoutId))
 }
 
 function pickVariant<T>(variants: readonly T[], index?: number): T {
@@ -113,6 +28,40 @@ function pickVariant<T>(variants: readonly T[], index?: number): T {
   const safe =
     index === undefined ? 0 : Math.max(0, Math.min(index, variants.length - 1))
   return variants[safe] as T
+}
+
+/**
+ * Authored text for a specific layout: the layout override verbatim (real
+ * symbols), or the canonical source mapped onto the layout.
+ */
+export function lessonSourceFor(
+  meta: LessonMeta,
+  content: LessonContent,
+  layout: Layout,
+): unknown[] {
+  const override = content.layoutVariants?.[layout.id]
+  if (override) {
+    return override
+  }
+  const focus = meta.focus
+  if (focus?.keys) {
+    const canonical = getLayout(content.canonicalLayout ?? meta.layoutId)
+    return content.variants.map((variant) =>
+      Array.from(String(variant), (char) =>
+        mapCanonicalChar(meta, canonical, layout, char),
+      )
+        .map((mapped) => mapped?.char ?? '')
+        .join(''),
+    )
+  }
+  if (focus?.chars?.length) {
+    return content.variants.map((variant) =>
+      Array.from(String(variant), (char) =>
+        codeForChar(layout, char) !== undefined ? char : '',
+      ).join(''),
+    )
+  }
+  return content.variants
 }
 
 export function makeProvider(
@@ -125,24 +74,42 @@ export function makeProvider(
   }
   const variants = content.variants
 
+  function drillCuesFor(
+    layout: Layout,
+    text: string,
+    verbatim: boolean,
+  ): Cue[] {
+    const focus = meta.focus
+    if (focus?.keys) {
+      if (verbatim) {
+        return drillCues(layout, text, { dropMissing: true })
+      }
+      const canonical = getLayout(content.canonicalLayout ?? meta.layoutId)
+      return drillCues(layout, text, {
+        charMap: (char) => mapCanonicalChar(meta, canonical, layout, char),
+      })
+    }
+    if (focus?.chars?.length) {
+      return drillCues(layout, text, { dropMissing: true })
+    }
+    return drillCues(layout, text)
+  }
+
   function authoredCues(layout: Layout, options?: CreateCuesOptions): Cue[] {
-    const cueOptions: CueTextOptions = meta.identityCodes?.length
-      ? {
-          authoredLayout: getLayout(meta.layoutId),
-          identityCodes: meta.identityCodes,
-        }
-      : {}
-    const selected = content.layoutVariants?.[layout.id] ?? variants
+    const layoutOverride = content.layoutVariants?.[layout.id]
+    const selected = layoutOverride ?? variants
     switch (kind) {
-      case 'drill':
-        if (options?.generate === true && meta.focusCodes?.length) {
-          return randomComboCues(layout, meta.focusCodes)
+      case 'drill': {
+        if (options?.generate === true && meta.focus?.keys) {
+          const codes = resolveFocus(meta, layout)?.codes ?? []
+          return randomComboCues(layout, codes)
         }
-        return drillCues(
+        return drillCuesFor(
           layout,
           pickVariant(selected as string[], options?.variantIndex),
-          cueOptions,
+          layoutOverride !== undefined,
         )
+      }
       case 'words':
         return wordCues(
           layout,
@@ -150,19 +117,16 @@ export function makeProvider(
             selected as (readonly string[])[],
             options?.variantIndex,
           ).join(' '),
-          cueOptions,
         )
       case 'prose':
         return wordCues(
           layout,
           pickVariant(selected as string[], options?.variantIndex),
-          cueOptions,
         )
       case 'code':
         return lineCues(
           layout,
           pickVariant(selected as string[], options?.variantIndex),
-          cueOptions,
         )
       default:
         return []
@@ -180,11 +144,14 @@ export function makeProvider(
     const sentenceSource = options.sentenceSource ?? 'lorem'
 
     if (kind === 'drill') {
-      if (!meta.focusCodes?.length) {
+      const codes = meta.focus?.keys
+        ? (resolveFocus(meta, layout)?.codes ?? [])
+        : []
+      if (codes.length === 0) {
         return { cues: authoredCues(layout, options) }
       }
       return {
-        cues: randomComboCues(layout, meta.focusCodes),
+        cues: randomComboCues(layout, codes),
         generation: { areaId: 'focus', sentenceSource },
       }
     }
@@ -225,16 +192,14 @@ export function makeProvider(
   }
 }
 
-export type LessonDef = Omit<LessonMeta, 'requires' | 'order'> & {
+export type LessonDef = Omit<LessonMeta, 'requires'> & {
   kind: LessonKind
 }
 
 export function chainDefs(defs: readonly LessonDef[]): LessonMeta[] {
   return defs.map((def, index) => {
     const previous = index > 0 ? defs[index - 1] : undefined
-    return previous
-      ? { ...def, order: index + 1, requires: [previous.id] }
-      : { ...def, order: index + 1 }
+    return previous ? { ...def, requires: [previous.id] } : { ...def }
   })
 }
 

@@ -1,8 +1,7 @@
-import { getLayout } from '../domain/layout'
+import { resolveFocus } from '../domain/keyZones'
 import { makeProvider } from '../domain/lessons/curriculum'
 import type { LessonContentMap, LessonMeta } from '../domain/lessons/types'
 import type { Code, Layout } from '../domain/types'
-import { mapFocusCodes } from './lessonLayout'
 
 const IGNORED_CODES: ReadonlySet<Code> = new Set<Code>(['Space', 'Enter'])
 
@@ -34,11 +33,6 @@ export function usedCodesForLesson(
   if (codes.size > 0) {
     return [...codes]
   }
-  const mapped = mapFocusCodes(
-    meta.layoutFocusCodes?.[layout.id] ?? meta.focusCodes,
-    getLayout(meta.layoutId),
-    layout,
-    meta.identityCodes,
-  )
-  return (mapped ?? []).filter((code) => !IGNORED_CODES.has(code))
+  const mapped = resolveFocus(meta, layout)?.codes ?? []
+  return mapped.filter((code) => !IGNORED_CODES.has(code))
 }

@@ -16,24 +16,18 @@ const lessons: LessonMeta[] = [
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeLeft',
-    order: 1,
-    difficulty: 1,
   },
   {
     id: 'en-home-right',
     language: 'en',
     layoutId: 'us-qwerty',
     titleKey: 'lesson.en.homeRight',
-    order: 2,
-    difficulty: 1,
   },
   {
     id: 'ru-home-left',
     language: 'ru',
     layoutId: 'ru-jcuken',
     titleKey: 'lesson.ru.homeLeft',
-    order: 1,
-    difficulty: 1,
   },
 ]
 

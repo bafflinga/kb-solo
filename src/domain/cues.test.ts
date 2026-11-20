@@ -95,47 +95,18 @@ describe('cues', () => {
     )
   })
 
-  it('resolves authored key references by physical key identity', () => {
-    const authored = getLayout('ru-jcuken-mac-iso')
-    const iso = getLayout('ru-jcuken-mac-iso')
-    const windows = getLayout('ru-jcuken')
-    const options = {
-      authoredLayout: authored,
-      identityCodes: ['KeyZ', 'Slash', 'IntlBackslash'],
-    }
-
-    const backslash = cueFromText(iso, ']', 'char', options).chars[0]
-    expect(backslash?.code).toBe('IntlBackslash')
-    expect(backslash?.char).toBe(']')
-    expect(backslash?.needsShift).toBe(false)
-
-    const slash = cueFromText(iso, '/', 'char', options).chars[0]
-    expect(slash?.code).toBe('Slash')
-    expect(slash?.char).toBe('/')
-    expect(slash?.finger).toBe('rp')
-
-    const shifted = cueFromText(iso, '?', 'char', options).chars[0]
-    expect(shifted?.code).toBe('Slash')
-    expect(shifted?.needsShift).toBe(true)
-
-    const windowsSlash = cueFromText(windows, '/', 'char', options).chars[0]
-    expect(windowsSlash?.code).toBe('Slash')
-    expect(windowsSlash?.char).toBe('.')
-    expect(windowsSlash?.needsShift).toBe(false)
-
-    const windowsShift = cueFromText(windows, '?', 'char', options).chars[0]
-    expect(windowsShift?.code).toBe('Slash')
-    expect(windowsShift?.char).toBe(',')
-    expect(windowsShift?.needsShift).toBe(true)
+  it('applies a character mapper and drops unmapped chars', () => {
+    const cue = cueFromText(getLayout('us-qwerty'), 'ab', 'char', {
+      charMap: (char) => (char === 'a' ? undefined : { char, code: 'KeyB', needsShift: false }),
+    })
+    expect(cue.chars.map((char) => char.char)).toEqual(['b'])
   })
 
-  it('drops identity-bound keys that are absent from the active layout', () => {
-    const cue = cueFromText(getLayout('ru-jcuken'), ']', 'char', {
-      authoredLayout: getLayout('ru-jcuken-mac-iso'),
-      identityCodes: ['KeyZ', 'Slash', 'IntlBackslash'],
+  it('drops characters the active layout cannot produce when asked', () => {
+    const cue = cueFromText(getLayout('us-qwerty'), 'Жa', 'char', {
+      dropMissing: true,
     })
-    expect(cue.chars).toEqual([])
-    expect(cue.text).toBe('')
+    expect(cue.chars.map((char) => char.char)).toEqual(['a'])
   })
 
   it('builds word cues with a trailing space', () => {

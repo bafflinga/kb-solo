@@ -163,26 +163,39 @@ describe('ContentEditor', () => {
     expect(container.querySelector('[role="alert"]')).toBeNull()
   })
 
-  it('uses focus keys and variants for the selected layout', async () => {
+  it('shows focus keys for the selected layout', async () => {
     await render('ru-pinky-top', 'ru-jcuken')
 
     const winHint =
       container.querySelector('.content-focus-hint')?.textContent ?? ''
-    expect(winHint).toContain('ё')
-    expect(textareas()[0]?.value).toContain('ё')
+    expect(winHint).not.toContain('ё')
+    expect(winHint).toContain('\\')
 
     await render('ru-pinky-top', 'ru-jcuken-mac-iso')
 
     const isoHint =
       container.querySelector('.content-focus-hint')?.textContent ?? ''
     expect(isoHint).not.toContain('ё')
-    expect(textareas()[0]?.value).not.toContain('ё')
-    expect(container.textContent).toContain('layout-specific variants')
+    expect(isoHint).not.toContain('\\')
+    expect(container.textContent).toContain('shared variants')
 
     await render('ru-pinky-top', 'ru-jcuken-mac')
     const macHint =
       container.querySelector('.content-focus-hint')?.textContent ?? ''
     expect(macHint.split('ё').length - 1).toBe(1)
+  })
+
+  it('shows the selected layout symbols as current values', async () => {
+    await render('ru-bottom-right', 'ru-jcuken')
+    expect(textareas()[0]?.value).toBe('ть б. ю, ьт .б тю ,ь тьб ю.')
+    expect(container.textContent).toContain('layout-specific variants')
+
+    await render('ru-bottom-right', 'ru-jcuken-mac')
+    expect(textareas()[0]?.value).toBe('ть б/ ю/ ьт /б тю /ь тьб ю/')
+    expect(container.textContent).toContain('shared variants')
+
+    await render('ru-bottom-right', 'ru-jcuken-mac-iso')
+    expect(textareas()[0]?.value).toBe('ть б/ ю/ ьт /б тю /ь тьб ю/')
   })
 
   it('lets the user switch layout from the editor header', async () => {
@@ -202,7 +215,7 @@ describe('ContentEditor', () => {
     expect(onLayoutChange).toHaveBeenCalledWith('ru-jcuken-mac-iso')
   })
 
-  it('saves edits into the active layout variant set', async () => {
+  it('saves layout-specific content for the selected layout', async () => {
     await render('ru-pinky-top', 'ru-jcuken-mac-iso')
     const original = textareas()[0]?.value ?? ''
 
@@ -210,10 +223,15 @@ describe('ContentEditor', () => {
     await click(button('Save'))
 
     const override = await lessonsDb.getOverride('ru-pinky-top')
-    expect(override?.document.layoutVariants?.['ru-jcuken-mac-iso']?.[0]).toBe(
-      `${original} й`,
+    expect(override?.document.canonicalLayout).toBe('ru-jcuken')
+    expect(
+      String(
+        override?.document.layoutVariants?.['ru-jcuken-mac-iso']?.[0],
+      ).endsWith(' й'),
+    ).toBe(true)
+    expect(override?.document.variants).not.toEqual(
+      override?.document.layoutVariants?.['ru-jcuken-mac-iso'],
     )
-    expect(String(override?.document.variants[0]).endsWith(' й')).toBe(false)
   })
 
   it('rejects an empty variant', async () => {

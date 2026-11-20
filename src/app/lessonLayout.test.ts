@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getLayout } from '../domain/layout'
+import { getLessonMeta } from '../domain/lessons/registry'
 import { mapFocusCodes, resolveLessonLayout } from './lessonLayout'
 
 describe('lesson layout resolution', () => {
@@ -36,27 +37,24 @@ describe('lesson layout resolution', () => {
     )
   })
 
-  it('remaps focus codes onto the selected layout', () => {
-    const from = getLayout('ru-jcuken')
-    const ansi = getLayout('ru-jcuken-mac')
-    const iso = getLayout('ru-jcuken-mac-iso')
+  it('resolves physical focus codes for the active layout', () => {
+    const meta = getLessonMeta('en-pinky-top')
+    expect(meta).toBeDefined()
+    const windows = getLayout('us-qwerty')
+    const macIso = getLayout('us-qwerty-mac-iso')
 
-    expect(mapFocusCodes(['Backquote'], from, ansi)).toEqual(['Backslash'])
-    expect(mapFocusCodes(['Backquote'], from, iso)).toEqual(['Backslash'])
-    expect(
-      mapFocusCodes(['Backquote', 'Digit4', 'Digit7', 'Slash'], from, iso),
-    ).toEqual(['Backslash', 'Digit4', 'Digit7'])
-    expect(mapFocusCodes(undefined, from, iso)).toBeUndefined()
+    expect(mapFocusCodes(meta!, windows)).toEqual([
+      'KeyQ',
+      'KeyP',
+      'BracketLeft',
+      'BracketRight',
+    ])
+    expect(mapFocusCodes(meta!, macIso)).toEqual(mapFocusCodes(meta!, windows))
   })
 
-  it('preserves identity-bound codes across layouts', () => {
-    const iso = getLayout('ru-jcuken-mac-iso')
-    const mac = getLayout('ru-jcuken-mac')
-    const windows = getLayout('ru-jcuken')
-    const codes = ['KeyZ', 'Slash', 'IntlBackslash']
-
-    expect(mapFocusCodes(codes, iso, iso, codes)).toEqual(codes)
-    expect(mapFocusCodes(codes, iso, mac, codes)).toEqual(['KeyZ', 'Slash'])
-    expect(mapFocusCodes(codes, iso, windows, codes)).toEqual(['KeyZ', 'Slash'])
+  it('returns undefined when a lesson has no focus', () => {
+    const meta = getLessonMeta('en-words')
+    expect(meta).toBeDefined()
+    expect(mapFocusCodes(meta!, getLayout('us-qwerty'))).toBeUndefined()
   })
 })

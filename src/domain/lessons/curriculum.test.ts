@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker/locale/en'
 import { describe, expect, it } from 'vitest'
 import { mapFocusCodes } from '../../app/lessonLayout'
+import { resolveFocus } from '../keyZones'
 import { getLayout } from '../layout'
 import type { LayoutId } from '../types'
 import { allLessons, getLesson } from './registry'
@@ -57,16 +58,8 @@ describe('curricula', () => {
 
       const layout = getLayout(meta.layoutId)
       const focusChars = new Set<string>([' ', '\n'])
-      for (const code of meta.focusCodes ?? []) {
-        const legend = layout.legends[code]
-        if (!legend) {
-          continue
-        }
-        focusChars.add(legend.base)
-        focusChars.add(legend.shift)
-        if (legend.alt) {
-          focusChars.add(legend.alt)
-        }
+      for (const char of resolveFocus(meta, layout)?.chars ?? []) {
+        focusChars.add(char)
       }
 
       const seen = new Map<string, number>()
@@ -79,7 +72,7 @@ describe('curricula', () => {
         ).toBe(false)
         seen.set(text, index)
 
-        if (!meta.focusCodes?.length) {
+        if (!resolveFocus(meta, layout)?.chars) {
           continue
         }
         for (const cue of cues) {
@@ -258,7 +251,7 @@ describe('curricula', () => {
     const top = getLesson('ru-pinky-top')
     const home = getLesson('ru-pinky-home-both')
 
-    expect(yoCodeFor(top, 'ru-jcuken')).toBe('Backquote')
+    expect(yoCodeFor(top, 'ru-jcuken')).toBeUndefined()
     expect(yoCodeFor(top, 'ru-jcuken-mac')).toBe('Backslash')
     expect(yoCodeFor(top, 'ru-jcuken-mac-iso')).toBeUndefined()
 
@@ -281,20 +274,73 @@ describe('curricula', () => {
         const layout = getLayout(layoutId)
         const meta = provider?.meta
         expect(meta, id).toBeDefined()
-        const focus =
-          meta &&
-          mapFocusCodes(
-            meta.layoutFocusCodes?.[layout.id] ?? meta.focusCodes,
-            getLayout(meta.layoutId),
-            layout,
-            meta.identityCodes,
-          )
+        const focus = meta && mapFocusCodes(meta, layout)
         expect(focus, `${id} ${layoutId}`).toContain('Slash')
         const cues = provider?.createCues(layout, { variantIndex: 0 }) ?? []
         const slash = cues
           .flatMap((cue) => cue.chars)
           .find((char) => char.code === 'Slash')
         expect(slash?.char, `${id} ${layoutId}`).toBe('/')
+      }
+    }
+  })
+
+  it('renders the authored Mac content for Russian bottom-row lessons', () => {
+    const cases: Record<string, Partial<Record<LayoutId, string>>> = {
+      'ru-bottom-right': {
+        'ru-jcuken': 'ть б. ю, ьт .б тю ,ь тьб ю.',
+        'ru-jcuken-mac': 'ть б/ ю/ ьт /б тю /ь тьб ю/',
+        'ru-jcuken-mac-iso': 'ть б/ ю/ ьт /б тю /ь тьб ю/',
+      },
+      'ru-bottom-both': {
+        'ru-jcuken': 'яч ть сми б. ю, ьт ячс миб',
+        'ru-jcuken-mac': 'яч ть сми б/ ю/ ьт ячс миб',
+        'ru-jcuken-mac-iso': 'яч ть сми б/ ю/ ьт ячс миб',
+      },
+    }
+    for (const [id, byLayout] of Object.entries(cases)) {
+      const provider = getLesson(id)
+      expect(provider, id).toBeDefined()
+      for (const [layoutId, expected] of Object.entries(byLayout)) {
+        const text = (
+          provider?.createCues(getLayout(layoutId as LayoutId), {
+            variantIndex: 0,
+          }) ?? []
+        )
+          .map((cue) => cue.text)
+          .join('')
+          .trim()
+        expect(text, `${id} ${layoutId}`).toBe(expected)
+      }
+    }
+  })
+
+  it('renders the authored Windows and ISO content for Russian pinky lessons', () => {
+    const cases: Record<string, Partial<Record<LayoutId, string>>> = {
+      'ru-pinky-bottom': {
+        'ru-jcuken': '.я я. я. .я .я я. я.',
+        'ru-jcuken-mac': '/я я/ я/ /я /я я/ я/',
+        'ru-jcuken-mac-iso': ']я /я я/ ]я /я я/ ]я /я',
+      },
+      'ru-pinky-home-both': {
+        'ru-jcuken': 'фж эф жэ фэ жф эж фжэ',
+        'ru-jcuken-mac': 'фж эф жэ фэ жф эж фжэ',
+        'ru-jcuken-mac-iso': 'фж ёф жэ ёж фэ жё фжэ',
+      },
+    }
+    for (const [id, byLayout] of Object.entries(cases)) {
+      const provider = getLesson(id)
+      expect(provider, id).toBeDefined()
+      for (const [layoutId, expected] of Object.entries(byLayout)) {
+        const text = (
+          provider?.createCues(getLayout(layoutId as LayoutId), {
+            variantIndex: 0,
+          }) ?? []
+        )
+          .map((cue) => cue.text)
+          .join('')
+          .trim()
+        expect(text, `${id} ${layoutId}`).toBe(expected)
       }
     }
   })
@@ -385,11 +431,13 @@ describe('curricula', () => {
     const homeKeys = ['KeyJ', 'KeyK', 'KeyL', 'Semicolon']
 
     const right = allLessons().find((lesson) => lesson.id === 'ru-home-right')
-    expect([...(right?.focusCodes ?? [])].sort()).toEqual([...homeKeys].sort())
+    expect([...(right ? (resolveFocus(right, getLayout(right.layoutId))?.codes ?? []) : [])].sort()).toEqual([...homeKeys].sort())
 
     for (const id of ['ru-home-both']) {
       const meta = allLessons().find((lesson) => lesson.id === id)
-      const focus = new Set(meta?.focusCodes ?? [])
+      const focus = new Set(
+        meta ? (resolveFocus(meta, getLayout(meta.layoutId))?.codes ?? []) : [],
+      )
       for (const code of homeKeys) {
         expect(focus.has(code), `${id}: missing ${code}`).toBe(true)
       }
@@ -413,8 +461,10 @@ describe('curricula', () => {
     const provider = getLesson('en-home-left')
     const meta = provider?.meta
     expect(provider).toBeDefined()
-    expect(meta?.focusCodes?.length).toBeGreaterThan(0)
-    const focus = new Set(meta?.focusCodes ?? [])
+    expect(meta?.focus?.keys).toBeDefined()
+    const focus = new Set(
+      meta ? (resolveFocus(meta, getLayout(meta.layoutId))?.codes ?? []) : [],
+    )
 
     for (const cue of provider?.createCues(undefined, { generate: true }) ??
       []) {
@@ -432,7 +482,7 @@ describe('curricula', () => {
 
   it('falls back to authored variants for drills without focus codes', () => {
     const provider = getLesson('en-caps')
-    expect(provider?.meta.focusCodes).toBeUndefined()
+    expect(provider?.meta.focus).toBeUndefined()
     expect(
       provider?.createCues(undefined, { variantIndex: 0, generate: true }),
     ).toEqual(provider?.createCues(undefined, { variantIndex: 0 }))

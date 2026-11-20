@@ -360,8 +360,6 @@ describe('engine', () => {
         language: 'en',
         layoutId: 'us-qwerty',
         titleKey: 'lesson.synthetic',
-        order: 0,
-        difficulty: 1,
       },
       kind: 'drill',
       templateCount: 1,

@@ -21,30 +21,7 @@ describe('registry', () => {
     expect(lessonsFor('ru')).toHaveLength(28)
   })
 
-  it('shares lesson types and difficulty across languages', () => {
-    const typeOf = (id: string) => id.replace(/^(en|ru)-/, '')
-    const enLessons = lessonsFor('en')
-    const ruLessons = lessonsFor('ru')
-    const enTypes = enLessons.map((meta) => typeOf(meta.id))
-    const ruTypes = ruLessons.map((meta) => typeOf(meta.id))
-
-    expect([...enTypes].sort()).toEqual([...ruTypes].sort())
-    for (const meta of enLessons) {
-      const type = typeOf(meta.id)
-      const russian = ruLessons.find(
-        (candidate) => typeOf(candidate.id) === type,
-      )
-      expect(
-        russian?.difficulty,
-        `${meta.id} should have a Russian twin`,
-      ).toBeDefined()
-      if (russian) {
-        expect(meta.difficulty, meta.id).toBe(russian.difficulty)
-      }
-    }
-  })
-
-  it('orders lessons by language, then order, then id', () => {
+  it('groups lessons by language', () => {
     const metas = allLessons()
     for (let i = 1; i < metas.length; i++) {
       const previous = metas[i - 1]
@@ -53,12 +30,6 @@ describe('registry', () => {
         throw new Error('missing lesson in ordering check')
       }
       expect(previous.language <= current.language).toBe(true)
-      if (previous.language === current.language) {
-        expect(previous.order <= current.order).toBe(true)
-        if (previous.order === current.order) {
-          expect(previous.id < current.id).toBe(true)
-        }
-      }
     }
   })
 
@@ -121,8 +92,6 @@ describe('registry', () => {
         language: 'en',
         layoutId: 'us-qwerty',
         titleKey: 'lesson.synthetic',
-        order: 0,
-        difficulty: 1,
       },
       kind: 'drill',
       templateCount: 1,

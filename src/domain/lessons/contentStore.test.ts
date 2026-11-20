@@ -12,6 +12,7 @@ import {
   validateLessonContent,
 } from './contentStore'
 import { PACK_FORMAT } from './contentStore'
+import type { LayoutId } from '../types'
 import type { LanguageContent, LessonContent } from './types'
 
 const lessonsDir = path.resolve(process.cwd(), 'public/lessons')
@@ -213,7 +214,7 @@ describe('lesson content store', () => {
       variants: ['asdf'],
       layoutVariants: { 'us-qwerty': ['asdf'] },
     }
-    const allowed = new Set('asdf')
+    const allowed = (): ReadonlySet<string> => new Set('asdf')
     expect(validateLessonContent(document, 'drill', allowed)).toEqual([])
     expect(
       validateLessonContent(
@@ -242,6 +243,28 @@ describe('lesson content store', () => {
       (await lessonsDb.getOverride('en-home-left'))?.document.layoutVariants,
     ).toEqual(document.layoutVariants)
     await resetOverride('en-home-left')
+  })
+
+  it('validates each layout variant set against its own layout characters', () => {
+    const allowed = (layoutId?: LayoutId): ReadonlySet<string> =>
+      new Set(layoutId === 'us-qwerty-mac' ? 'jkl;' : 'asdf')
+    const base = { formatVersion: 1, variants: ['asdf'] }
+
+    expect(
+      validateLessonContent(
+        { ...base, layoutVariants: { 'us-qwerty-mac': ['jkl;'] } },
+        'drill',
+        allowed,
+      ),
+    ).toEqual([])
+
+    expect(
+      validateLessonContent(
+        { ...base, layoutVariants: { 'us-qwerty-mac': ['asdf'] } },
+        'drill',
+        allowed,
+      ).some((issue) => issue.code === 'focus-keys'),
+    ).toBe(true)
   })
 
   it('rejects empty or malformed variants', () => {

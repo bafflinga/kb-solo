@@ -18,7 +18,8 @@
         "zxc bnm vbn zxc m,. vcx bnm zxcv bnm, vbnm",
         "zxcvb bnm,. vcxz .,mnb zxc bnm vbnm zxcv",
         "zxcv bnm, zxcv bnm. ,. zx mc vn b, n. xz cv"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-bottom-left": {
       "formatVersion": 1,
@@ -27,7 +28,8 @@
         "zx cv xc vb zb xv cz bv zxc xcv cvb bvc vcx",
         "zb bz xc cx vz zv cb bc zxcvb bvcxz xcvbz",
         "zx xc cv vb bz zxc vcvb xzcb zzxx ccvv bbxz"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-bottom-right": {
       "formatVersion": 1,
@@ -36,7 +38,8 @@
         "nm ,. mn ., n, m. ,n .m nm, m,. ,.n .nm",
         "n. .n m, ,m nm,. .,mn nnmm ,,.. m,n. nm.,",
         "nm mn ,m m, .n n. ,. ., nm,. m,n. n,.m"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-caps": {
       "formatVersion": 1,
@@ -63,7 +66,8 @@
         "121 232 343 454 545 1234 2345 5432 4321 15243",
         "14 25 31 42 53 125 231 342 453 514 13524 53142",
         "12 23 34 45 51 123 234 345 451 512 12345 54321"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-digits-right": {
       "formatVersion": 1,
@@ -72,7 +76,8 @@
         "676 787 898 909 090 6789 7890 0987 9876 60798",
         "69 70 86 97 08 670 786 897 908 069 68079 08697",
         "67 78 89 90 06 678 789 890 906 067 67890 09876"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-home-both": {
       "formatVersion": 1,
@@ -81,7 +86,8 @@
         "asj dkl f;a sdk jfl a;s dfj kla ;sdf jkla",
         "fa j; ds kl af ;j sd lk fads jkl; asdf ;lkj",
         "asdf jkl; sad; ask; jad; fal; k;l as; df;j"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-home-left": {
       "formatVersion": 1,
@@ -90,7 +96,8 @@
         "as df sa fd ad sf da fs fds dsa asd fda",
         "af fa sd ds afs sfd dfa fad aass ddff fdsa",
         "ad da sa as df fd ds sd fad sad das fad asdf"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-home-right": {
       "formatVersion": 1,
@@ -99,7 +106,8 @@
         "jk l; kj ;l jl k; lj ;k jkl kl; l;j ;jk",
         "j; ;j kl lk j;k l;j k;l ;lk jjkk ll;; ;lkj",
         "jk kj lk kl jl lj ;k k; l; ;l jkl klj ;lk"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-index-both": {
       "formatVersion": 1,
@@ -108,7 +116,8 @@
         "nm gb tv fr hy ju nmgb tvfr hyju",
         "frt vbn gbn mju hyj frtv gbnm juhy",
         "rtv bnm fgh juy rtvb nmfg hju yfrt"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-index-bottom": {
       "formatVersion": 1,
@@ -117,7 +126,8 @@
         "nm vb bn mv nmb vbn mnb bvn nbmv",
         "vbn nmb mvb bnm vbmn nbvm mvbn bnvm",
         "vb nm vv bb nn mm vbn nmb vbmn nbvm"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-index-mid": {
       "formatVersion": 1,
@@ -126,7 +136,8 @@
         "hg gh hgg ggh hgh ghg hggh gghg",
         "ghg hgh ggh hgg gh hg ghgh hghg",
         "gg hh gh hg ggh hgg ghg hgh gghh"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-index-top-left": {
       "formatVersion": 1,
@@ -135,7 +146,8 @@
         "tr rt ttr rrt trt rtr ttrrt rrttr",
         "rtr trt rrt ttr rt tr rtrt trtr",
         "rr tt rt tr rrt ttr rtr trt rttr"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-index-top-right": {
       "formatVersion": 1,
@@ -144,7 +156,8 @@
         "uy yu uyy yyu uyu yuy uyyu yyuy",
         "yuy uyu yyu uyy yu uy yuyu uyuy",
         "yy uu yu uy yyu uyy yuy uyu uyyu"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-middle-both": {
       "formatVersion": 1,
@@ -153,7 +166,8 @@
         "ki de ie dk ci dc cie eci",
         "dec kie cdi kie dce ike deck",
         "dk ie dc ki de ci d, k, e, i,"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-pinky-both": {
       "formatVersion": 1,
@@ -162,7 +176,8 @@
         "z; aq [z q' ;p az p[ 'q p[",
         "p[ 'q aq z; az ;p [z q' az",
         "aqz ;p[ 'q az; p[z q'a az"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-pinky-bottom": {
       "formatVersion": 1,
@@ -171,7 +186,8 @@
         "/z z/ // zz /z/ z/z z// /zz",
         "z/ z/ /z /z z/z /z/ zz //",
         "zz // z/ /z /zz z// z/z /z/"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-pinky-home-both": {
       "formatVersion": 1,
@@ -180,7 +196,8 @@
         ";a '; a; ;' a' ;a ;' a",
         "'a ;a a; '; a' ;a 'a",
         "a;' ;a a' ;a '; a; '"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty-mac-iso"
     },
     "en-pinky-top": {
       "formatVersion": 1,
@@ -189,7 +206,8 @@
         "pq [p q] p[ qp] [q",
         "q[ p] ]q [p q] p[",
         "qp[ ]q p[ q] [p"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-prose": {
       "formatVersion": 1,
@@ -207,7 +225,8 @@
         "-= [] {} ;: '\" ,. <> /? \\| _= [] {} ;:",
         ",. /\\ [] -= ;' <> ?| {} _= :\" ,. /\\ []",
         "-= [] ;' ,. /\\ -_=+ []{} ;: ,.<> /? \\|"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-ring-both": {
       "formatVersion": 1,
@@ -216,7 +235,8 @@
         "xo sw xl wo x. s. xow wol",
         "swx ol. wox sl. xwo low",
         "s. x. wo xl sw xo sxo w.l"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-top-both": {
       "formatVersion": 1,
@@ -225,7 +245,8 @@
         "qwe poi rty uio wer iop tyu qwe rtyui opqwe",
         "try out our toy type your poetry quit it pour",
         "qwerty yuiop qwer tyuio qwrty uiopq wertyuiop"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-top-left": {
       "formatVersion": 1,
@@ -234,7 +255,8 @@
         "qw er we rt qr wt eq tr qwe wer ert tre rew",
         "qt tq wr rw eq qe rt tr qwert trewq wqert",
         "qw we er rt tq qe wr te rq qwer ertq wert req"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-top-right": {
       "formatVersion": 1,
@@ -243,7 +265,8 @@
         "yu io ui op yo up iy po yui uio iop poi oiu",
         "yp py uo ou iy yi op po yuiop poiuy uioyp",
         "yu ui io op py yi uo ip oy yui iop oyu pio"
-      ]
+      ],
+      "canonicalLayout": "us-qwerty"
     },
     "en-words": {
       "formatVersion": 1,

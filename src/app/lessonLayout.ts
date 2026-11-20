@@ -1,5 +1,7 @@
-import { getLayout, resolveKeyCode } from '../domain/layout'
+import { resolveFocus } from '../domain/keyZones'
+import { getLayout } from '../domain/layout'
 import type { Code, ContentLanguage, Layout, LayoutId } from '../domain/types'
+import type { LessonMeta } from '../domain/lessons/types'
 
 const FAMILY_PREFIX: Record<ContentLanguage, string> = {
   en: 'us-',
@@ -19,21 +21,8 @@ export function resolveLessonLayout(
 }
 
 export function mapFocusCodes(
-  focusCodes: readonly Code[] | undefined,
-  from: Layout,
-  to: Layout,
-  identityCodes: readonly Code[] = [],
+  meta: LessonMeta,
+  layout: Layout,
 ): Code[] | undefined {
-  if (focusCodes === undefined) {
-    return undefined
-  }
-  const mapped: Code[] = []
-  for (const code of focusCodes) {
-    const next = resolveKeyCode(code, from, to, identityCodes)
-    if (next === undefined || mapped.includes(next)) {
-      continue
-    }
-    mapped.push(next)
-  }
-  return mapped
+  return resolveFocus(meta, layout)?.codes
 }

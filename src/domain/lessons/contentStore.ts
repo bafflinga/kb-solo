@@ -2,13 +2,14 @@ import { use, useEffect, useSyncExternalStore } from 'react'
 import { lessonsDb } from '../../storage/lessonsDb'
 import { isLayoutId } from '../layout'
 import type { ContentLanguage, LayoutId } from '../types'
-import { focusCharsFor } from './curriculum'
+import { canonicalLayoutFor, contentFocusCharsFor } from '../keyZones'
 import { allLessons, getLessonMeta, isKnownLessonId } from './registry'
 import type {
   LanguageContent,
   LessonContent,
   LessonContentMap,
   LessonKind,
+  LessonMeta,
 } from './types'
 
 export const CONTENT_FORMAT_VERSION = 1
@@ -61,10 +62,24 @@ export interface ContentValidationIssue {
   message: string
 }
 
+/** Resolves the characters a lesson may use for the canonical set or a layout. */
+export type AllowedCharsFor = (
+  layoutId?: LayoutId,
+) => ReadonlySet<string> | undefined
+
+export function contentAllowedCharsFor(
+  meta: LessonMeta,
+  canonicalLayoutId?: LayoutId,
+): AllowedCharsFor {
+  const canonical =
+    canonicalLayoutId ?? canonicalLayoutFor(meta)?.id ?? meta.layoutId
+  return (layoutId) => contentFocusCharsFor(meta, layoutId ?? canonical)
+}
+
 export function validateLessonContent(
   value: unknown,
   kind: LessonKind,
-  allowedChars?: ReadonlySet<string>,
+  allowedCharsFor?: AllowedCharsFor,
 ): ContentValidationIssue[] {
   if (!isRecord(value)) {
     return [{ code: 'format', message: 'Lesson content must be an object' }]
@@ -74,6 +89,15 @@ export function validateLessonContent(
     issues.push({
       code: 'format',
       message: `Unsupported content format: ${String(value.formatVersion)}`,
+    })
+  }
+  if (
+    value.canonicalLayout !== undefined &&
+    !isLayoutId(value.canonicalLayout)
+  ) {
+    issues.push({
+      code: 'variants',
+      message: `Unknown canonical layout: ${String(value.canonicalLayout)}`,
     })
   }
   if (!Array.isArray(value.variants)) {
@@ -90,7 +114,7 @@ export function validateLessonContent(
     })
   }
 
-  const sets: { variants: unknown[]; label: string }[] = [
+  const sets: { variants: unknown[]; label: string; layoutId?: LayoutId }[] = [
     { variants: value.variants, label: '' },
   ]
   if (value.layoutVariants !== undefined) {
@@ -120,7 +144,7 @@ export function validateLessonContent(
           })
           continue
         }
-        sets.push({ variants: layoutSet, label: ` (${layoutId})` })
+        sets.push({ variants: layoutSet, label: ` (${layoutId})`, layoutId })
       }
     }
   }
@@ -146,6 +170,7 @@ export function validateLessonContent(
         })
       }
     })
+    const allowedChars = allowedCharsFor?.(set.layoutId)
     if (kind === 'drill' && allowedChars) {
       set.variants.forEach((variant, index) => {
         if (typeof variant !== 'string') {
@@ -166,12 +191,20 @@ export function validateLessonContent(
   return issues
 }
 
-function parseLessonContent(
-  value: unknown,
-  kind: LessonKind,
-  allowedChars?: ReadonlySet<string>,
-): LessonContent {
-  const issues = validateLessonContent(value, kind, allowedChars)
+function parseLessonContent(value: unknown, meta: LessonMeta): LessonContent {
+  const kind = meta.kind
+  if (!kind) {
+    throw new Error(`Missing lesson kind for ${meta.id}`)
+  }
+  const canonicalLayoutId =
+    isRecord(value) && isLayoutId(value.canonicalLayout)
+      ? value.canonicalLayout
+      : undefined
+  const issues = validateLessonContent(
+    value,
+    kind,
+    contentAllowedCharsFor(meta, canonicalLayoutId),
+  )
   if (issues.length > 0) {
     throw new Error(issues[0]?.message)
   }
@@ -179,6 +212,9 @@ function parseLessonContent(
   const parsed: LessonContent = {
     formatVersion: CONTENT_FORMAT_VERSION,
     variants: record.variants as unknown[],
+  }
+  if (isLayoutId(record.canonicalLayout)) {
+    parsed.canonicalLayout = record.canonicalLayout
   }
   if (isRecord(record.layoutVariants)) {
     parsed.layoutVariants = record.layoutVariants as Partial<
@@ -206,7 +242,7 @@ function parseLanguageContent(
     if (!meta?.kind) {
       throw new Error(`Unknown lesson in ${language} content: ${id}`)
     }
-    lessons[id] = parseLessonContent(raw, meta.kind, focusCharsFor(meta))
+    lessons[id] = parseLessonContent(raw, meta)
   }
   return {
     formatVersion: CONTENT_FORMAT_VERSION,
@@ -402,7 +438,7 @@ export async function setOverride(
   if (!meta?.kind) {
     throw new Error(`Unknown lesson: ${id}`)
   }
-  const parsed = parseLessonContent(document, meta.kind, focusCharsFor(meta))
+  const parsed = parseLessonContent(document, meta)
   await lessonsDb.putOverride({ id, document: parsed, updatedAt: Date.now() })
   pending.delete(id)
   void refreshStatus()
@@ -459,7 +495,7 @@ export function parsePack(text: string): ParsedPack {
     try {
       items.push({
         id,
-        document: parseLessonContent(raw, meta.kind, focusCharsFor(meta)),
+        document: parseLessonContent(raw, meta),
       })
     } catch {
       skipped.push(id)
