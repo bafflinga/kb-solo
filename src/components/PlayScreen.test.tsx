@@ -349,24 +349,23 @@ describe('PlayScreen', () => {
   })
 
   describe('cue feedback visibility', () => {
-    async function completeCue(options: { showFeedback?: boolean } = {}) {
-      await render(options)
+    async function completeFirstCue(options: { showFeedback?: boolean } = {}) {
+      await render({ lesson: twoCueLesson, ...options })
       await click('Play')
       await advance(3000)
       await press('KeyA', 'a')
-      await press('KeyB', 'b')
     }
 
-    it('hides the feedback span by default', async () => {
-      await completeCue()
-      expect(container.querySelector('.typing-feedback')).toBeNull()
+    it('does not flash the completed cue by default', async () => {
+      await completeFirstCue()
+      expect(container.querySelector('[data-flash-kind]')).toBeNull()
     })
 
-    it('shows the feedback span when enabled', async () => {
-      await completeCue({ showFeedback: true })
-      expect(container.querySelector('.typing-feedback')?.textContent).toBe(
-        'ab',
-      )
+    it('flashes the completed cue when enabled', async () => {
+      await completeFirstCue({ showFeedback: true })
+      const leaving = container.querySelector('[data-slot="-1"]')
+      expect(leaving?.getAttribute('data-flash-kind')).toBe('success')
+      expect(leaving?.textContent).toBe('a')
     })
   })
 

@@ -302,12 +302,7 @@ export function PlayScreen({
       <GenerationBadge generation={generation} />
 
       <div className="play-stage">
-        <TypingArea
-          state={state}
-          feedback={feedback}
-          showFeedback={showFeedback}
-          lang={language}
-        />
+        <TypingArea state={state} showFeedback={showFeedback} lang={language} />
 
         {state.status === 'idle' && (
           <div className="play-overlay">

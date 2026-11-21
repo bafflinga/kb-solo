@@ -37,6 +37,10 @@ function typeKey(state: EngineState, code: string, char: string): EngineState {
   })
 }
 
+function wordCuesFor(...words: string[]): Cue[] {
+  return words.map((word) => cueFromText(layout, word, 'word'))
+}
+
 describe('TypingArea', () => {
   let container: HTMLDivElement
   let root: Root
@@ -56,17 +60,10 @@ describe('TypingArea', () => {
 
   async function render(
     state: EngineState,
-    feedback?: { id: number; kind: 'success' | 'error'; text: string },
     showFeedback = false,
   ): Promise<void> {
     await act(async () => {
-      root.render(
-        <TypingArea
-          state={state}
-          feedback={feedback}
-          showFeedback={showFeedback}
-        />,
-      )
+      root.render(<TypingArea state={state} showFeedback={showFeedback} />)
     })
   }
 
@@ -111,7 +108,7 @@ describe('TypingArea', () => {
     await render(start([cueFromText(layout, 'a b', 'word')]))
 
     const space = container.querySelector('[data-space="true"]')
-    expect(space?.textContent).toBe('\u00a0')
+    expect(space?.textContent).toBe(' ')
   })
 
   it('renders a newline as a visible marker', async () => {
@@ -125,25 +122,96 @@ describe('TypingArea', () => {
     expect(newline?.getAttribute('data-pending')).toBe('true')
   })
 
-  it('shows transient cue feedback when enabled', async () => {
-    await render(
-      start([cueFromText(layout, 'ab', 'word')]),
-      { id: 1, kind: 'success', text: 'ab' },
-      true,
-    )
+  it('renders the current cue with five dimmed upcoming cues', async () => {
+    const cues = wordCuesFor('a', 'b', 'c', 'd', 'e', 'f', 'g')
+    await render(start(cues))
 
-    const feedback = container.querySelector('.typing-feedback')
-    expect(feedback?.textContent).toBe('ab')
-    expect(feedback?.getAttribute('data-kind')).toBe('success')
+    const slots = container.querySelectorAll('.cue-slot')
+    expect(
+      Array.from(slots).map((slot) => slot.getAttribute('data-slot')),
+    ).toEqual(['0', '1', '2', '3', '4', '5'])
+    expect(
+      Array.from(slots).map((slot) => slot.getAttribute('data-state')),
+    ).toEqual(['active', 'future', 'future', 'future', 'future', 'future'])
+    expect(
+      Array.from(slots).map((slot) => slot.getAttribute('aria-hidden')),
+    ).toEqual([null, 'true', 'true', 'true', 'true', 'true'])
+    expect(container.querySelectorAll('.typing-char')).toHaveLength(1)
   })
 
-  it('hides cue feedback when disabled', async () => {
-    await render(
-      start([cueFromText(layout, 'ab', 'word')]),
-      { id: 1, kind: 'success', text: 'ab' },
-      false,
-    )
+  it('keeps completed cues in place with their text footprint', async () => {
+    const cues = wordCuesFor('ab', 'cd', 'ef')
+    let state = start(cues)
+    await render(state)
+    state = typeKey(state, 'KeyA', 'a')
+    state = typeKey(state, 'KeyB', 'b')
+    await render(state)
 
-    expect(container.querySelector('.typing-feedback')).toBeNull()
+    const slots = container.querySelectorAll('.cue-slot')
+    expect(slots).toHaveLength(3)
+    expect(slots[0]?.getAttribute('data-state')).toBe('done')
+    expect(slots[0]?.getAttribute('data-slot')).toBe('-1')
+    expect(slots[0]?.textContent).toBe('ab')
+    expect(slots[1]?.getAttribute('data-state')).toBe('active')
+    expect(slots[1]?.getAttribute('data-slot')).toBe('0')
+    expect(slots[1]?.textContent).toBe('cd')
+  })
+
+  it('renders line cues as their own block ending with the newline marker', async () => {
+    await render(start(lineCues(layout, 'ab\ncd')))
+
+    const slots = container.querySelectorAll('.cue-slot')
+    expect(slots).toHaveLength(2)
+    expect(slots[0]?.getAttribute('data-kind')).toBe('line')
+    expect(slots[1]?.getAttribute('data-kind')).toBe('line')
+    expect(slots[0]?.textContent).toBe('ab↵')
+  })
+
+  it('does not overflow the window at the end of the lesson', async () => {
+    const cues = wordCuesFor('ab', 'cd')
+    let state = start(cues)
+    state = typeKey(state, 'KeyA', 'a')
+    state = typeKey(state, 'KeyB', 'b')
+    state = typeKey(state, 'KeyC', 'c')
+    state = typeKey(state, 'KeyD', 'd')
+    await render(state)
+
+    const slots = container.querySelectorAll('.cue-slot')
+    expect(slots).toHaveLength(2)
+    expect(slots[0]?.getAttribute('data-slot')).toBe('-1')
+    expect(slots[1]?.getAttribute('data-slot')).toBe('0')
+  })
+
+  it('flashes the completed cue when feedback is enabled', async () => {
+    const cues = wordCuesFor('a', 'b')
+    let state = start(cues)
+    await render(state, true)
+    state = typeKey(state, 'KeyA', 'a')
+    await render(state, true)
+
+    const leaving = container.querySelector('[data-slot="-1"]')
+    expect(leaving?.getAttribute('data-flash-kind')).toBe('success')
+    expect(leaving?.textContent).toBe('a')
+  })
+
+  it('does not flash the completed cue when feedback is disabled', async () => {
+    const cues = wordCuesFor('a', 'b')
+    let state = start(cues)
+    await render(state)
+    state = typeKey(state, 'KeyA', 'a')
+    await render(state)
+
+    expect(container.querySelector('[data-flash-kind]')).toBeNull()
+  })
+
+  it('flashes red when the completed cue had an error', async () => {
+    const cues = wordCuesFor('a', 'b')
+    let state = start(cues, 'advance')
+    await render(state, true)
+    state = typeKey(state, 'KeyZ', 'z')
+    await render(state, true)
+
+    const leaving = container.querySelector('[data-slot="-1"]')
+    expect(leaving?.getAttribute('data-flash-kind')).toBe('error')
   })
 })
