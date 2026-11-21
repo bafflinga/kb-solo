@@ -14,10 +14,10 @@
     "en-bottom-both": {
       "formatVersion": 1,
       "variants": [
-        "z, x. cm vn b, .z ,x mc nv ,b z,x. cmvn b,z.",
-        "zxc bnm vbn zxc m,. vcx bnm zxcv bnm, vbnm",
-        "zxcvb bnm,. vcxz .,mnb zxc bnm vbnm zxcv",
-        "zxcv bnm, zxcv bnm. ,. zx mc vn b, n. xz cv"
+        "xv ,.m mbn xc c/ .zmv ,vz. /nx bz",
+        ".bv cb, z./x xc. vn ,m zxvm ,ncn /m/",
+        "cxcn m/m z/b ,b. vx., nb vcz",
+        "x. c.m z/ ,n bnx, vcz mbv c.n bx/"
       ],
       "canonicalLayout": "us-qwerty"
     },
@@ -34,10 +34,10 @@
     "en-bottom-right": {
       "formatVersion": 1,
       "variants": [
-        "nn mm ,, .. nnmm ,,.. .,mn m,n. nm,. .,mn",
-        "nm ,. mn ., n, m. ,n .m nm, m,. ,.n .nm",
-        "n. .n m, ,m nm,. .,mn nnmm ,,.. m,n. nm.,",
-        "nm mn ,m m, .n n. ,. ., nm,. m,n. n,.m"
+        ".mn ,/ m/,n nm. ,mn, /.,. ./",
+        "mn.m n/n /,/ mn .,/, .m. n,",
+        "./, n,n m/m .nm. n/, ., m/mn",
+        "n/ ,n. /m/n ,m/ n. .m ,m ,. /n,"
       ],
       "canonicalLayout": "us-qwerty"
     },
@@ -132,30 +132,20 @@
     "en-index-mid": {
       "formatVersion": 1,
       "variants": [
-        "gh hg ggh hgg ghg hgh gghg hggh",
-        "hg gh hgg ggh hgh ghg hggh gghg",
-        "ghg hgh ggh hgg gh hg ghgh hghg",
-        "gg hh gh hg ggh hgg ghg hgh gghh"
+        "ghg gh gjf fjgh jjf fjf gjhh fh",
+        "gj fjf ghgh fh fhfj fjgh fhgj ghgj",
+        "gjfg fhjj gjf fjfh gh gjfh ghg fhfh gj",
+        "fjfh gjfh gjgh gj gjf jhg fhfh gh"
       ],
       "canonicalLayout": "us-qwerty"
     },
-    "en-index-top-left": {
+    "en-index-top": {
       "formatVersion": 1,
       "variants": [
-        "rt tr rrt ttr rtr trt rrttr ttrrt",
-        "tr rt ttr rrt trt rtr ttrrt rrttr",
-        "rtr trt rrt ttr rt tr rtrt trtr",
-        "rr tt rt tr rrt ttr rtr trt rttr"
-      ],
-      "canonicalLayout": "us-qwerty"
-    },
-    "en-index-top-right": {
-      "formatVersion": 1,
-      "variants": [
-        "yu uy yyu uyy yuy uyu yyuy uyyu",
-        "uy yu uyy yyu uyu yuy uyyu yyuy",
-        "yuy uyu yyu uyy yu uy yuyu uyuy",
-        "yy uu yu uy yyu uyy yuy uyu uyyu"
+        "ru tyr turt ty yyr ruty rtru yutu",
+        "tyr ryry tyru tytu rutu ryu ty ru",
+        "turu tyry uyt ryt ry tytu ty ruru",
+        "uur ryrt tu ty tyry rutu ryt tyru"
       ],
       "canonicalLayout": "us-qwerty"
     },
@@ -172,42 +162,56 @@
     "en-pinky-both": {
       "formatVersion": 1,
       "variants": [
-        "aq z; p[ 'q az ;p [z q' az",
-        "z; aq [z q' ;p az p[ 'q p[",
-        "p[ 'q aq z; az ;p [z q' az",
-        "aqz ;p[ 'q az; p[z q'a az"
+        ";\\a `[q/ a][; z/ q'p[ a/z] `\\ z'p",
+        "`]` z' q\\ zp` a[q/ p\\a q']; a[/ z];",
+        "a;]p zp q'`[ q\\`; a'\\ `/qp z]/ z[",
+        "a' `]q[ []q q; `\\ apz/ zp `/a; z\\'"
       ],
-      "canonicalLayout": "us-qwerty"
+      "canonicalLayout": "us-qwerty",
+      "layoutVariants": {
+        "us-qwerty-mac-iso": [
+          "§;§[ z/zp a] ][§ `p q'q\\ q/ ';a `\\z;",
+          "§;' §/ zpq `/zp a\\] '[q a] `\\",
+          "/pa §]z/ z'§ `\\ a;[' p[z `;q\\ q]",
+          "ap§ ;[§ `] p'zp z]q/ q/a[ §; z[\\ `'`\\"
+        ]
+      }
     },
-    "en-pinky-bottom": {
+    "en-pinky-home-bottom": {
       "formatVersion": 1,
       "variants": [
-        "z/ /z zz // z/z /z/ z// /zz",
-        "/z z/ // zz /z/ z/z z// /zz",
-        "z/ z/ /z /z z/z /z/ zz //",
-        "zz // z/ /z /zz z// z/z /z/"
+        "a; '/z/ ;'z a;a z' a/z /'a/ z;",
+        "/;z; a;z /'a a;' z/z' /;a a'",
+        "a/a' 'z a; z;z' '/a; z'/ a;z/",
+        "z'/ a/;' z/ z;z ';a z' a/;a 'a"
       ],
-      "canonicalLayout": "us-qwerty"
-    },
-    "en-pinky-home-both": {
-      "formatVersion": 1,
-      "variants": [
-        "a; 'a ;a a' ;a '; a;'",
-        ";a '; a; ;' a' ;a ;' a",
-        "'a ;a a; '; a' ;a 'a",
-        "a;' ;a a' ;a '; a; '"
-      ],
-      "canonicalLayout": "us-qwerty-mac-iso"
+      "canonicalLayout": "us-qwerty",
+      "layoutVariants": {
+        "us-qwerty-mac-iso": [
+          "z\\` `'/; a'z' z;z\\ `/`/ a; a/\\",
+          "a'\\; ;\\` z' `' a' a/ `\\/ z/z z;a/",
+          "\\'` `/;/ `\\ `'z; a/ z\\ a;z a'",
+          "`/a\\ `; a' a;` \\/z/ z'a; z\\ z'"
+        ]
+      }
     },
     "en-pinky-top": {
       "formatVersion": 1,
       "variants": [
-        "qp ]p q[ p] qp[ ]q",
-        "pq [p q] p[ qp] [q",
-        "q[ p] ]q [p q] p[",
-        "qp[ ]q p[ q] [p"
+        "`[]\\ `[p q[ q]p] q\\ `p`\\ q]\\",
+        "qp`] []`\\ `[ q[p[ `]p\\ q\\ qp",
+        "q[ []` p]`] [\\` q[p\\ `\\ qp q]",
+        "`]`p q\\ ][q[ \\` q[ [pq\\ q]p `]p\\"
       ],
-      "canonicalLayout": "us-qwerty"
+      "canonicalLayout": "us-qwerty",
+      "layoutVariants": {
+        "us-qwerty-mac-iso": [
+          "p]§] §p§ [pq[ §]q[ p[q q] q[ q]§p §[",
+          "qp []§] p[§ qpq §[ q]§ ][q] §p",
+          "]p§p qp§ ][q qp[ §]§[ ]pq q[",
+          "q]q[ [§ qp §p§[ []qp §[] qp§]"
+        ]
+      }
     },
     "en-prose": {
       "formatVersion": 1,
@@ -241,10 +245,10 @@
     "en-top-both": {
       "formatVersion": 1,
       "variants": [
-        "qp wo ei ru ty pq ow ie ur yt qpow eiru tyqp",
-        "qwe poi rty uio wer iop tyu qwe rtyui opqwe",
-        "try out our toy type your poetry quit it pour",
-        "qwerty yuiop qwer tyuio qwrty uiopq wertyuiop"
+        "]ty w]uy ie[ i\\ rotw proq \\p",
+        "i]t \\rp q[tw \\q ]yp oe riu",
+        "ep] ]pr ew tq [\\ oy itw ur[",
+        "w[ ywrt e[] uq] ioq ye opi\\"
       ],
       "canonicalLayout": "us-qwerty"
     },
@@ -261,10 +265,10 @@
     "en-top-right": {
       "formatVersion": 1,
       "variants": [
-        "yy uu ii oo pp yyuu iioo ppyy poiuy uiopy oipuy",
-        "yu io ui op yo up iy po yui uio iop poi oiu",
-        "yp py uo ou iy yi op po yuiop poiuy uioyp",
-        "yu ui io op py yi uo ip oy yui iop oyu pio"
+        "p[ ][ i\\p upo ]i \\oi ]u [po \\u",
+        "u][ ]uo] i\\ o[ \\up op i[i\\",
+        "[i[i \\u u\\] ou ip po]u \\]op []",
+        "p]op io ou[\\ p[ u] \\[ i]\\u"
       ],
       "canonicalLayout": "us-qwerty"
     },

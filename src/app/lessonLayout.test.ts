@@ -44,12 +44,20 @@ describe('lesson layout resolution', () => {
     const macIso = getLayout('us-qwerty-mac-iso')
 
     expect(mapFocusCodes(meta!, windows)).toEqual([
+      'Backquote',
+      'KeyQ',
+      'KeyP',
+      'BracketLeft',
+      'BracketRight',
+      'Backslash',
+    ])
+    expect(mapFocusCodes(meta!, macIso)).toEqual([
+      'Backquote',
       'KeyQ',
       'KeyP',
       'BracketLeft',
       'BracketRight',
     ])
-    expect(mapFocusCodes(meta!, macIso)).toEqual(mapFocusCodes(meta!, windows))
   })
 
   it('returns undefined when a lesson has no focus', () => {

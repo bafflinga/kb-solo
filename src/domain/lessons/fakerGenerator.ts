@@ -1,4 +1,5 @@
 import type { Faker } from '@faker-js/faker'
+import { languageConfig } from '../languages'
 import { codeForChar } from '../layout'
 import type { ContentLanguage, Layout } from '../types'
 import { GENERATION_AREAS, areaIdsForSource } from './generationAreas'
@@ -7,13 +8,6 @@ import type {
   GenerationSentenceSource,
 } from './generationAreas'
 
-const FAKER_LOADERS: Readonly<
-  Record<ContentLanguage, () => Promise<{ faker: Faker }>>
-> = {
-  en: () => import('@faker-js/faker/locale/en'),
-  ru: () => import('@faker-js/faker/locale/ru'),
-}
-
 const fakerCache = new Map<ContentLanguage, Promise<Faker>>()
 
 export function loadFaker(language: ContentLanguage): Promise<Faker> {
@@ -21,7 +15,9 @@ export function loadFaker(language: ContentLanguage): Promise<Faker> {
   if (cached) {
     return cached
   }
-  const pending = FAKER_LOADERS[language]().then((module) => module.faker)
+  const pending = languageConfig(language)
+    .loadFaker()
+    .then((module) => module.faker)
   fakerCache.set(language, pending)
   return pending
 }

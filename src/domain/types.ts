@@ -17,7 +17,7 @@ export type LayoutId =
   | 'ru-jcuken-mac'
   | 'ru-jcuken-mac-iso'
 
-export type ContentLanguage = 'en' | 'ru'
+export type { ContentLanguage } from './languages'
 
 export type UiLocale = 'en' | 'ru'
 

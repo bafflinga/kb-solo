@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker/locale/en'
 import { describe, expect, it } from 'vitest'
 import { mapFocusCodes } from '../../app/lessonLayout'
-import { resolveFocus } from '../keyZones'
+import { canonicalLayoutFor, resolveFocus, unionZone } from '../keyZones'
 import { getLayout } from '../layout'
 import type { LayoutId } from '../types'
 import { allLessons, getLesson } from './registry'
@@ -22,9 +22,8 @@ function typedCodes(id: string): Set<string> {
 }
 
 describe('curricula', () => {
-  it('produces non-empty, fully resolved cues for all 56 lessons', () => {
+  it('produces non-empty, fully resolved cues for every lesson', () => {
     const metas = allLessons()
-    expect(metas).toHaveLength(56)
 
     for (const meta of metas) {
       const provider = getLesson(meta.id)
@@ -109,10 +108,18 @@ describe('curricula', () => {
     }
   })
 
-  it('keeps ru-pinky-bottom on unshifted pinky keys across Russian layouts', () => {
-    const provider = getLesson('ru-pinky-bottom')
+  it('keeps ru-pinky-home-bottom on unshifted pinky keys across Russian layouts', () => {
+    const provider = getLesson('ru-pinky-home-bottom')
     expect(provider).toBeDefined()
-    const expectedCodes = new Set(['KeyZ', 'Slash', 'IntlBackslash'])
+    const expectedCodes = new Set([
+      'KeyA',
+      'Semicolon',
+      'Quote',
+      'Backslash',
+      'KeyZ',
+      'Slash',
+      'IntlBackslash',
+    ])
 
     for (const layoutId of [
       'ru-jcuken',
@@ -177,20 +184,62 @@ describe('curricula', () => {
         layouts: ruLayouts,
       },
       {
-        id: 'ru-pinky-home-both',
-        codes: ['KeyA', 'Semicolon', 'Quote', 'Backslash'],
+        id: 'ru-pinky-home-bottom',
+        codes: [
+          'KeyA',
+          'Semicolon',
+          'Quote',
+          'Backslash',
+          'KeyZ',
+          'Slash',
+          'IntlBackslash',
+        ],
         fingers: ['lp', 'rp'],
         layouts: ruLayouts,
       },
       {
         id: 'en-pinky-top',
-        codes: ['KeyQ', 'KeyP', 'BracketLeft', 'BracketRight'],
+        codes: [
+          'Backquote',
+          'KeyQ',
+          'KeyP',
+          'BracketLeft',
+          'BracketRight',
+          'Backslash',
+        ],
         fingers: ['lp', 'rp'],
         layouts: enLayouts,
       },
       {
-        id: 'en-pinky-home-both',
-        codes: ['KeyA', 'Semicolon', 'Quote'],
+        id: 'en-pinky-home-bottom',
+        codes: [
+          'KeyA',
+          'KeyZ',
+          'Semicolon',
+          'Quote',
+          'Slash',
+          'Backslash',
+          'IntlBackslash',
+        ],
+        fingers: ['lp', 'rp'],
+        layouts: enLayouts,
+      },
+      {
+        id: 'en-pinky-both',
+        codes: [
+          'Backquote',
+          'KeyQ',
+          'KeyP',
+          'BracketLeft',
+          'BracketRight',
+          'Backslash',
+          'KeyA',
+          'KeyZ',
+          'IntlBackslash',
+          'Semicolon',
+          'Quote',
+          'Slash',
+        ],
         fingers: ['lp', 'rp'],
         layouts: enLayouts,
       },
@@ -249,7 +298,7 @@ describe('curricula', () => {
     ) => cuesFor(provider, layoutId).find((char) => char.char === 'ё')?.code
 
     const top = getLesson('ru-pinky-top')
-    const home = getLesson('ru-pinky-home-both')
+    const home = getLesson('ru-pinky-home-bottom')
 
     expect(yoCodeFor(top, 'ru-jcuken')).toBe('Backquote')
     expect(yoCodeFor(top, 'ru-jcuken-mac')).toBe('Backslash')
@@ -315,17 +364,78 @@ describe('curricula', () => {
     }
   })
 
+  it('includes the ISO-only bottom key in bottom-row focus on ISO layouts only', () => {
+    const cases = [
+      {
+        id: 'en-bottom-left',
+        iso: 'us-qwerty-mac-iso',
+        ansi: ['us-qwerty', 'us-qwerty-mac'],
+        char: '`',
+      },
+      {
+        id: 'en-bottom-both',
+        iso: 'us-qwerty-mac-iso',
+        ansi: ['us-qwerty', 'us-qwerty-mac'],
+        char: '`',
+      },
+      {
+        id: 'ru-bottom-left',
+        iso: 'ru-jcuken-mac-iso',
+        ansi: ['ru-jcuken', 'ru-jcuken-mac'],
+        char: ']',
+      },
+      {
+        id: 'ru-bottom-both',
+        iso: 'ru-jcuken-mac-iso',
+        ansi: ['ru-jcuken', 'ru-jcuken-mac'],
+        char: ']',
+      },
+    ] as const
+
+    for (const { id, iso, ansi, char } of cases) {
+      const meta = getLesson(id)?.meta
+      expect(meta, id).toBeDefined()
+      if (!meta) {
+        continue
+      }
+      expect(mapFocusCodes(meta, getLayout(iso)), `${id} ${iso}`).toContain(
+        'IntlBackslash',
+      )
+      expect(resolveFocus(meta, getLayout(iso))?.chars.has(char), id).toBe(true)
+      for (const layoutId of ansi) {
+        expect(
+          mapFocusCodes(meta, getLayout(layoutId)),
+          `${id} ${layoutId}`,
+        ).not.toContain('IntlBackslash')
+      }
+    }
+  })
+
+  it('keeps bottom-row canonical layouts ANSI', () => {
+    const cases = [
+      ['en-bottom-left', 'us-qwerty'],
+      ['en-bottom-both', 'us-qwerty'],
+      ['ru-bottom-left', 'ru-jcuken'],
+      ['ru-bottom-both', 'ru-jcuken'],
+    ] as const
+
+    for (const [id, canonical] of cases) {
+      const meta = getLesson(id)?.meta
+      expect(meta, id).toBeDefined()
+      if (!meta) {
+        continue
+      }
+      expect(canonicalLayoutFor(meta)?.id, id).toBe(canonical)
+      expect(unionZone(meta).has('IntlBackslash'), id).toBe(false)
+    }
+  })
+
   it('renders the authored Windows and ISO content for Russian pinky lessons', () => {
     const cases: Record<string, Partial<Record<LayoutId, string>>> = {
-      'ru-pinky-bottom': {
-        'ru-jcuken': '.я я. я. .я .я я. я.',
-        'ru-jcuken-mac': '/я я/ я/ /я /я я/ я/',
-        'ru-jcuken-mac-iso': ']я /я я/ ]я /я я/ ]я /я',
-      },
-      'ru-pinky-home-both': {
-        'ru-jcuken': 'фж эф жэ фэ жф эж фжэ',
-        'ru-jcuken-mac': 'фж эф жэ фэ жф эж фжэ',
-        'ru-jcuken-mac-iso': 'фж ёф жэ ёж фэ жё фжэ',
+      'ru-pinky-home-bottom': {
+        'ru-jcuken': 'фж эф жэ фэ жф эж фжэ .я я. я. .я .я я. я.',
+        'ru-jcuken-mac': 'фж эф жэ фэ жф эж фжэ /я я/ я/ /я /я я/ я/',
+        'ru-jcuken-mac-iso': 'фж ёф жэ ёж фэ жё фжэ ]я /я я/ ]я /я я/ ]я /я',
       },
     }
     for (const [id, byLayout] of Object.entries(cases)) {
@@ -431,7 +541,13 @@ describe('curricula', () => {
     const homeKeys = ['KeyJ', 'KeyK', 'KeyL', 'Semicolon']
 
     const right = allLessons().find((lesson) => lesson.id === 'ru-home-right')
-    expect([...(right ? (resolveFocus(right, getLayout(right.layoutId))?.codes ?? []) : [])].sort()).toEqual([...homeKeys].sort())
+    expect(
+      [
+        ...(right
+          ? (resolveFocus(right, getLayout(right.layoutId))?.codes ?? [])
+          : []),
+      ].sort(),
+    ).toEqual([...homeKeys].sort())
 
     for (const id of ['ru-home-both']) {
       const meta = allLessons().find((lesson) => lesson.id === id)

@@ -72,9 +72,6 @@ describe('ContentTransferDialog', () => {
     await render()
 
     expect(container.querySelectorAll('.content-dialog-column')).toHaveLength(2)
-    expect(
-      container.querySelectorAll('.content-transfer-list li'),
-    ).toHaveLength(28)
     expect(container.querySelector('.content-import')).not.toBeNull()
     expect(document.activeElement).toBe(
       container.querySelector('.content-dialog-close'),
@@ -97,7 +94,6 @@ describe('ContentTransferDialog', () => {
       expect.arrayContaining(['en-home-left']),
       false,
     )
-    expect(onSetExport.mock.calls[0]?.[0]).toHaveLength(28)
 
     await render(new Set(lessonsFor('en').map((meta) => meta.id)))
     const checkedAll = container.querySelector<HTMLInputElement>(

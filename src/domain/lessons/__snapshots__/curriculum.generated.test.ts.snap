@@ -1,0 +1,1016 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generated curriculum parity > matches the frozen English and Russian definitions 1`] = `
+{
+  "en": [
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "KeyG",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "en-home-left",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.homeLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "KeyH",
+            "Quote",
+            "Backslash",
+          ],
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "en-home-right",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.homeRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "KeyG",
+            "KeyH",
+            "Quote",
+            "Backslash",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "en-home-both",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.homeBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "en-index-top",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.indexTop",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "en-index-mid",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.indexMid",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "bottom",
+          ],
+        },
+      },
+      "id": "en-index-bottom",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.indexBottom",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "en-index-both",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.indexBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lm",
+            "rm",
+          ],
+          "rows": [
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "en-middle-both",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.middleBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lr",
+            "rr",
+          ],
+          "rows": [
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "en-ring-both",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.ringBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "rp",
+          ],
+          "rows": [
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "en-pinky-home-bottom",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.pinkyHomeBottom",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Digit0",
+            "Digit1",
+            "Minus",
+            "Equal",
+          ],
+          "fingers": [
+            "lp",
+            "rp",
+          ],
+          "rows": [
+            "top",
+            "digits",
+          ],
+        },
+      },
+      "id": "en-pinky-top",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.pinkyTop",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Backquote",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "digits",
+          ],
+        },
+      },
+      "id": "en-digits-left",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.digitsLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Minus",
+            "Equal",
+          ],
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "digits",
+          ],
+        },
+      },
+      "id": "en-digits-right",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.digitsRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "bottom",
+          ],
+        },
+      },
+      "id": "en-bottom-right",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.bottomRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "bottom",
+          ],
+          "unionExclude": [
+            "IntlBackslash",
+          ],
+        },
+      },
+      "id": "en-bottom-left",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.bottomLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "bottom",
+          ],
+          "unionExclude": [
+            "IntlBackslash",
+          ],
+        },
+      },
+      "id": "en-bottom-both",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.bottomBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Backquote",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "en-top-left",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.topLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "en-top-right",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.topRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "en-top-both",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.topBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Digit0",
+            "Digit1",
+            "Minus",
+            "Equal",
+          ],
+          "fingers": [
+            "lp",
+            "rp",
+          ],
+          "rows": [
+            "digits",
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "en-pinky-both",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.pinkyBoth",
+    },
+    {
+      "id": "en-all-letters",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.allLetters",
+    },
+    {
+      "id": "en-caps",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.caps",
+    },
+    {
+      "focus": {
+        "keys": {
+          "codes": [
+            "Minus",
+            "Equal",
+            "BracketLeft",
+            "BracketRight",
+            "Semicolon",
+            "Quote",
+            "Comma",
+            "Period",
+            "Slash",
+            "Backslash",
+          ],
+        },
+      },
+      "id": "en-punctuation",
+      "kind": "drill",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.punctuation",
+    },
+    {
+      "id": "en-words",
+      "kind": "words",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.words",
+    },
+    {
+      "id": "en-prose",
+      "kind": "prose",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.prose",
+    },
+    {
+      "id": "en-code",
+      "kind": "code",
+      "language": "en",
+      "layoutId": "us-qwerty",
+      "titleKey": "lesson.code",
+    },
+  ],
+  "ru": [
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "KeyG",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "ru-home-left",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.homeLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "KeyH",
+            "Quote",
+            "Backslash",
+          ],
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "ru-home-right",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.homeRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "KeyG",
+            "KeyH",
+            "Quote",
+            "Backslash",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "ru-home-both",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.homeBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "ru-index-top",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.indexTop",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "home",
+          ],
+        },
+      },
+      "id": "ru-index-mid",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.indexMid",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "bottom",
+          ],
+        },
+      },
+      "id": "ru-index-bottom",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.indexBottom",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "li",
+            "ri",
+          ],
+          "rows": [
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "ru-index-both",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.indexBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lm",
+            "rm",
+          ],
+          "rows": [
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "ru-middle-both",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.middleBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lr",
+            "rr",
+          ],
+          "rows": [
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "ru-ring-both",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.ringBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "rp",
+          ],
+          "rows": [
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "ru-pinky-home-bottom",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken-mac-iso",
+      "titleKey": "lesson.pinkyHomeBottom",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Digit0",
+            "Digit1",
+            "Minus",
+            "Equal",
+          ],
+          "fingers": [
+            "lp",
+            "rp",
+          ],
+          "rows": [
+            "top",
+            "digits",
+          ],
+        },
+      },
+      "id": "ru-pinky-top",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.pinkyTop",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Backquote",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "digits",
+          ],
+        },
+      },
+      "id": "ru-digits-left",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.digitsLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Minus",
+            "Equal",
+          ],
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "digits",
+          ],
+        },
+      },
+      "id": "ru-digits-right",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.digitsRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "bottom",
+          ],
+        },
+      },
+      "id": "ru-bottom-right",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.bottomRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "bottom",
+          ],
+          "unionExclude": [
+            "IntlBackslash",
+          ],
+        },
+      },
+      "id": "ru-bottom-left",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.bottomLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "bottom",
+          ],
+          "unionExclude": [
+            "IntlBackslash",
+          ],
+        },
+      },
+      "id": "ru-bottom-both",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.bottomBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Backquote",
+          ],
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "ru-top-left",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.topLeft",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "ru-top-right",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.topRight",
+    },
+    {
+      "focus": {
+        "keys": {
+          "fingers": [
+            "lp",
+            "lr",
+            "lm",
+            "li",
+            "ri",
+            "rm",
+            "rr",
+            "rp",
+          ],
+          "rows": [
+            "top",
+          ],
+        },
+      },
+      "id": "ru-top-both",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.topBoth",
+    },
+    {
+      "focus": {
+        "keys": {
+          "exclude": [
+            "Digit0",
+            "Digit1",
+            "Minus",
+            "Equal",
+          ],
+          "fingers": [
+            "lp",
+            "rp",
+          ],
+          "rows": [
+            "digits",
+            "top",
+            "home",
+            "bottom",
+          ],
+        },
+      },
+      "id": "ru-pinky-both",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken-mac-iso",
+      "titleKey": "lesson.pinkyBoth",
+    },
+    {
+      "id": "ru-all-letters",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.allLetters",
+    },
+    {
+      "id": "ru-caps",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.caps",
+    },
+    {
+      "focus": {
+        "chars": [
+          ".",
+          ",",
+          "!",
+          "?",
+          ";",
+          ":",
+          """,
+          "-",
+        ],
+      },
+      "id": "ru-punctuation",
+      "kind": "drill",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.punctuation",
+    },
+    {
+      "id": "ru-words",
+      "kind": "words",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.words",
+    },
+    {
+      "id": "ru-prose",
+      "kind": "prose",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.prose",
+    },
+    {
+      "id": "ru-code",
+      "kind": "code",
+      "language": "ru",
+      "layoutId": "ru-jcuken",
+      "titleKey": "lesson.code",
+    },
+  ],
+}
+`;

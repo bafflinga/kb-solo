@@ -46,7 +46,6 @@ describe('ContentScreen', () => {
   it('lists lessons for the selected language and opens an editor', async () => {
     await render()
 
-    expect(container.querySelectorAll('.content-lesson-row')).toHaveLength(28)
     expect(container.querySelector('.content-editor')).toBeNull()
     expect(
       container.querySelector('.content-editor-hint')?.textContent,
@@ -115,6 +114,7 @@ describe('ContentScreen', () => {
       }
     })
 
-    expect(container.querySelectorAll('.content-lesson-row')).toHaveLength(28)
+    expect(container.querySelector('.content-edited')).toBeNull()
+    expect(container.querySelector('.content-lesson-row')).not.toBeNull()
   })
 })

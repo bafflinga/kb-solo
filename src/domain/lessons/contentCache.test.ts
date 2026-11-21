@@ -29,7 +29,7 @@ beforeEach(() => {
     if (url.includes('/lessons/manifest.json')) {
       return new Response(manifestText, { status: 200 })
     }
-    const match = /lessons\/((?:en|ru)\.json)/.exec(url)
+    const match = /lessons\/([a-z]+\.json)/.exec(url)
     const text = match?.[1] ? languageTexts[match[1]] : undefined
     if (text === undefined) {
       return new Response('Not found', { status: 404 })

@@ -13,7 +13,7 @@ import {
   dismissLayoutMismatch,
   loadDismissedLayoutMismatch,
 } from '../app/layoutMismatchNotice'
-import { DEFAULT_SHORTCUTS, NEXT_LESSON_SHORTCUT } from '../app/shortcuts'
+import { DEFAULT_SHORTCUTS } from '../app/shortcuts'
 import type { ShortcutSettings } from '../app/shortcuts'
 import { useGlobalShortcut } from '../app/useGlobalShortcut'
 import { useTypingSession } from '../app/useTypingSession'
@@ -226,7 +226,7 @@ export function PlayScreen({
   }, [feedback, state.status])
 
   const finished = state.status === 'success' || state.status === 'failure'
-  const language = lesson.meta.language === 'ru' ? 'ru' : 'en'
+  const language = lesson.meta.language
   const next = nextLesson(lesson.meta)
 
   const goToNext = useCallback(() => {
@@ -236,7 +236,7 @@ export function PlayScreen({
   }, [next])
 
   useGlobalShortcut({
-    shortcut: NEXT_LESSON_SHORTCUT,
+    shortcut: shortcuts.nextLesson,
     enabled: !suspended && next !== undefined,
     onTrigger: goToNext,
   })

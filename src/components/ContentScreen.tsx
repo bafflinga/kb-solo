@@ -4,6 +4,7 @@ import type { MessageKey } from '../i18n'
 import { exportPack, packToJson } from '../domain/lessons/contentStore'
 import type { ContentPack } from '../domain/lessons/contentStore'
 import { lessonsFor } from '../domain/lessons/registry'
+import { LANGUAGE_CODES, LANGUAGE_LABEL } from '../domain/languages'
 import type { ContentLanguage, LayoutId } from '../domain/types'
 import { lessonsDb } from '../storage/lessonsDb'
 import { ContentEditor } from './ContentEditor'
@@ -123,8 +124,11 @@ export function ContentScreen({
                 setSelectedId(null)
               }}
             >
-              <option value="en">English</option>
-              <option value="ru">Русский</option>
+              {LANGUAGE_CODES.map((code) => (
+                <option key={code} value={code}>
+                  {LANGUAGE_LABEL[code]}
+                </option>
+              ))}
             </select>
           </label>
           <h3>{t('contentSelectLesson')}</h3>

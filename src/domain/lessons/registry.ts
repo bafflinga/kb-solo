@@ -1,10 +1,11 @@
+import { languageConfig, LANGUAGE_CODES } from '../languages'
 import type { ContentLanguage } from '../types'
-import { buildChainedLessons, chainDefs } from './curriculum'
-import { enDefs } from './curriculum.en'
-import { ruDefs } from './curriculum.ru'
+import { buildChainedLessons, buildLessonDefs, chainDefs } from './curriculum'
 import type { LessonContentMap, LessonMeta, LessonProvider } from './types'
 
-const DEF_GROUPS = [enDefs, ruDefs] as const
+const DEF_GROUPS = LANGUAGE_CODES.map((language) =>
+  buildLessonDefs(language, languageConfig(language).curriculum),
+)
 const METAS: readonly LessonMeta[] = DEF_GROUPS.flatMap(chainDefs)
 const KNOWN_IDS = new Set(METAS.map((meta) => meta.id))
 

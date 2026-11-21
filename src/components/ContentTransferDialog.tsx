@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n'
 import { lessonsFor } from '../domain/lessons/registry'
+import { LANGUAGE_CODES, LANGUAGE_LABEL } from '../domain/languages'
 import type { ContentLanguage } from '../domain/types'
 import { ContentImportPanel } from './ContentImportPanel'
 
@@ -100,8 +101,11 @@ export function ContentTransferDialog({
                   setDialogLanguage(event.target.value as ContentLanguage)
                 }
               >
-                <option value="en">English</option>
-                <option value="ru">Русский</option>
+                {LANGUAGE_CODES.map((code) => (
+                  <option key={code} value={code}>
+                    {LANGUAGE_LABEL[code]}
+                  </option>
+                ))}
               </select>
             </label>
             <div className="content-select-all-row">

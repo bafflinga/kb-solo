@@ -9,6 +9,7 @@ export interface Shortcut {
 export interface ShortcutSettings {
   start: Shortcut
   pause: Shortcut
+  nextLesson: Shortcut
 }
 
 const MODIFIER_CODES = new Set([
@@ -59,19 +60,7 @@ function primaryModifier(): Pick<Shortcut, 'ctrl' | 'meta'> {
   return isMac() ? { ctrl: false, meta: true } : { ctrl: true, meta: false }
 }
 
-export function defaultShortcuts(): ShortcutSettings {
-  const start: Shortcut = {
-    code: 'Enter',
-    ...primaryModifier(),
-    alt: false,
-    shift: false,
-  }
-  return { start, pause: { ...start } }
-}
-
-export const DEFAULT_SHORTCUTS: ShortcutSettings = defaultShortcuts()
-
-export function defaultNextLessonShortcut(): Shortcut {
+export function nextLessonShortcut(): Shortcut {
   return {
     code: 'ArrowRight',
     ...primaryModifier(),
@@ -80,7 +69,22 @@ export function defaultNextLessonShortcut(): Shortcut {
   }
 }
 
-export const NEXT_LESSON_SHORTCUT: Shortcut = defaultNextLessonShortcut()
+export function defaultShortcuts(): ShortcutSettings {
+  const start: Shortcut = {
+    code: 'Enter',
+    ...primaryModifier(),
+    alt: false,
+    shift: false,
+  }
+  const nextLesson: Shortcut = nextLessonShortcut();
+  return {
+    start,
+    pause: { ...start },
+    nextLesson,
+  }
+}
+
+export const DEFAULT_SHORTCUTS: ShortcutSettings = defaultShortcuts()
 
 export function matchesShortcut(
   event: KeyboardEvent,
@@ -180,6 +184,7 @@ export function normalizeShortcut(value: unknown): Shortcut | undefined {
   return isShortcutSafe(shortcut) ? shortcut : undefined
 }
 
+// TODO: implement once for all defined shortcuts
 export function normalizeShortcutSettings(
   value: unknown,
 ): ShortcutSettings | undefined {
@@ -189,8 +194,13 @@ export function normalizeShortcutSettings(
   const raw = value as Record<string, unknown>
   const start = normalizeShortcut(raw.start)
   const pause = normalizeShortcut(raw.pause)
-  if (start === undefined || pause === undefined) {
+  const nextLesson = normalizeShortcut(raw.nextLesson)
+  if (
+    start === undefined ||
+    pause === undefined ||
+    nextLesson === undefined
+  ) {
     return undefined
   }
-  return { start, pause }
+  return { start, pause, nextLesson }
 }

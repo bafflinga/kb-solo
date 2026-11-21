@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getLayout } from '../domain/layout'
+import { loadLessonContentMap } from '../domain/lessons/contentStore'
 import { getLessonMeta } from '../domain/lessons/registry'
 import type { LessonContentMap, LessonMeta } from '../domain/lessons/types'
 import { usedCodesForLesson } from './lessonPreview'
@@ -8,7 +9,7 @@ const meta: LessonMeta = {
   id: 'test-preview',
   language: 'en',
   layoutId: 'us-qwerty',
-  titleKey: 'lesson.en.homeLeft',
+  titleKey: 'lesson.homeLeft',
   kind: 'drill',
   focus: { keys: { codes: ['KeyA', 'KeyS', 'KeyD'] } },
 }
@@ -66,6 +67,16 @@ describe('usedCodesForLesson', () => {
       getLayout('us-qwerty'),
     )
     expect(codes).toEqual(['KeyA', 'KeyS'])
+  })
+
+  it('previews Russian word, prose and code keys from content', async () => {
+    const map = await loadLessonContentMap('ru')
+    for (const id of ['ru-words', 'ru-prose', 'ru-code']) {
+      const meta = getLessonMeta(id)
+      expect(meta).toBeDefined()
+      const codes = usedCodesForLesson(meta!, map, getLayout('ru-jcuken'))
+      expect(codes.length, id).toBeGreaterThan(0)
+    }
   })
 
   it('previews Backquote for ru-pinky-top on every Russian layout', () => {

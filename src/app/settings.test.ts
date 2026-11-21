@@ -12,6 +12,14 @@ const altEnter: Shortcut = {
   shift: false,
 }
 
+const altArrowRight: Shortcut = {
+  code: 'ArrowRight',
+  ctrl: false,
+  meta: false,
+  alt: true,
+  shift: false,
+}
+
 function storeWith(raw?: string) {
   const values = new Map<string, string>()
   if (raw !== undefined) {
@@ -97,12 +105,14 @@ describe('settings shortcuts', () => {
         shortcuts: {
           start: altEnter,
           pause: { ...altEnter, code: 'Space' },
+          nextLesson: altArrowRight,
         },
       }),
     )
     expect(store.load().shortcuts).toEqual({
       start: altEnter,
       pause: { ...altEnter, code: 'Space' },
+      nextLesson: altArrowRight,
     })
   })
 
@@ -121,7 +131,11 @@ describe('settings shortcuts', () => {
   it('persists shortcut updates', () => {
     const { store, values } = storeWith()
     const next = store.update({
-      shortcuts: { start: altEnter, pause: DEFAULT_SHORTCUTS.pause },
+      shortcuts: {
+        start: altEnter,
+        pause: DEFAULT_SHORTCUTS.pause,
+        nextLesson: altArrowRight,
+      },
     })
     expect(next.shortcuts.start).toEqual(altEnter)
     expect(

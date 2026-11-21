@@ -4,7 +4,7 @@ import type { LessonMeta } from '../domain/lessons/types'
 import type { LessonProgress } from '../storage/progress'
 import { useI18n } from '../i18n'
 import { LessonCard } from './LessonCard'
-import { LANGUAGE_LABEL } from './languages'
+import { LANGUAGE_LABEL } from '../domain/languages'
 
 export interface LessonPickerProps {
   lessons: LessonMeta[]

@@ -1,11 +1,6 @@
-import type {
-  Code,
-  ContentLanguage,
-  KeyLevel,
-  Layout,
-  LayoutId,
-} from './types'
+import type { Code, ContentLanguage, KeyLevel, Layout, LayoutId } from './types'
 import { ANSI_GEOMETRY, ISO_GEOMETRY } from './geometry'
+import { languageConfig } from './languages'
 import { LEGEND_SETS } from './legends'
 
 export { fingerFor } from './fingerMap'
@@ -66,14 +61,6 @@ const PROFILE_BY_LAYOUT: Readonly<Record<LayoutId, KeyboardProfile>> = {
   'ru-jcuken-mac-iso': 'mac-iso',
 }
 
-const LAYOUT_BY_PROFILE: Readonly<
-  Record<KeyboardProfile, Record<ContentLanguage, LayoutId>>
-> = {
-  pc: { en: 'us-qwerty', ru: 'ru-jcuken' },
-  'mac-ansi': { en: 'us-qwerty-mac', ru: 'ru-jcuken-mac' },
-  'mac-iso': { en: 'us-qwerty-mac-iso', ru: 'ru-jcuken-mac-iso' },
-}
-
 const PROFILE_ORDER: readonly KeyboardProfile[] = ['pc', 'mac-ansi', 'mac-iso']
 
 export function getLayout(id: LayoutId): Layout {
@@ -100,12 +87,12 @@ export function layoutForProfile(
   profile: KeyboardProfile,
   language: ContentLanguage,
 ): LayoutId {
-  return LAYOUT_BY_PROFILE[profile][language]
+  return languageConfig(language).layouts[profile]
 }
 
 export function layoutsForLanguage(language: ContentLanguage): Layout[] {
   return PROFILE_ORDER.map((profile) =>
-    getLayout(LAYOUT_BY_PROFILE[profile][language]),
+    getLayout(languageConfig(language).layouts[profile]),
   )
 }
 

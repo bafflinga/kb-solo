@@ -1,4 +1,5 @@
 import type { ErrorMode } from '../domain/engine'
+import { LANGUAGE_CODES } from '../domain/languages'
 import { areaIdsForSource } from '../domain/lessons/generationAreas'
 import type {
   GenerationAreaId,
@@ -8,6 +9,7 @@ import { isLayoutId, layoutForProfile, profileOf } from '../domain/layout'
 import { isPaceLevel } from '../domain/pacing'
 import type { PaceLevel } from '../domain/pacing'
 import type { Code, ContentLanguage, Finger, LayoutId } from '../domain/types'
+import { LOCALES } from '../i18n/messages'
 import type { UiLocale } from '../i18n/messages'
 import { DEFAULT_SHORTCUTS, normalizeShortcutSettings } from './shortcuts'
 import type { ShortcutSettings } from './shortcuts'
@@ -48,11 +50,24 @@ export interface SettingsStore {
   update(patch: Partial<AppSettings>): AppSettings
 }
 
+function isUiLocale(value: unknown): value is UiLocale {
+  return (
+    typeof value === 'string' && (LOCALES as readonly string[]).includes(value)
+  )
+}
+
+function isContentLanguage(value: unknown): value is ContentLanguage {
+  return (
+    typeof value === 'string' &&
+    (LANGUAGE_CODES as readonly string[]).includes(value)
+  )
+}
+
 function detectLocale(): UiLocale {
-  if (typeof navigator !== 'undefined' && navigator.language.startsWith('ru')) {
-    return 'ru'
-  }
-  return 'en'
+  const preferred =
+    typeof navigator !== 'undefined' ? navigator.language.toLowerCase() : ''
+  const match = LANGUAGE_CODES.find((code) => preferred.startsWith(code))
+  return match !== undefined && isUiLocale(match) ? match : 'en'
 }
 
 const initialLocale = detectLocale()
@@ -87,10 +102,9 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
         generatedDrills?: unknown
       }
       const { generatedDrills: legacyGeneratedDrills, ...parsed } = stored
-      const contentLanguage =
-        parsed.contentLanguage === 'en' || parsed.contentLanguage === 'ru'
-          ? parsed.contentLanguage
-          : DEFAULT_SETTINGS.contentLanguage
+      const contentLanguage = isContentLanguage(parsed.contentLanguage)
+        ? parsed.contentLanguage
+        : DEFAULT_SETTINGS.contentLanguage
       const storedLayout = isLayoutId(parsed.layoutId)
         ? parsed.layoutId
         : DEFAULT_SETTINGS.layoutId
@@ -121,10 +135,9 @@ export function createSettingsStore(storage: SafeStorage): SettingsStore {
       return {
         ...DEFAULT_SETTINGS,
         ...parsed,
-        locale:
-          parsed.locale === 'en' || parsed.locale === 'ru'
-            ? parsed.locale
-            : DEFAULT_SETTINGS.locale,
+        locale: isUiLocale(parsed.locale)
+          ? parsed.locale
+          : DEFAULT_SETTINGS.locale,
         contentLanguage,
         layoutId: layoutForProfile(profileOf(storedLayout), contentLanguage),
         showFeedback:

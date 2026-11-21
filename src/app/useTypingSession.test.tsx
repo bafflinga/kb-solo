@@ -32,7 +32,7 @@ function lessonFor(
       id: 'test',
       language: 'en',
       layoutId: 'us-qwerty',
-      titleKey: 'lesson.en.homeLeft',
+      titleKey: 'lesson.homeLeft',
       ...meta,
     },
     kind: 'drill',
@@ -53,7 +53,7 @@ function drillLessonFor(
     id: 'drill',
     language: 'en',
     layoutId: 'us-qwerty',
-    titleKey: 'lesson.en.homeLeft',
+    titleKey: 'lesson.homeLeft',
     focus: { keys: { codes: ['KeyA', 'KeyS'] } },
     ...meta,
   }

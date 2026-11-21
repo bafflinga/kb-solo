@@ -7,7 +7,15 @@ import {
   layoutsForLanguage,
   slotForChar,
 } from './layout'
-import type { Code, Finger, KeyLevel, Layout, LayoutId, Row, Side } from './types'
+import type {
+  Code,
+  Finger,
+  KeyLevel,
+  Layout,
+  LayoutId,
+  Row,
+  Side,
+} from './types'
 import type { LessonMeta } from './lessons/types'
 
 export interface KeySelector {
@@ -17,6 +25,7 @@ export interface KeySelector {
   /** Explicit key escape hatch; still filtered by the active layout. */
   codes?: Code[]
   exclude?: Code[]
+  unionExclude?: Code[]
 }
 
 export interface LessonFocus {
@@ -132,9 +141,12 @@ export function unionZone(meta: LessonMeta): ReadonlySet<Code> {
     return new Set()
   }
   const codes = new Set<Code>()
+  const unionExclude = new Set(selector.unionExclude ?? [])
   for (const layout of layoutsForLanguage(meta.language)) {
     for (const code of zoneCodes(selector, layout)) {
-      codes.add(code)
+      if (!unionExclude.has(code)) {
+        codes.add(code)
+      }
     }
   }
   return codes

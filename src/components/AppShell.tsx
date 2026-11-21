@@ -24,6 +24,7 @@ import {
 import { loadFaker } from '../domain/lessons/fakerGenerator'
 import { allLessons, getLessonMeta } from '../domain/lessons/registry'
 import type { LessonContentMap } from '../domain/lessons/types'
+import { LANGUAGE_CODES, LANGUAGE_LABEL } from '../domain/languages'
 import type { Code, ContentLanguage } from '../domain/types'
 import { useI18n } from '../i18n'
 import {
@@ -237,8 +238,7 @@ export default function AppShell() {
       )
     : menuLayout
   const focusCodes = useMemo(
-    () =>
-      lessonMeta ? mapFocusCodes(lessonMeta, lessonLayout) : undefined,
+    () => (lessonMeta ? mapFocusCodes(lessonMeta, lessonLayout) : undefined),
     [lessonMeta, lessonLayout],
   )
 
@@ -397,8 +397,11 @@ export default function AppShell() {
                         )
                       }
                     >
-                      <option value="en">English</option>
-                      <option value="ru">Русский</option>
+                      {LANGUAGE_CODES.map((code) => (
+                        <option key={code} value={code}>
+                          {LANGUAGE_LABEL[code]}
+                        </option>
+                      ))}
                     </select>
                   </label>
                 </div>

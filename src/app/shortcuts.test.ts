@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
 import {
-  defaultNextLessonShortcut,
+  nextLessonShortcut,
   defaultShortcuts,
   formatShortcut,
   isMac,
@@ -36,6 +36,14 @@ const enterCtrl: Shortcut = {
   shift: false,
 }
 
+const arrowRightCtrl: Shortcut = {
+  code: 'ArrowRight',
+  ctrl: true,
+  meta: false,
+  alt: false,
+  shift: false,
+}
+
 describe('shortcuts', () => {
   afterEach(() => {
     if (originalPlatform) {
@@ -57,6 +65,7 @@ describe('shortcuts', () => {
     expect(defaultShortcuts()).toEqual({
       start: enterCtrl,
       pause: enterCtrl,
+      nextLesson: arrowRightCtrl,
     })
 
     setPlatform('MacIntel')
@@ -71,7 +80,7 @@ describe('shortcuts', () => {
 
   it('builds a platform-appropriate next-lesson shortcut', () => {
     setPlatform('Win32')
-    expect(defaultNextLessonShortcut()).toEqual({
+    expect(nextLessonShortcut()).toEqual({
       code: 'ArrowRight',
       ctrl: true,
       meta: false,
@@ -80,7 +89,7 @@ describe('shortcuts', () => {
     })
 
     setPlatform('MacIntel')
-    expect(defaultNextLessonShortcut()).toEqual({
+    expect(nextLessonShortcut()).toEqual({
       code: 'ArrowRight',
       ctrl: false,
       meta: true,
@@ -159,10 +168,20 @@ describe('shortcuts', () => {
     expect(isShortcutSafe(enterCtrl)).toBe(true)
   })
 
-  it('normalizes a shortcut pair as a unit', () => {
+  it('normalizes all shortcuts as a unit', () => {
+    const settings = {
+      start: enterCtrl,
+      pause: { ...enterCtrl },
+      nextLesson: arrowRightCtrl,
+    }
+    expect(normalizeShortcutSettings(settings)).toEqual({
+      start: enterCtrl,
+      pause: enterCtrl,
+      nextLesson: arrowRightCtrl,
+    })
     expect(
       normalizeShortcutSettings({ start: enterCtrl, pause: { ...enterCtrl } }),
-    ).toEqual({ start: enterCtrl, pause: enterCtrl })
+    ).toBeUndefined()
     expect(normalizeShortcutSettings({ start: enterCtrl })).toBeUndefined()
     expect(normalizeShortcutSettings(undefined)).toBeUndefined()
   })

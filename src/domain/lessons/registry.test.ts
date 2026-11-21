@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cueFromText } from '../cues'
+import { LANGUAGE_CODES } from '../languages'
 import type { Cue, Layout } from '../types'
 import {
   allLessons,
@@ -15,12 +16,6 @@ function countChars(cues: readonly Cue[]): number {
 }
 
 describe('registry', () => {
-  it('has 56 lessons split into 28 English and 28 Russian', () => {
-    expect(allLessons()).toHaveLength(56)
-    expect(lessonsFor('en')).toHaveLength(28)
-    expect(lessonsFor('ru')).toHaveLength(28)
-  })
-
   it('groups lessons by language', () => {
     const metas = allLessons()
     for (let i = 1; i < metas.length; i++) {
@@ -33,10 +28,14 @@ describe('registry', () => {
     }
   })
 
-  it('has unique ids and title keys', () => {
-    const metas = allLessons()
-    expect(new Set(metas.map((meta) => meta.id)).size).toBe(metas.length)
-    expect(new Set(metas.map((meta) => meta.titleKey)).size).toBe(metas.length)
+  it('has unique ids and title keys within each language', () => {
+    for (const language of LANGUAGE_CODES) {
+      const metas = lessonsFor(language)
+      expect(new Set(metas.map((meta) => meta.id)).size).toBe(metas.length)
+      expect(new Set(metas.map((meta) => meta.titleKey)).size).toBe(
+        metas.length,
+      )
+    }
   })
 
   it('resolves every registered id to a provider', () => {
@@ -47,7 +46,7 @@ describe('registry', () => {
   })
 
   it('chains each lesson to the previous one within its language', () => {
-    for (const language of ['en', 'ru'] as const) {
+    for (const language of LANGUAGE_CODES) {
       const metas = lessonsFor(language)
       for (let i = 1; i < metas.length; i++) {
         const current = metas[i]
@@ -114,7 +113,7 @@ describe('registry', () => {
   })
 
   it('resolves the next lesson within the same language and stops at the end', () => {
-    for (const language of ['en', 'ru'] as const) {
+    for (const language of LANGUAGE_CODES) {
       const metas = lessonsFor(language)
       for (let i = 0; i < metas.length - 1; i++) {
         const current = metas[i]

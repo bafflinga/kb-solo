@@ -172,6 +172,25 @@ describe('AppShell', () => {
     ).toBe('false')
   })
 
+  it('previews Russian word keys on lesson hover', async () => {
+    await act(async () => {
+      root.render(<AppShell />)
+    })
+    await choose(container, 'ru')
+
+    const button = [
+      ...container.querySelectorAll<HTMLButtonElement>('.lesson-button'),
+    ].find((element) => element.textContent?.includes('Common words'))
+    expect(button).toBeDefined()
+
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    expect(
+      container.querySelectorAll('.keycap[data-focused="true"]').length,
+    ).toBeGreaterThan(0)
+  })
+
   it('syncs the sound setting to the audio engine', async () => {
     await act(async () => {
       root.render(<AppShell />)
@@ -322,7 +341,7 @@ describe('AppShell', () => {
         layoutId: 'ru-jcuken-mac',
       }),
     )
-    window.location.hash = '#/lesson/ru-pinky-home-both'
+    window.location.hash = '#/lesson/ru-pinky-home-bottom'
 
     await act(async () => {
       root.render(<AppShell />)
@@ -343,7 +362,7 @@ describe('AppShell', () => {
     ).toBe('false')
   })
 
-  it('does not ring Backslash on RU Windows for ru-pinky-home-both', async () => {
+  it('does not ring Backslash on RU Windows for ru-pinky-home-bottom', async () => {
     localStorage.setItem(
       'kb-solo.settings',
       JSON.stringify({
@@ -352,7 +371,7 @@ describe('AppShell', () => {
         layoutId: 'ru-jcuken',
       }),
     )
-    window.location.hash = '#/lesson/ru-pinky-home-both'
+    window.location.hash = '#/lesson/ru-pinky-home-bottom'
 
     await act(async () => {
       root.render(<AppShell />)
@@ -408,7 +427,7 @@ describe('AppShell', () => {
         layoutId: 'ru-jcuken-mac-iso',
       }),
     )
-    window.location.hash = '#/lesson/ru-pinky-home-both'
+    window.location.hash = '#/lesson/ru-pinky-home-bottom'
 
     await act(async () => {
       root.render(<AppShell />)
@@ -477,7 +496,7 @@ describe('AppShell', () => {
         layoutId: 'ru-jcuken-mac-iso',
       }),
     )
-    window.location.hash = '#/lesson/ru-pinky-home-both'
+    window.location.hash = '#/lesson/ru-pinky-home-bottom'
 
     await act(async () => {
       root.render(<AppShell />)

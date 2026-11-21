@@ -4,7 +4,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DEFAULT_SHORTCUTS, NEXT_LESSON_SHORTCUT } from '../app/shortcuts'
+import { DEFAULT_SHORTCUTS } from '../app/shortcuts'
 import { play, unlockAudio } from '../audio/audio'
 import { cueFromText } from '../domain/cues'
 import { getLayout } from '../domain/layout'
@@ -28,7 +28,7 @@ const lesson: LessonProvider = {
     id: 'test',
     language: 'en',
     layoutId: 'us-qwerty',
-    titleKey: 'lesson.en.homeLeft',
+    titleKey: 'lesson.homeLeft',
   } satisfies LessonMeta,
   kind: 'drill',
   templateCount: 1,
@@ -208,12 +208,12 @@ describe('PlayScreen', () => {
         new KeyboardEvent('keydown', {
           bubbles: true,
           cancelable: true,
-          code: NEXT_LESSON_SHORTCUT.code,
+          code: DEFAULT_SHORTCUTS.nextLesson.code,
           key: 'ArrowRight',
-          ctrlKey: NEXT_LESSON_SHORTCUT.ctrl,
-          metaKey: NEXT_LESSON_SHORTCUT.meta,
-          altKey: NEXT_LESSON_SHORTCUT.alt,
-          shiftKey: NEXT_LESSON_SHORTCUT.shift,
+          ctrlKey: DEFAULT_SHORTCUTS.nextLesson.ctrl,
+          metaKey: DEFAULT_SHORTCUTS.nextLesson.meta,
+          altKey: DEFAULT_SHORTCUTS.nextLesson.alt,
+          shiftKey: DEFAULT_SHORTCUTS.nextLesson.shift,
         }),
       )
     })

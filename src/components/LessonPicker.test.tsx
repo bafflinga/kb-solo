@@ -15,13 +15,13 @@ const lessons: LessonMeta[] = [
     id: 'en-home-left',
     language: 'en',
     layoutId: 'us-qwerty',
-    titleKey: 'lesson.en.homeLeft',
+    titleKey: 'lesson.homeLeft',
   },
   {
     id: 'en-home-right',
     language: 'en',
     layoutId: 'us-qwerty',
-    titleKey: 'lesson.en.homeRight',
+    titleKey: 'lesson.homeRight',
     requires: ['en-home-left'],
   },
 ]

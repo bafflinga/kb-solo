@@ -15,19 +15,19 @@ const lessons: LessonMeta[] = [
     id: 'en-home-left',
     language: 'en',
     layoutId: 'us-qwerty',
-    titleKey: 'lesson.en.homeLeft',
+    titleKey: 'lesson.homeLeft',
   },
   {
     id: 'en-home-right',
     language: 'en',
     layoutId: 'us-qwerty',
-    titleKey: 'lesson.en.homeRight',
+    titleKey: 'lesson.homeRight',
   },
   {
     id: 'ru-home-left',
     language: 'ru',
     layoutId: 'ru-jcuken',
-    titleKey: 'lesson.ru.homeLeft',
+    titleKey: 'lesson.homeLeft',
   },
 ]
 
@@ -110,7 +110,8 @@ describe('StatsScreen', () => {
     await render(progress)
 
     expect(container.textContent).toContain('Home row: left hand')
-    expect(container.textContent).toContain('Ряд дома: левая рука')
+    expect(container.textContent).toContain('English')
+    expect(container.textContent).toContain('Русский')
     expect(container.textContent).not.toContain('Home row: right hand')
     expect(container.querySelectorAll('.stats-row')).toHaveLength(2)
   })

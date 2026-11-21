@@ -1,11 +1,8 @@
 import { drillCues, lineCues, randomComboCues, wordCues } from '../cues'
-import {
-  focusLabels,
-  mapCanonicalChar,
-  resolveFocus,
-} from '../keyZones'
+import { focusLabels, mapCanonicalChar, resolveFocus } from '../keyZones'
+import type { LessonFocus } from '../keyZones'
 import { codeForChar, getLayout } from '../layout'
-import type { Cue, Layout } from '../types'
+import type { ContentLanguage, Cue, Layout, LayoutId } from '../types'
 import { generateText } from './fakerGenerator'
 import type {
   CreateCuesOptions,
@@ -213,5 +210,225 @@ export function buildChainedLessons(
       throw new Error(`Missing lesson content for ${meta.id}`)
     }
     return makeProvider(meta, found)
+  })
+}
+
+export type LanguageFocusId = 'punctuation'
+
+export interface LanguageCurriculumSetup {
+  layoutId: LayoutId
+  punctuationFocus: LessonFocus
+  layoutOverrides?: Readonly<Record<string, LayoutId>>
+}
+
+export interface LessonBlueprint {
+  suffix: string
+  kind: LessonKind
+  focus?: LessonFocus | LanguageFocusId
+}
+
+export const LESSON_BLUEPRINTS: readonly LessonBlueprint[] = [
+  {
+    suffix: 'home-left',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['home'],
+        exclude: ['KeyG'],
+      },
+    },
+  },
+  {
+    suffix: 'home-right',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['home'],
+        exclude: ['KeyH', 'Quote', 'Backslash'],
+      },
+    },
+  },
+  {
+    suffix: 'home-both',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['home'],
+        exclude: ['KeyG', 'KeyH', 'Quote', 'Backslash'],
+      },
+    },
+  },
+  {
+    suffix: 'index-top',
+    kind: 'drill',
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['top'] } },
+  },
+  {
+    suffix: 'index-mid',
+    kind: 'drill',
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['home'] } },
+  },
+  {
+    suffix: 'index-bottom',
+    kind: 'drill',
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['bottom'] } },
+  },
+  {
+    suffix: 'index-both',
+    kind: 'drill',
+    focus: { keys: { fingers: ['li', 'ri'], rows: ['top', 'home', 'bottom'] } },
+  },
+  {
+    suffix: 'middle-both',
+    kind: 'drill',
+    focus: { keys: { fingers: ['lm', 'rm'], rows: ['top', 'home', 'bottom'] } },
+  },
+  {
+    suffix: 'ring-both',
+    kind: 'drill',
+    focus: { keys: { fingers: ['lr', 'rr'], rows: ['top', 'home', 'bottom'] } },
+  },
+  {
+    suffix: 'pinky-home-bottom',
+    kind: 'drill',
+    focus: { keys: { fingers: ['lp', 'rp'], rows: ['home', 'bottom'] } },
+  },
+  {
+    suffix: 'pinky-top',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'rp'],
+        rows: ['top', 'digits'],
+        exclude: ['Digit0', 'Digit1', 'Minus', 'Equal'],
+      },
+    },
+  },
+  {
+    suffix: 'digits-left',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['digits'],
+        exclude: ['Backquote'],
+      },
+    },
+  },
+  {
+    suffix: 'digits-right',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['digits'],
+        exclude: ['Minus', 'Equal'],
+      },
+    },
+  },
+  {
+    suffix: 'bottom-right',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['bottom'],
+      },
+    },
+  },
+  {
+    suffix: 'bottom-left',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['bottom'],
+        unionExclude: ['IntlBackslash'],
+      },
+    },
+  },
+  {
+    suffix: 'bottom-both',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['bottom'],
+        unionExclude: ['IntlBackslash'],
+      },
+    },
+  },
+  {
+    suffix: 'top-left',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li'],
+        rows: ['top'],
+        exclude: ['Backquote'],
+      },
+    },
+  },
+  {
+    suffix: 'top-right',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['ri', 'rm', 'rr', 'rp'],
+        rows: ['top'],
+      },
+    },
+  },
+  {
+    suffix: 'top-both',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'lr', 'lm', 'li', 'ri', 'rm', 'rr', 'rp'],
+        rows: ['top'],
+      },
+    },
+  },
+  {
+    suffix: 'pinky-both',
+    kind: 'drill',
+    focus: {
+      keys: {
+        fingers: ['lp', 'rp'],
+        rows: ['digits', 'top', 'home', 'bottom'],
+        exclude: ['Digit0', 'Digit1', 'Minus', 'Equal'],
+      },
+    },
+  },
+  { suffix: 'all-letters', kind: 'drill' },
+  { suffix: 'caps', kind: 'drill' },
+  { suffix: 'punctuation', kind: 'drill', focus: 'punctuation' },
+  { suffix: 'words', kind: 'words' },
+  { suffix: 'prose', kind: 'prose' },
+  { suffix: 'code', kind: 'code' },
+]
+
+export function buildLessonDefs(
+  language: ContentLanguage,
+  setup: LanguageCurriculumSetup,
+): LessonDef[] {
+  return LESSON_BLUEPRINTS.map((blueprint) => {
+    const focus =
+      blueprint.focus === 'punctuation'
+        ? setup.punctuationFocus
+        : blueprint.focus
+    return {
+      id: `${language}-${blueprint.suffix}`,
+      language,
+      layoutId: setup.layoutOverrides?.[blueprint.suffix] ?? setup.layoutId,
+      titleKey: `lesson.${blueprint.suffix.replace(/-([a-z])/g, (match) =>
+        match.charAt(1).toUpperCase(),
+      )}`,
+      ...(focus ? { focus } : {}),
+      kind: blueprint.kind,
+    }
   })
 }

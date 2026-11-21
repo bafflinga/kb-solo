@@ -13,7 +13,7 @@ const meta: LessonMeta = {
   id: 'en-home-left',
   language: 'en',
   layoutId: 'us-qwerty',
-  titleKey: 'lesson.en.homeLeft',
+  titleKey: 'lesson.homeLeft',
 }
 
 describe('LessonCard', () => {

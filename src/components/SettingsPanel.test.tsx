@@ -176,7 +176,8 @@ describe('SettingsPanel shortcuts', () => {
     expect(container.textContent).toContain('Keyboard shortcuts')
     expect(container.textContent).toContain('Start / retry lesson')
     expect(container.textContent).toContain('Pause / resume')
-    expect(container.querySelectorAll('.shortcut-keys')).toHaveLength(2)
+    expect(container.textContent).toContain('Next Lesson')
+    expect(container.querySelectorAll('.shortcut-keys')).toHaveLength(3)
     expect(container.querySelector('.shortcut-keys')?.textContent).toBe(
       formatShortcut(DEFAULT_SHORTCUTS.start, (code) =>
         code === 'Enter' ? 'Enter' : undefined,

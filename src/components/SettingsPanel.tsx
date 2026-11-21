@@ -183,10 +183,10 @@ export function SettingsPanel({
       }
       setShortcutError(undefined)
       onPatch({
-        shortcuts:
-          target === 'start'
-            ? { ...settings.shortcuts, start: candidate }
-            : { ...settings.shortcuts, pause: candidate },
+        shortcuts: {
+          ...settings.shortcuts,
+          [target]: candidate
+        }
       })
       setRecording(null)
     }
@@ -263,6 +263,7 @@ export function SettingsPanel({
           <div className="shortcut-settings">
             <h4>{t('shortcuts')}</h4>
             <p className="muted">{t('shortcutHint')}</p>
+            {/* TODO: render list of shortcuts from settings */}
             <ShortcutField
               label={t('startShortcut')}
               value={settings.shortcuts.start}
@@ -309,6 +310,31 @@ export function SettingsPanel({
                   shortcuts: {
                     ...settings.shortcuts,
                     pause: DEFAULT_SHORTCUTS.pause,
+                  },
+                })
+              }
+            />
+            <ShortcutField
+              label={t('nextLessonShortcut')}
+              value={settings.shortcuts.nextLesson}
+              recording={recording === 'nextLesson'}
+              disabled={recording !== null}
+              error={recording === 'nextLesson' ? shortcutError : undefined}
+              keyLabel={keyLabel}
+              i18n={i18n}
+              onRecord={() => {
+                setShortcutError(undefined)
+                setRecording('nextLesson')
+              }}
+              onCancel={() => {
+                setShortcutError(undefined)
+                setRecording(null)
+              }}
+              onReset={() =>
+                onPatch({
+                  shortcuts: {
+                    ...settings.shortcuts,
+                    nextLesson: DEFAULT_SHORTCUTS.nextLesson,
                   },
                 })
               }

@@ -1,16 +1,13 @@
 import { useCallback } from 'react'
+import { LANGUAGE_CODES, LANGUAGE_LABEL } from '../domain/languages'
 import type { PaceLevel } from '../domain/pacing'
-import type { ContentLanguage } from '../domain/types'
 import type { LessonMeta } from '../domain/lessons/types'
 import type { LessonProgress } from '../storage/progress'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n'
 import { starGlyphs } from './stars'
-import { LANGUAGE_LABEL } from './languages'
 import { navigate } from '../app/useHashRoute'
 import './statsScreen.css'
-
-const LANGUAGES: readonly ContentLanguage[] = ['en', 'ru']
 
 export interface StatsScreenProps {
   progress: LessonProgress[]
@@ -37,9 +34,12 @@ export function StatsScreen({
       ? 0
       : scored.reduce((sum, item) => sum + item.bestAccuracy, 0) / scored.length
 
-  const gotoLessonHandler = useCallback((id: string) => () => {
-    navigate(`#/lesson/${encodeURIComponent(id)}`)
-  }, [])
+  const gotoLessonHandler = useCallback(
+    (id: string) => () => {
+      navigate(`#/lesson/${encodeURIComponent(id)}`)
+    },
+    [],
+  )
 
   if (progress.length === 0) {
     return (
@@ -77,7 +77,7 @@ export function StatsScreen({
         </div>
       </dl>
 
-      {LANGUAGES.map((language) => {
+      {LANGUAGE_CODES.map((language) => {
         const rows = lessons.filter(
           (meta) => meta.language === language && records.has(meta.id),
         )
